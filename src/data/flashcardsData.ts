@@ -1,0 +1,67 @@
+import { Flashcard } from '../types';
+
+export const flashcardsData: Flashcard[] = [
+  {
+    id: 'fc-1',
+    topic: 'Master Theorem',
+    question: 'In T(N) = aT(N/b) + O(N^d), what condition gives T(N) = O(N^d log N)?',
+    answer: 'Case 2: When log_b(a) == d. The work is evenly split across all levels of the recursion tree.',
+    codeSnippet: 'Merge Sort: a=2, b=2, d=1 -> log_2(2) == 1 -> O(N log N)',
+    box: 1,
+  },
+  {
+    id: 'fc-2',
+    topic: 'Binary Heaps',
+    question: 'For a 0-indexed array representation of a binary heap, what are the left child, right child, and parent formulas for index i?',
+    answer: 'Left Child: 2i + 1\nRight Child: 2i + 2\nParent: (i - 1) // 2',
+    codeSnippet: 'parent = (i - 1) // 2\nleft = 2 * i + 1\nright = 2 * i + 2',
+    box: 1,
+  },
+  {
+    id: 'fc-3',
+    topic: 'Quick Sort',
+    question: 'What is the Lomuto Partition invariant for pointer i and pointer j?',
+    answer: 'Elements from lo to i are <= pivot (Small Zone). Elements from i+1 to j-1 are > pivot (Big Zone). When arr[j] <= pivot, increment i and swap arr[i] with arr[j].',
+    codeSnippet: 'if arr[j] <= pivot:\n    i += 1\n    arr[i], arr[j] = arr[j], arr[i]',
+    box: 1,
+  },
+  {
+    id: 'fc-4',
+    topic: 'Dynamic Programming',
+    question: 'Why MUST you iterate backwards over weight capacity in 1D array 0/1 Knapsack?',
+    answer: 'Iterating backwards (W down to w) guarantees dp[w - weight] reflects the state before considering the current item, preventing the item from being used multiple times.',
+    codeSnippet: 'for cap in range(capacity, w - 1, -1):\n    dp[cap] = max(dp[cap], dp[cap - w] + v)',
+    box: 1,
+  },
+  {
+    id: 'fc-5',
+    topic: 'Graph Algorithms',
+    question: 'Why does Dijkstra’s algorithm fail on graphs with negative edge weights?',
+    answer: 'Dijkstra assumes that once a node is finalized from the priority queue, its shortest distance is permanently determined. A negative edge later could offer a shorter path, violating the greedy assumption.',
+    codeSnippet: 'Use Bellman-Ford O(V*E) or SPFA when negative weights exist!',
+    box: 1,
+  },
+  {
+    id: 'fc-6',
+    topic: 'Tree Traversal',
+    question: 'Which tree traversal yields elements in strictly sorted ascending order in a Binary Search Tree?',
+    answer: 'In-order Traversal (Left subtree -> Current Node -> Right subtree).',
+    codeSnippet: 'def inorder(node):\n    if not node: return\n    inorder(node.left)\n    print(node.val)\n    inorder(node.right)',
+    box: 1,
+  },
+  {
+    id: 'fc-7',
+    topic: 'Monotonic Stack',
+    question: 'How does a monotonic decreasing stack find Next Greater Element in O(N)?',
+    answer: 'It stores indices in descending order. When an incoming element is greater than stack top, the incoming element is the next greater element for the popped index. Each index is pushed once and popped once.',
+    codeSnippet: 'while stack and arr[stack[-1]] < x:\n    res[stack.pop()] = x\nstack.append(i)',
+    box: 1,
+  },
+  {
+    id: 'fc-8',
+    topic: 'Amortized Complexity',
+    question: 'Why is dynamic array (Python list) append amortized O(1) even though resizing takes O(N)?',
+    answer: 'Because doubling capacity occurs exponentially less frequently (at sizes 1, 2, 4, 8, 16...). Over N appends, total resizing copy work is 1 + 2 + 4 + ... + N = 2N = O(N), so 2N / N = O(1) per append.',
+    box: 1,
+  },
+];

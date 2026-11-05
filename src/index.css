@@ -1,0 +1,357 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #090a10;
+    color: #f1f5f9;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Standard Beautiful Comic Color Tokens */
+:root {
+  --comic-yellow: #FBBF24; /* Warm Golden Amber */
+  --comic-orange: #FB923C; /* Radiant Coral Orange */
+  --comic-red: #F43F5E;    /* Modern Rose Crimson */
+  --comic-blue: #38BDF8;   /* Sky Neon Blue */
+  --comic-green: #10B981;  /* Crisp Emerald Green */
+  --comic-purple: #8B5CF6; /* Royal Cosmic Violet */
+  --comic-cyan: #06B6D4;   /* High-Tech Cyan */
+  --surface-0: #090a10;    /* Canvas */
+  --surface-1: #0f1322;    /* Card base */
+  --surface-2: #161c30;    /* Card inner / elevated */
+  --surface-3: #1e2642;    /* Hover / input state */
+}
+
+/* High-Contrast Comic Hard Shadows */
+.shadow-comic {
+  box-shadow: 4px 4px 0px 0px #000000, 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+}
+
+.shadow-comic-sm {
+  box-shadow: 2px 2px 0px 0px #000000, 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+}
+
+.shadow-comic-lg {
+  box-shadow: 6px 6px 0px 0px #000000, 0 12px 32px -6px rgba(0, 0, 0, 0.6);
+}
+
+.shadow-comic-yellow {
+  box-shadow: 4px 4px 0px 0px #000000, 0 0 20px rgba(251, 191, 36, 0.35);
+}
+
+.shadow-comic-cyan {
+  box-shadow: 4px 4px 0px 0px #000000, 0 0 20px rgba(6, 182, 212, 0.35);
+}
+
+.shadow-comic-rose {
+  box-shadow: 4px 4px 0px 0px #000000, 0 0 20px rgba(244, 63, 94, 0.35);
+}
+
+/* Comic Halftone Dot Pattern - Subtle & Elegant */
+.bg-halftone {
+  background-image: radial-gradient(rgba(251, 191, 36, 0.08) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+.bg-halftone-blue {
+  background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+.bg-halftone-cyan {
+  background-image: radial-gradient(rgba(6, 182, 212, 0.08) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+.bg-comic-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.02) 10px,
+    rgba(0, 0, 0, 0.12) 10px,
+    rgba(0, 0, 0, 0.12) 20px
+  );
+}
+
+/* 3D Flip Card */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Comic Fonts */
+.font-bangers {
+  font-family: 'Bangers', cursive, sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.font-code {
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #141622;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b3049;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f476a;
+}
+
+/* Animations */
+@keyframes pulse-flame {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(255, 145, 77, 0.8));
+  }
+  30% {
+    transform: scale(1.18) rotate(-2deg);
+    filter: drop-shadow(0 0 18px rgba(255, 87, 87, 1));
+  }
+  70% {
+    transform: scale(1.1) rotate(2deg);
+    filter: drop-shadow(0 0 14px rgba(255, 222, 89, 0.9));
+  }
+}
+
+.animate-flame {
+  animation: pulse-flame 1.6s infinite ease-in-out;
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 0.4; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.animate-radar {
+  animation: radar-pulse 2s infinite ease-in-out;
+}
+
+/* Comic Book Pop-In with Spring Bounce */
+@keyframes comic-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(12px) rotate(-1.5deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-3px) rotate(1deg);
+  }
+  85% {
+    transform: scale(0.98) translateY(1px) rotate(-0.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+.animate-comic-pop {
+  animation: comic-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Comic Idle Floating */
+@keyframes comic-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.animate-comic-float {
+  animation: comic-float 2.8s ease-in-out infinite;
+}
+
+/* Spectral Ghost Floating for Nully */
+@keyframes ghost-sway {
+  0%, 100% {
+    transform: translateY(0px) rotate(-1.5deg);
+    filter: drop-shadow(0 0 8px rgba(199, 125, 255, 0.35));
+  }
+  50% {
+    transform: translateY(-9px) rotate(1.5deg);
+    filter: drop-shadow(0 0 16px rgba(199, 125, 255, 0.7));
+  }
+}
+
+.animate-ghost-float {
+  animation: ghost-sway 2.4s ease-in-out infinite;
+}
+
+/* Comic Playful Wiggle */
+@keyframes comic-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  75% { transform: rotate(4deg); }
+}
+
+.animate-comic-wiggle {
+  animation: comic-wiggle 0.35s ease-in-out infinite;
+}
+
+/* Shimmer Light Streak across Bars and Cards */
+@keyframes xp-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-xp-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: xp-shimmer 2.2s infinite linear;
+}
+
+/* Rainbow Dispersion Prism Animation for Pri */
+@keyframes rainbow-dispersion {
+  0% {
+    filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.6)) hue-rotate(0deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.8)) hue-rotate(180deg);
+  }
+  100% {
+    filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.6)) hue-rotate(360deg);
+  }
+}
+
+.animate-rainbow-prism {
+  animation: rainbow-dispersion 4s infinite linear;
+}
+
+/* Rubber Stamp Slam for Certificates & Badges */
+@keyframes comic-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(3) rotate(-20deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.9) rotate(-4deg);
+  }
+  80% {
+    transform: scale(1.08) rotate(-7deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+
+.animate-comic-stamp {
+  animation: comic-stamp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Wrong Answer Shake */
+@keyframes comic-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px) rotate(-1deg); }
+  40% { transform: translateX(6px) rotate(1deg); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.animate-comic-shake {
+  animation: comic-shake 0.4s ease-in-out;
+}
+
+/* Star Twinkle */
+@keyframes star-twinkle {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.3) rotate(15deg); opacity: 1; }
+}
+
+.animate-sparkle {
+  animation: star-twinkle 1.5s infinite ease-in-out;
+}
+
+/* Tactile Comic Button Press */
+.btn-comic-push {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.btn-comic-push:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+.btn-comic-push:active {
+  transform: translateY(2px) translateX(2px);
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+
+/* Hover Lift with Enhanced Comic Shadow */
+.hover-comic-lift {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.hover-comic-lift:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+
+/* Glowing Comic Shadows */
+.shadow-comic-glow-cyan {
+  box-shadow: 4px 4px 0px 0px #000, 0 0 15px rgba(6, 182, 212, 0.5);
+}
+.shadow-comic-glow-yellow {
+  box-shadow: 4px 4px 0px 0px #000, 0 0 15px rgba(255, 222, 89, 0.5);
+}
+.shadow-comic-glow-purple {
+  box-shadow: 4px 4px 0px 0px #000, 0 0 15px rgba(140, 82, 255, 0.5);
+}
+
+/* VS Code Red Wavy Squiggly Underline & Error Diagnostics */
+.squiggly-error {
+  text-decoration: underline wavy #ef4444 !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  border-radius: 2px;
+}
+
+.squiggly-warning {
+  text-decoration: underline wavy #f59e0b !important;
+  text-decoration-thickness: 1.5px !important;
+  text-underline-offset: 3px !important;
+  background-color: rgba(245, 158, 11, 0.14) !important;
+  border-radius: 2px;
+}
+
+/* Studio Editor Selection */
+.code-editor-textarea {
+  caret-color: #38BDF8 !important;
+  color: transparent !important;
+}
+
+.code-editor-textarea::selection {
+  background-color: rgba(56, 189, 248, 0.3) !important;
+  color: transparent !important;
+}
+
