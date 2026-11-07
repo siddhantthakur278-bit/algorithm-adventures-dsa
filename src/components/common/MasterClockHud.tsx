@@ -249,6 +249,17 @@ export const MasterClockHud: React.FC<MasterClockHudProps> = ({ variant = 'banne
               <Zap className="w-3.5 h-3.5" />
               <span>Day 2 (Nov 7)</span>
             </button>
+
+            <button
+              onClick={() => {
+                setSimulatedDate(new Date(2026, 10, 8, 10, 0, 0));
+                sound.playSuccess();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-400 hover:bg-purple-300 text-slate-950 font-black text-xs border border-slate-900 shadow-comic-sm transition cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Day 3 (Nov 8)</span>
+            </button>
           </div>
         </div>
 

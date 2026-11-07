@@ -1,7 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ambientRadio, AmbientMode } from '../../utils/ambientMusicEngine';
 import { Headphones, Play, Pause, Volume2, VolumeX, Sparkles, Music2, Radio } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
+
+// Optimized 60FPS Web Audio Analyser Canvas
+const AudioVisualizerCanvas: React.FC<{ isPlaying: boolean }> = ({ isPlaying }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+
+    const render = () => {
+      const data = ambientRadio.getFrequencyData();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const barCount = 16;
+      const barWidth = canvas.width / barCount - 2;
+
+      for (let i = 0; i < barCount; i++) {
+        const val = data[i] || Math.sin(Date.now() / 150 + i) * 20 + 25;
+        const barHeight = Math.max(3, (val / 255) * canvas.height);
+        const x = i * (barWidth + 2);
+        const y = canvas.height - barHeight;
+
+        const grad = ctx.createLinearGradient(0, canvas.height, 0, y);
+        grad.addColorStop(0, '#8b5cf6');
+        grad.addColorStop(1, '#06b6d4');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barWidth, barHeight);
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+
+    animId = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(animId);
+  }, [isPlaying]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={260}
+      height={28}
+      className="w-full h-7 rounded-lg mt-2 pt-1 border-t border-[#141b2e]"
+    />
+  );
+};
 
 export const LoFiRadioWidget: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -144,21 +194,8 @@ export const LoFiRadioWidget: React.FC = () => {
               </button>
             </div>
 
-            {/* Live equalizer visualizer bar */}
-            {isPlaying && (
-              <div className="flex items-center justify-between gap-1 mt-3 pt-2 border-t border-[#141b2e]">
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1 bg-gradient-to-t from-purple-500 to-cyan-400 rounded-full animate-pulse"
-                    style={{
-                      height: `${12 + Math.sin((i + Date.now() / 200)) * 14}px`,
-                      animationDelay: `${i * 60}ms`,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Optimized Web Audio Frequency Spectrum Visualizer */}
+            {isPlaying && <AudioVisualizerCanvas isPlaying={isPlaying} />}
           </div>
 
           {/* Mode Selector Radio Pills */}

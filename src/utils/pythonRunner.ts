@@ -116,16 +116,34 @@ function executePythonFallback(
   };
 }
 
+// In-memory execution cache for fast instant re-runs
+const pythonRunCache = new Map<string, RunResult>();
+
+export function clearPythonCache(): void {
+  pythonRunCache.clear();
+}
+
 export async function runPythonTests(
   userCode: string,
   testCases: TestCase[],
   entryFunctionName?: string
 ): Promise<RunResult> {
+  const cacheKey = `${entryFunctionName || ''}:::${userCode.trim()}:::${JSON.stringify(testCases)}`;
+  const cached = pythonRunCache.get(cacheKey);
+  if (cached) {
+    return {
+      ...cached,
+      totalTimeMs: 0,
+    };
+  }
+
   const pyodide = await getPyodideInstance();
 
   if (!pyodide) {
     // Fallback to local sandbox runner
-    return executePythonFallback(userCode, testCases);
+    const fallbackRes = executePythonFallback(userCode, testCases);
+    pythonRunCache.set(cacheKey, fallbackRes);
+    return fallbackRes;
   }
 
   const overallStart = performance.now();
@@ -224,13 +242,19 @@ _out = _catcher.get_value()
       }
     }
 
-    return {
+    const finalRes: RunResult = {
       success: true,
       allPassed,
       totalTimeMs: Math.round(performance.now() - overallStart),
       results,
       globalStdout,
     };
+    pythonRunCache.set(cacheKey, finalRes);
+    if (pythonRunCache.size > 80) {
+      const first = pythonRunCache.keys().next().value;
+      if (first) pythonRunCache.delete(first);
+    }
+    return finalRes;
   } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     return {
       success: false,
