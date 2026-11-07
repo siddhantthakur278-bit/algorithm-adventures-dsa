@@ -53,6 +53,7 @@ import {
   INTELLISENSE_ITEMS,
   IntelliSenseItem,
 } from '../../utils/pythonTokenizer';
+import { PairProgrammingCockpit } from './PairProgrammingCockpit';
 import { sound } from '../../utils/soundEffects';
 
 export const VSCodeEditor: React.FC = () => {
@@ -60,7 +61,7 @@ export const VSCodeEditor: React.FC = () => {
 
   const [code, setCode] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
-    'problem' | 'hints' | 'aiProfessor' | 'snippets' | 'extensions' | 'gitLog'
+    'problem' | 'hints' | 'aiProfessor' | 'snippets' | 'extensions' | 'gitLog' | 'pairCockpit'
   >('problem');
 
   // Compiler & Execution States
@@ -719,6 +720,17 @@ export const VSCodeEditor: React.FC = () => {
               <GitCommitIcon className="w-3.5 h-3.5 text-[#38BDF8]" />
               Git
             </button>
+            <button
+              onClick={() => setActiveTab('pairCockpit')}
+              className={`flex items-center gap-1 px-2.5 py-2 text-xs font-bold rounded-t-lg transition border-t-2 border-x-2 whitespace-nowrap ${
+                activeTab === 'pairCockpit'
+                  ? 'bg-[#0c101d] text-[#06B6D4] border-black border-b-transparent'
+                  : 'bg-transparent text-slate-400 border-transparent hover:text-white'
+              }`}
+            >
+              <Cpu className="w-3.5 h-3.5 text-[#06B6D4]" />
+              Voice Cockpit
+            </button>
           </div>
 
           {/* Drawer Content */}
@@ -1107,6 +1119,15 @@ export const VSCodeEditor: React.FC = () => {
                   )}
                 </div>
               </div>
+            )}
+
+            {/* 7. AI Pair Programming Voice & AST Metrics Cockpit */}
+            {activeTab === 'pairCockpit' && (
+              <PairProgrammingCockpit
+                code={code}
+                onCodeChange={setCode}
+                problemTitle={selectedProblem.title}
+              />
             )}
           </div>
         </div>

@@ -9,6 +9,7 @@ class AmbientMusicEngine {
   private currentMode: AmbientMode = 'lofi';
   private timerId: number | null = null;
   private masterGain: GainNode | null = null;
+  private analyser: AnalyserNode | null = null;
   private volume: number = 0.25;
 
   private initCtx() {
@@ -26,8 +27,18 @@ class AmbientMusicEngine {
     if (this.ctx && !this.masterGain) {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
-      this.masterGain.connect(this.ctx.destination);
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 64;
+      this.masterGain.connect(this.analyser);
+      this.analyser.connect(this.ctx.destination);
     }
+  }
+
+  public getFrequencyData(): Uint8Array {
+    if (!this.analyser) return new Uint8Array(32);
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getByteFrequencyData(data);
+    return data;
   }
 
   public setVolume(vol: number) {

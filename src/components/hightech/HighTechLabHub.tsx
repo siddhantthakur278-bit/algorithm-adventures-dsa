@@ -8,14 +8,20 @@ import {
   Zap,
   Activity,
   Layers,
+  ShieldAlert,
 } from 'lucide-react';
 import { BytecodeDisassemblerStudio } from './BytecodeDisassemblerStudio';
 import { NeuralCodeSpaceVisualizer } from './NeuralCodeSpaceVisualizer';
 import { RaftConsensusSimulator } from './RaftConsensusSimulator';
+import { WasmJitAstStudio } from './WasmJitAstStudio';
+import { QuantumCircuitStudio } from './QuantumCircuitStudio';
+import { DistributedRateLimiterStudio } from './DistributedRateLimiterStudio';
 import { sound } from '../../utils/soundEffects';
 
 export const HighTechLabHub: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'bytecode' | 'neural' | 'raft'>('bytecode');
+  const [activeTab, setActiveTab] = useState<
+    'bytecode' | 'neural' | 'raft' | 'ast_jit' | 'quantum' | 'ratelimit'
+  >('bytecode');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -34,7 +40,7 @@ export const HighTechLabHub: React.FC = () => {
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Direct hardware and systems insight: Disassemble CPython 3.12 bytecode, project code vectors in neural AST embedding spaces, and simulate distributed consensus clusters under network partitions.
+            Direct hardware, compiler and systems insight: Disassemble CPython 3.12 bytecode, inspect AST parsing &amp; Wasm WAT compilation, experiment with quantum qubit gates, project neural code spaces, simulate Raft consensus clusters, and test distributed token-bucket rate limiters.
           </p>
         </div>
 
@@ -44,7 +50,7 @@ export const HighTechLabHub: React.FC = () => {
           </div>
           <div className="font-mono text-xs">
             <span className="text-slate-400 block text-[10px] uppercase">Telemetry Status</span>
-            <span className="text-emerald-400 font-bold">Wasm JIT &amp; Raft Active</span>
+            <span className="text-emerald-400 font-bold">6 High-Tech Labs Active</span>
             <span className="text-slate-500 block text-[9px]">100% In-Browser</span>
           </div>
         </div>
@@ -54,6 +60,9 @@ export const HighTechLabHub: React.FC = () => {
       <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
         {[
           { id: 'bytecode', label: 'CPython Bytecode Disassembler', icon: Cpu },
+          { id: 'ast_jit', label: 'AST Explorer & Wasm JIT', icon: Layers },
+          { id: 'quantum', label: 'Quantum Circuit & Qubits', icon: Sparkles },
+          { id: 'ratelimit', label: 'Distributed Rate Limiter', icon: ShieldAlert },
           { id: 'neural', label: 'Neural Code Vector Space (AST)', icon: Brain },
           { id: 'raft', label: 'Distributed Raft Consensus', icon: Network },
         ].map((tab) => {
@@ -81,6 +90,9 @@ export const HighTechLabHub: React.FC = () => {
 
       {/* Dynamic Tab Body */}
       {activeTab === 'bytecode' && <BytecodeDisassemblerStudio />}
+      {activeTab === 'ast_jit' && <WasmJitAstStudio />}
+      {activeTab === 'quantum' && <QuantumCircuitStudio />}
+      {activeTab === 'ratelimit' && <DistributedRateLimiterStudio />}
       {activeTab === 'neural' && <NeuralCodeSpaceVisualizer />}
       {activeTab === 'raft' && <RaftConsensusSimulator />}
     </div>

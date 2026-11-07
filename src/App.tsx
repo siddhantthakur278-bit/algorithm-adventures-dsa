@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CourseProvider, useCourse } from './context/CourseContext';
 import { Navbar } from './components/navbar/Navbar';
 import { TimeTravelWidget } from './components/common/TimeTravelWidget';
 import { RealTimeStatusBar } from './components/common/RealTimeStatusBar';
 import { MasterClockHud } from './components/common/MasterClockHud';
+import { CommandPaletteModal } from './components/common/CommandPaletteModal';
+import { applyTheme, getStoredTheme } from './utils/themeEngine';
 import { DailyQuestHub } from './components/daily/DailyQuestHub';
 import { LiveDeveloperProfile } from './components/profile/LiveDeveloperProfile';
 import { TheoryViewer } from './components/theory/TheoryViewer';
@@ -324,37 +326,74 @@ const FooterContent: React.FC = () => {
   );
 };
 
+export const AppContent: React.FC = () => {
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    applyTheme(getStoredTheme());
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+
+    const handleCustomOpen = () => {
+      setIsCommandPaletteOpen(true);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('open-command-palette', handleCustomOpen);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('open-command-palette', handleCustomOpen);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#080a11] text-[#f1f5f9] flex flex-col font-sans selection:bg-[#FBBF24] selection:text-black relative">
+      {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
+      <MasterClockHud />
+
+      {/* Real-Time Live Telemetry Bar */}
+      <RealTimeStatusBar />
+
+      {/* Developer Time Engine Quick Controls */}
+      <TimeTravelWidget />
+
+      {/* Global Navigation Bar */}
+      <Navbar />
+
+      {/* Dynamic Tab Router */}
+      <MainContent />
+
+      {/* Floating AI Mentor Sanctuary Drawer (Ask Byte & Professor) */}
+      <AiMentorDrawer />
+
+      {/* Live In-App Broadcast Banner Toast */}
+      <BroadcastBanner />
+
+      {/* Comic Action Starburst Splash (POW! / ZAP! / BOOM!) */}
+      <ActionBurst />
+
+      {/* Universal Command Palette Modal (⌘K / Ctrl+K) */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
+      {/* Dynamic Comic Footer */}
+      <FooterContent />
+    </div>
+  );
+};
+
 export const App: React.FC = () => {
   return (
     <CourseProvider>
-      <div className="min-h-screen bg-[#080a11] text-[#f1f5f9] flex flex-col font-sans selection:bg-[#FBBF24] selection:text-black relative">
-        {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
-        <MasterClockHud />
-
-        {/* Real-Time Live Telemetry Bar */}
-        <RealTimeStatusBar />
-
-        {/* Developer Time Engine Quick Controls */}
-        <TimeTravelWidget />
-
-        {/* Global Navigation Bar */}
-        <Navbar />
-
-        {/* Dynamic Tab Router */}
-        <MainContent />
-
-        {/* Floating AI Mentor Sanctuary Drawer (Ask Byte & Professor) */}
-        <AiMentorDrawer />
-
-        {/* Live In-App Broadcast Banner Toast */}
-        <BroadcastBanner />
-
-        {/* Comic Action Starburst Splash (POW! / ZAP! / BOOM!) */}
-        <ActionBurst />
-
-        {/* Dynamic Comic Footer */}
-        <FooterContent />
-      </div>
+      <AppContent />
     </CourseProvider>
   );
 };

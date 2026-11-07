@@ -29,6 +29,7 @@ import {
   GraduationCap,
   Briefcase,
   Cpu,
+  Command,
 } from 'lucide-react';
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
@@ -348,6 +349,21 @@ export const Navbar: React.FC = () => {
                 </div>
                 <span className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{getLevelTitle(currentLevel)}</span>
               </div>
+
+              {/* Universal Command Palette Trigger (⌘K) */}
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('open-command-palette'));
+                }}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#141b2e] hover:bg-[#1d2742] rounded-xl border-2 border-[#1f2b48] hover:border-cyan-400/50 shadow-comic-sm text-slate-200 font-medium text-xs transition cursor-pointer"
+                title="Universal Command Palette (⌘K / Ctrl+K)"
+              >
+                <Command className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden xl:inline text-slate-300">Quick Actions</span>
+                <kbd className="hidden sm:inline-block font-mono text-[9px] px-1.5 py-0.2 bg-[#090d18] text-cyan-300 rounded border border-cyan-500/30 font-bold">
+                  ⌘K
+                </kbd>
+              </button>
 
               {/* Broadcast Notification Bell */}
               <NotificationBell />

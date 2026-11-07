@@ -94,13 +94,13 @@ export const MasterClockHud: React.FC<MasterClockHudProps> = ({ variant = 'banne
 
   // Cohort Schedule Days Strip
   const cohortDays = [
-    { day: 0, date: new Date(2026, 10, 5, 16, 30, 0), label: 'Today (Nov 5)', sub: 'Pre-Launch Countdown', isToday: true },
-    { day: 1, date: new Date(2026, 10, 6, 5, 0, 0), label: 'Tomorrow (Nov 6)', sub: 'Day 1 Launch • Two Sum', isLaunch: true },
-    { day: 2, date: new Date(2026, 10, 7, 5, 0, 0), label: 'Sat (Nov 7)', sub: 'Weekend Rush +2 HW', isWeekend: true },
-    { day: 3, date: new Date(2026, 10, 8, 5, 0, 0), label: 'Sun (Nov 8)', sub: 'Weekend Rush +2 HW', isWeekend: true },
-    { day: 4, date: new Date(2026, 10, 9, 5, 0, 0), label: 'Mon (Nov 9)', sub: 'Day 4 • Dynamic Prog', isWeekday: true },
-    { day: 5, date: new Date(2026, 10, 10, 5, 0, 0), label: 'Tue (Nov 10)', sub: 'Day 5 • Trees & BST', isWeekday: true },
-    { day: 6, date: new Date(2026, 10, 11, 5, 0, 0), label: 'Wed (Nov 11)', sub: 'Day 6 • Graphs BFS', isWeekday: true },
+    { day: 0, date: new Date(2026, 10, 5, 16, 30, 0), label: 'Thu, Nov 5', sub: 'Pre-Launch Prep', isPrep: true },
+    { day: 1, date: new Date(2026, 10, 6, 5, 0, 0), label: 'Fri, Nov 6', sub: 'Day 1 Launch • Two Sum', isLaunch: true },
+    { day: 2, date: new Date(2026, 10, 7, 5, 0, 0), label: 'Sat, Nov 7', sub: 'Weekend Rush +2 HW', isWeekend: true },
+    { day: 3, date: new Date(2026, 10, 8, 5, 0, 0), label: 'Sun, Nov 8', sub: 'Weekend Rush +2 HW', isWeekend: true },
+    { day: 4, date: new Date(2026, 10, 9, 5, 0, 0), label: 'Mon, Nov 9', sub: 'Day 4 • Dynamic Prog', isWeekday: true },
+    { day: 5, date: new Date(2026, 10, 10, 5, 0, 0), label: 'Tue, Nov 10', sub: 'Day 5 • Trees & BST', isWeekday: true },
+    { day: 6, date: new Date(2026, 10, 11, 5, 0, 0), label: 'Wed, Nov 11', sub: 'Day 6 • Graphs BFS', isWeekday: true },
   ];
 
   const isCurrentActiveDay = (d: Date) => {
@@ -236,7 +236,18 @@ export const MasterClockHud: React.FC<MasterClockHudProps> = ({ variant = 'banne
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs border border-slate-900 shadow-comic-sm transition cursor-pointer"
             >
               <Rocket className="w-3.5 h-3.5" />
-              <span>Tomorrow (Day 1)</span>
+              <span>Day 1 (Nov 6)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setSimulatedDate(new Date(2026, 10, 7, 9, 30, 0));
+                sound.playSuccess();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-400 hover:bg-sky-300 text-slate-950 font-black text-xs border border-slate-900 shadow-comic-sm transition cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Day 2 (Nov 7)</span>
             </button>
           </div>
         </div>
