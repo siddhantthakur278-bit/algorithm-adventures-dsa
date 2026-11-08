@@ -23,7 +23,51 @@ import { Problem } from '../types';
  *    Problems advance in exact order across days and within homework.
  */
 
-export const COHORT_START_DATE = new Date(2026, 10, 6, 5, 0, 0); // 2026-11-06 05:00:00 (Tomorrow Morning)
+export interface UserCohortConfig {
+  startDate: string; // ISO string for Day 1
+  mode: 'automatic' | 'manual_day' | 'self_paced';
+  manualDayNumber: number; // e.g. 1, 2, 3...
+  isUnlockedAll: boolean; // if true, all POTD and HW are immediately unlocked
+}
+
+const STORAGE_KEY_COHORT_CONFIG = 'ada_user_cohort_config';
+
+export function getDefaultCohortConfig(): UserCohortConfig {
+  const now = new Date();
+  // By default, Day 1 starts TODAY at 05:00:00 AM! Unbound from hardcoded calendar dates.
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 0, 0);
+  return {
+    startDate: start.toISOString(),
+    mode: 'automatic',
+    manualDayNumber: 1,
+    isUnlockedAll: false,
+  };
+}
+
+export function getUserCohortConfig(): UserCohortConfig {
+  if (typeof window === 'undefined') return getDefaultCohortConfig();
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_COHORT_CONFIG);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.startDate) {
+        return parsed;
+      }
+    }
+  } catch {}
+  const def = getDefaultCohortConfig();
+  saveUserCohortConfig(def);
+  return def;
+}
+
+export function saveUserCohortConfig(config: UserCohortConfig): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY_COHORT_CONFIG, JSON.stringify(config));
+  } catch {}
+}
+
+export const COHORT_START_DATE = new Date(); // Dynamic fallback reference
 
 export interface ScheduleCalculation {
   isPotdUnlocked: boolean;
@@ -46,41 +90,61 @@ export interface ScheduleCalculation {
   cohortStartDateStr: string;
 }
 
-export function computeDailySchedule(simulatedDate?: Date): ScheduleCalculation {
+export function computeDailySchedule(
+  simulatedDate?: Date,
+  userConfig?: UserCohortConfig
+): ScheduleCalculation {
   const now = simulatedDate ? new Date(simulatedDate) : new Date();
-
-  // Check if current date is before official cohort launch (Tomorrow Nov 6, 2026 5:00 AM)
-  const isPreLaunch = now.getTime() < COHORT_START_DATE.getTime();
+  const config = userConfig || getUserCohortConfig();
+  const cohortStartDate = new Date(config.startDate);
 
   let dayNumber = 1;
+  let isPreLaunch = false;
   let daysUntilLaunch = 0;
+  let isPotdUnlocked = false;
 
-  if (isPreLaunch) {
-    dayNumber = 0;
-    const msUntilLaunch = COHORT_START_DATE.getTime() - now.getTime();
-    daysUntilLaunch = Math.max(1, Math.ceil(msUntilLaunch / (1000 * 60 * 60 * 24)));
+  if (config.isUnlockedAll || config.mode === 'self_paced') {
+    // User chose self-paced mode: all days and challenges are unlocked immediately!
+    dayNumber = Math.max(1, config.manualDayNumber || 1);
+    isPotdUnlocked = true;
+    isPreLaunch = false;
+    daysUntilLaunch = 0;
+  } else if (config.mode === 'manual_day') {
+    // User decided by himself which day he is on!
+    dayNumber = Math.max(1, config.manualDayNumber || 1);
+    isPotdUnlocked = true;
+    isPreLaunch = false;
+    daysUntilLaunch = 0;
   } else {
-    // Day 1 begins on Nov 6, 2026 (Tomorrow)
-    const startMidnight = new Date(2026, 10, 6, 0, 0, 0);
-    const currentMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    const diffDays = Math.round((currentMidnight.getTime() - startMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    dayNumber = Math.max(1, diffDays + 1);
+    // Automatic schedule from user's chosen start date onwards
+    const msUntilLaunch = cohortStartDate.getTime() - now.getTime();
+    if (msUntilLaunch > 0) {
+      isPreLaunch = true;
+      dayNumber = 0;
+      daysUntilLaunch = Math.max(1, Math.ceil(msUntilLaunch / (1000 * 60 * 60 * 24)));
+    } else {
+      const startMidnight = new Date(cohortStartDate.getFullYear(), cohortStartDate.getMonth(), cohortStartDate.getDate(), 0, 0, 0);
+      const currentMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const diffDays = Math.round((currentMidnight.getTime() - startMidnight.getTime()) / (1000 * 60 * 60 * 24));
+      dayNumber = Math.max(1, diffDays + 1);
+    }
+
+    const potdUnlockToday = new Date(now);
+    potdUnlockToday.setHours(5, 0, 0, 0);
+    isPotdUnlocked = !isPreLaunch && now.getTime() >= potdUnlockToday.getTime();
   }
-
-  // POTD Unlock is at 05:00:00 AM of today (or cohort launch if pre-launch)
-  const potdUnlockToday = new Date(now);
-  potdUnlockToday.setHours(5, 0, 0, 0);
-
-  let isPotdUnlocked = !isPreLaunch && now.getTime() >= potdUnlockToday.getTime();
 
   let unlockTarget: Date;
   if (isPreLaunch) {
-    unlockTarget = COHORT_START_DATE;
+    unlockTarget = cohortStartDate;
   } else if (isPotdUnlocked) {
-    // Next unlock target is tomorrow at 5 AM
+    const potdUnlockToday = new Date(now);
+    potdUnlockToday.setHours(5, 0, 0, 0);
     unlockTarget = new Date(potdUnlockToday);
     unlockTarget.setDate(unlockTarget.getDate() + 1);
   } else {
+    const potdUnlockToday = new Date(now);
+    potdUnlockToday.setHours(5, 0, 0, 0);
     unlockTarget = potdUnlockToday;
   }
 
@@ -149,7 +213,11 @@ export function computeDailySchedule(simulatedDate?: Date): ScheduleCalculation 
     dayNumber,
     isPreLaunch,
     daysUntilLaunch,
-    cohortStartDateStr: 'Nov 6, 2026 05:00 AM'
+    cohortStartDateStr: `${cohortStartDate.toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })} 05:00 AM`,
   };
 }
 
@@ -163,10 +231,11 @@ export function computeDailySchedule(simulatedDate?: Date): ScheduleCalculation 
  */
 export function selectDailyProblems(
   allProblems: Problem[],
-  simulatedDate?: Date
+  simulatedDate?: Date,
+  userConfig?: UserCohortConfig
 ): { potd: Problem; homework: Problem[] } {
   const now = simulatedDate ? new Date(simulatedDate) : new Date();
-  const schedule = computeDailySchedule(now);
+  const schedule = computeDailySchedule(now, userConfig);
 
   if (allProblems.length === 0) {
     const dummy: Problem = {

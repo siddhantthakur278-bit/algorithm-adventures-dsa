@@ -3,7 +3,7 @@ import { useCourse } from '../../context/CourseContext';
 import { GitCommit, Flame, Calendar, Award, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export const ContributionHeatmap: React.FC = () => {
-  const { stats, scheduleState } = useCourse();
+  const { stats, scheduleState, simulatedDate } = useCourse();
   const [hoveredDay, setHoveredDay] = useState<{
     dateStr: string;
     count: number;
@@ -12,7 +12,7 @@ export const ContributionHeatmap: React.FC = () => {
 
   // Generate 52 weeks (364 days) leading up to current effective date
   const weeks = useMemo(() => {
-    const today = new Date(2026, 10, 6); // Cohort Day 1 base
+    const today = simulatedDate ? new Date(simulatedDate) : new Date();
     const days: { date: Date; dateStr: string; count: number; level: number; details: string }[] = [];
 
     // Map stats activity: completedDailyTargetDates, gitCommits, solvedProblemIds

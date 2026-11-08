@@ -3,11 +3,19 @@ import { useCourse } from '../../context/CourseContext';
 import { Clock, RefreshCw, Sparkles, ChevronDown, ChevronUp, Calendar, Rocket, Lock } from 'lucide-react';
 
 export const TimeTravelWidget: React.FC = () => {
-  const { simulatedDate, setSimulatedDate, scheduleState } = useCourse();
+  const {
+    simulatedDate,
+    setSimulatedDate,
+    scheduleState,
+    cohortConfig,
+    resetCohortToToday,
+    setManualCohortDay,
+    updateCohortConfig,
+  } = useCourse();
   const [isOpen, setIsOpen] = useState(false);
 
   const setTime = (hours: number, minutes: number, dayOfWeek?: number) => {
-    const d = new Date();
+    const d = new Date(simulatedDate || new Date());
     if (dayOfWeek !== undefined) {
       const currentDay = d.getDay();
       const distance = (dayOfWeek + 7 - currentDay) % 7;
@@ -18,9 +26,15 @@ export const TimeTravelWidget: React.FC = () => {
   };
 
   const jumpToCohortDay = (day: number) => {
-    // Cohort Day 1 = Nov 6, 2026 (Tomorrow)
-    const target = new Date(2026, 10, 5 + day, 5, 0, 0);
-    setSimulatedDate(target);
+    if (cohortConfig.mode === 'manual_day') {
+      setManualCohortDay(day);
+    } else {
+      const start = new Date(cohortConfig.startDate);
+      const target = new Date(start);
+      target.setDate(target.getDate() + (day - 1));
+      target.setHours(5, 0, 0, 0);
+      setSimulatedDate(target);
+    }
   };
 
   const resetToReal = () => {
@@ -48,7 +62,11 @@ export const TimeTravelWidget: React.FC = () => {
           <span className="hidden sm:inline-block text-slate-500">•</span>
           <span className="hidden sm:inline-block text-slate-300">
             <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-bold">
-              {scheduleState.isPreLaunch ? '⏳ Pre-Launch (Starts Tomorrow)' : `🚀 Cohort Day ${scheduleState.dayNumber || 1}`}
+              {cohortConfig.isUnlockedAll || cohortConfig.mode === 'self_paced'
+                ? '⚡ Self-Paced (All Open)'
+                : scheduleState.isPreLaunch
+                ? `⏳ Pre-Launch (${scheduleState.cohortStartDateStr})`
+                : `🚀 Cohort Day ${scheduleState.dayNumber || 1}`}
             </span>
           </span>
           <span className="hidden sm:inline-block text-slate-500">•</span>
@@ -94,34 +112,39 @@ export const TimeTravelWidget: React.FC = () => {
         <div className="max-w-7xl mx-auto mt-2 pt-2 border-t border-[#1b2236] flex flex-wrap items-center gap-2">
           <span className="text-slate-400 font-medium">Cohort Timeline Jumps:</span>
           <button
-            onClick={() => jumpToCohortDay(1)}
+            onClick={() => resetCohortToToday()}
             className="px-2.5 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-xs border border-slate-900 cursor-pointer flex items-center gap-1 shadow-sm hover:bg-amber-300"
           >
-            <Rocket className="w-3 h-3" /> Tomorrow (Day 1 - Nov 6, 5:00 AM Launch)
+            <Rocket className="w-3 h-3" /> Start Day 1 Today
           </button>
           <button
             onClick={() => jumpToCohortDay(2)}
             className="px-2.5 py-0.5 rounded bg-[#131728] hover:bg-[#1d233c] text-xs text-sky-300 border border-sky-500/30 cursor-pointer flex items-center gap-1"
           >
-            <Calendar className="w-3 h-3" /> Day 2 (Nov 7 - Sat Weekend Rush +2)
+            <Calendar className="w-3 h-3" /> Day 2
           </button>
           <button
             onClick={() => jumpToCohortDay(3)}
             className="px-2.5 py-0.5 rounded bg-[#131728] hover:bg-[#1d233c] text-xs text-emerald-300 border border-emerald-500/30 cursor-pointer flex items-center gap-1"
           >
-            <Calendar className="w-3 h-3" /> Day 3 (Nov 8 - Sun Weekend Rush +2)
+            <Calendar className="w-3 h-3" /> Day 3
           </button>
           <button
             onClick={() => jumpToCohortDay(4)}
             className="px-2.5 py-0.5 rounded bg-[#131728] hover:bg-[#1d233c] text-xs text-purple-300 border border-purple-500/30 cursor-pointer flex items-center gap-1"
           >
-            <Calendar className="w-3 h-3" /> Day 4 (Nov 9, Dynamic Prog)
+            <Calendar className="w-3 h-3" /> Day 4
           </button>
           <button
-            onClick={() => setSimulatedDate(new Date(2026, 10, 5, 16, 0, 0))}
-            className="px-2.5 py-0.5 rounded bg-[#131728] hover:bg-[#1d233c] text-xs text-amber-300 border border-amber-500/30 cursor-pointer flex items-center gap-1"
+            onClick={() => updateCohortConfig({ isUnlockedAll: !cohortConfig.isUnlockedAll })}
+            className={`px-2.5 py-0.5 rounded text-xs border cursor-pointer flex items-center gap-1 ${
+              cohortConfig.isUnlockedAll
+                ? 'bg-purple-600 text-white border-purple-400 font-bold'
+                : 'bg-[#131728] hover:bg-[#1d233c] text-purple-300 border-purple-500/30'
+            }`}
           >
-            <Lock className="w-3 h-3" /> Today (Nov 5, Pre-Launch Countdown)
+            <Sparkles className="w-3 h-3" />
+            {cohortConfig.isUnlockedAll ? '⚡ Self-Paced: ON' : 'Self-Paced: OFF'}
           </button>
           <button
             onClick={() => setTime(4, 30)}

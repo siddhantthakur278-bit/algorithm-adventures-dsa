@@ -33,7 +33,7 @@ import { ProfessorAvatar, ByteAvatar, PriAvatar, ComicBubble } from '../characte
 import { sound } from '../../utils/soundEffects';
 
 export const StandardSyllabusHub: React.FC = () => {
-  const { stats, setActiveTab, setActiveSaga, loadProblemInIDE } = useCourse();
+  const { stats, setActiveTab, setActiveSaga, loadProblemInIDE, scheduleState } = useCourse();
   const [activeSubTab, setActiveSubTab] = useState<'modules' | 'routine' | 'rubric' | 'syllabus-doc'>('modules');
   const [selectedModuleId, setSelectedModuleId] = useState<string>('mod-1');
 
@@ -105,7 +105,7 @@ export const StandardSyllabusHub: React.FC = () => {
             </span>
             <span className="text-xs text-amber-300 font-bold">Standard 10-Module Academic Curriculum</span>
             <span className="text-slate-500">•</span>
-            <span className="text-xs font-mono text-emerald-400 font-bold">Launch: Tomorrow, Nov 6, 2026 (5:00 AM)</span>
+            <span className="text-xs font-mono text-emerald-400 font-bold">Cohort Day {scheduleState.dayNumber} • {scheduleState.cohortStartDateStr}</span>
           </div>
 
           <h1 className="font-bangers text-3xl sm:text-4xl text-white tracking-wide">
@@ -536,7 +536,7 @@ export const StandardSyllabusHub: React.FC = () => {
                 CS 201: DATA STRUCTURES, ALGORITHMS &amp; COMPUTATIONAL SYSTEMS
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Term: Cohort Launch Tomorrow (November 6, 2026) • 4.0 Semester Units • Prerequisites: CS101 or Equivalent
+                Term: Cohort Day {scheduleState.dayNumber} ({scheduleState.cohortStartDateStr}) • 4.0 Semester Units • Prerequisites: CS101 or Equivalent
               </p>
             </div>
 

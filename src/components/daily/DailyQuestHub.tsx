@@ -31,6 +31,10 @@ export const DailyQuestHub: React.FC = () => {
     setSimulatedDate,
     dailyTargetStatus,
     realStreak,
+    cohortConfig,
+    updateCohortConfig,
+    resetCohortToToday,
+    setManualCohortDay,
   } = useCourse();
   const [now, setNow] = useState(new Date());
   const [sequenceWarning, setSequenceWarning] = useState<string | null>(null);
@@ -71,33 +75,44 @@ export const DailyQuestHub: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8 animate-fadeIn font-comic">
-      {/* Pre-Launch Cohort Alert (shown if today is before tomorrow's launch) */}
+      {/* Pre-Launch Cohort Alert (shown if today is before user's start date) */}
       {scheduleState.isPreLaunch && (
         <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-rose-500/20 border-3 border-amber-400 rounded-3xl p-6 sm:p-8 shadow-comic-lg flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <span className="px-3 py-1 bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-full border-2 border-slate-900 shadow-sm flex items-center gap-1">
-                <Rocket className="w-3.5 h-3.5" /> Official Cohort Launch: Tomorrow!
+                <Rocket className="w-3.5 h-3.5" /> Scheduled Cohort Start
               </span>
-              <span className="text-xs text-amber-300 font-bold">November 6, 2026 at 05:00 AM</span>
+              <span className="text-xs text-amber-300 font-bold">{scheduleState.cohortStartDateStr} at 05:00 AM</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              The Adventure Starts Tomorrow Morning!
+              Your Scheduled Cohort Adventure Awaits!
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-              Day 1 unlocks tomorrow at 5:00 AM with <strong>Two Sum & Foundational Arrays</strong>. All homework tasks will unlock in strict sequence as you solve them.
+              Your Day 1 is scheduled to unlock on <strong>{scheduleState.cohortStartDateStr}</strong> at 5:00 AM with <strong>Two Sum & Foundational Arrays</strong>. Want to start today or self-pace your schedule?
             </p>
           </div>
 
-          <button
-            onClick={() => {
-              setSimulatedDate(new Date(2026, 10, 6, 5, 0, 0));
-              sound.playSuccess();
-            }}
-            className="btn-comic-push px-6 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase rounded-2xl border-3 border-slate-900 shadow-comic flex items-center gap-2 whitespace-nowrap cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4" /> Run from Tomorrow (Day 1) Now →
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => {
+                resetCohortToToday();
+                sound.playCelebration();
+              }}
+              className="btn-comic-push px-5 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase rounded-2xl border-3 border-slate-900 shadow-comic flex items-center gap-2 whitespace-nowrap cursor-pointer"
+            >
+              <Rocket className="w-4 h-4" /> Start Today (Day 1) Now →
+            </button>
+            <button
+              onClick={() => {
+                updateCohortConfig({ isUnlockedAll: true, mode: 'self_paced' });
+                sound.playSuccess();
+              }}
+              className="btn-comic-push px-5 py-3 bg-purple-600 hover:bg-purple-500 text-white font-black text-sm uppercase rounded-2xl border-3 border-slate-900 shadow-comic flex items-center gap-2 whitespace-nowrap cursor-pointer"
+            >
+              <Zap className="w-4 h-4" /> Self-Paced Unlock
+            </button>
+          </div>
         </div>
       )}
 
@@ -176,7 +191,7 @@ export const DailyQuestHub: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2 font-mono text-xs w-full md:w-auto justify-end">
           <div className="px-3 py-1.5 rounded-xl bg-[#12182b] border border-[#1f2a4a] text-slate-300">
             <span className="text-[10px] text-slate-400 block font-sans">Cohort Launch</span>
-            <span className="text-amber-400 font-bold">Nov 6, 05:00 AM (Day 1)</span>
+            <span className="text-amber-400 font-bold">{scheduleState.cohortStartDateStr} (Day {scheduleState.dayNumber || 1})</span>
           </div>
           <div className="px-3 py-1.5 rounded-xl bg-[#12182b] border border-[#1f2a4a] text-slate-300">
             <span className="text-[10px] text-slate-400 block font-sans">POTD Vault</span>
@@ -392,15 +407,27 @@ export const DailyQuestHub: React.FC = () => {
                   />
                 </div>
 
-                <button
-                  onClick={() => {
-                    setSimulatedDate(new Date(2026, 10, 1, 5, 0, 0));
-                    sound.playSuccess();
-                  }}
-                  className="btn-comic-push text-xs text-amber-300 font-bold hover:underline cursor-pointer pt-1"
-                >
-                  🚀 Time Warp to Tomorrow 5:00 AM (Day 1 Launch) →
-                </button>
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      resetCohortToToday();
+                      sound.playCelebration();
+                    }}
+                    className="btn-comic-push text-xs text-amber-300 font-bold hover:underline cursor-pointer"
+                  >
+                    🚀 Start Day 1 Today
+                  </button>
+                  <span className="text-slate-500">•</span>
+                  <button
+                    onClick={() => {
+                      updateCohortConfig({ isUnlockedAll: true });
+                      sound.playSuccess();
+                    }}
+                    className="btn-comic-push text-xs text-purple-300 font-bold hover:underline cursor-pointer"
+                  >
+                    ⚡ Unlock Now (Self-Paced)
+                  </button>
+                </div>
               </div>
             </div>
           )}

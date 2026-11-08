@@ -9,7 +9,14 @@ import {
 } from '../types';
 import { hallOfFameProblems } from '../data/hallOfFameData';
 import { initialInventory, initialBadges } from '../data/gameData';
-import { computeDailySchedule, selectDailyProblems } from '../utils/dailySchedule';
+import {
+  computeDailySchedule,
+  selectDailyProblems,
+  UserCohortConfig,
+  getUserCohortConfig,
+  saveUserCohortConfig,
+  getDefaultCohortConfig,
+} from '../utils/dailySchedule';
 import { commitProblemSolution, loadStoredCommits, saveStoredCommits, CommitResult, loadGitHubConfig, saveGitHubConfig, GitHubConfig } from '../utils/githubService';
 import {
   createPotdBroadcast,
@@ -77,6 +84,10 @@ interface CourseContextType {
   githubConfig: GitHubConfig;
   updateGitHubConfig: (config: GitHubConfig) => void;
   recentCommits: GitCommit[];
+  cohortConfig: UserCohortConfig;
+  updateCohortConfig: (newCfg: Partial<UserCohortConfig>) => void;
+  resetCohortToToday: () => void;
+  setManualCohortDay: (day: number) => void;
 }
 
 const STORAGE_KEY_STATS = 'ada_course_stats';
@@ -296,18 +307,38 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [simulatedDate, setSimulatedDate] = useState<Date | null>(() => {
     try {
       const saved = localStorage.getItem('ada_simulated_date');
-      if (saved) {
-        const d = new Date(saved);
-        // If it was the older Nov 1 test date, roll it forward to tomorrow (Nov 6, Day 1 Launch)
-        if (d.getFullYear() === 2026 && d.getMonth() === 10 && d.getDate() < 5) {
-          return new Date(2026, 10, 6, 5, 0, 0);
-        }
-        return d;
-      }
+      if (saved) return new Date(saved);
     } catch {}
-    // Default to Tomorrow, Nov 6, 2026 at 05:00 AM (Day 1 Official Cohort Launch)
-    return new Date(2026, 10, 6, 5, 0, 0);
+    return null; // By default, follows the user's real local machine clock!
   });
+
+  // User-configurable schedule: unbound from any arbitrary static date!
+  const [cohortConfig, setCohortConfigState] = useState<UserCohortConfig>(() => getUserCohortConfig());
+
+  const updateCohortConfig = (newCfg: Partial<UserCohortConfig>) => {
+    setCohortConfigState((prev) => {
+      const updated: UserCohortConfig = { ...prev, ...newCfg };
+      saveUserCohortConfig(updated);
+      return updated;
+    });
+  };
+
+  const resetCohortToToday = () => {
+    const def = getDefaultCohortConfig();
+    setCohortConfigState(def);
+    saveUserCohortConfig(def);
+    setSimulatedDate(null);
+    sound.playSuccess();
+  };
+
+  const setManualCohortDay = (day: number) => {
+    updateCohortConfig({
+      mode: 'manual_day',
+      manualDayNumber: day,
+    });
+    sound.playPop();
+  };
+
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   // Sync sound engine
@@ -338,10 +369,10 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
   }, [stats]);
 
-  // Compute schedule state
+  // Compute schedule state based on user's own start date and chosen pace
   const effectiveDate = simulatedDate || new Date();
-  const scheduleCalc = computeDailySchedule(effectiveDate);
-  const { potd, homework } = selectDailyProblems(hallOfFameProblems, effectiveDate);
+  const scheduleCalc = computeDailySchedule(effectiveDate, cohortConfig);
+  const { potd, homework } = selectDailyProblems(hallOfFameProblems, effectiveDate, cohortConfig);
 
   const scheduleState: DailyScheduleState = {
     isPotdUnlocked: scheduleCalc.isPotdUnlocked,
@@ -810,6 +841,10 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toggleBrowserNotifications,
         githubConfig,
         updateGitHubConfig,
+        cohortConfig,
+        updateCohortConfig,
+        resetCohortToToday,
+        setManualCohortDay,
         recentCommits: stats.gitCommits && stats.gitCommits.length > 0 ? stats.gitCommits : loadStoredCommits(),
       }}
     >
