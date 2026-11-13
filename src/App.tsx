@@ -40,6 +40,7 @@ const CodeforcesHub = React.lazy(() => import('./components/codeforces/Codeforce
 const BossBattleModal = React.lazy(() => import('./components/boss/BossBattleModal').then((m) => ({ default: m.BossBattleModal })));
 const MegaCheatSheets = React.lazy(() => import('./components/cheatsheet/MegaCheatSheets').then((m) => ({ default: m.MegaCheatSheets })));
 const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/GlobalLeaderboardHub').then((m) => ({ default: m.GlobalLeaderboardHub })));
+const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityChatHub').then((m) => ({ default: m.CommunityChatHub })));
 import { isProfileSetupComplete } from './utils/universalLeaderboardService';
 import { GlobalOnboardingModal } from './components/common/GlobalOnboardingModal';
 
@@ -121,6 +122,7 @@ const MainContent: React.FC = () => {
         <main className="flex-1 pb-16">
           {activeTab === 'quest' && <DailyQuestHub />}
           {activeTab === 'leaderboard' && <GlobalLeaderboardHub />}
+          {activeTab === 'chat' && <CommunityChatHub />}
           {activeTab === 'syllabus' && <StandardSyllabusHub />}
           {activeTab === 'profile' && <LiveDeveloperProfile />}
           {activeTab === 'skilltree' && <DsaSkillTree />}

@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Sparkles,
   Trophy,
+  MessagesSquare,
 } from 'lucide-react';
 import { FlameIcon } from '../common/Icons';
 import { NotificationBell } from '../common/NotificationBell';
@@ -25,6 +26,7 @@ import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 export const TopHeaderBar: React.FC = () => {
   const {
     activeTab,
+    setActiveTab,
     activeSaga,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
@@ -64,6 +66,7 @@ export const TopHeaderBar: React.FC = () => {
     const titles: Record<string, string> = {
       quest: '5 AM Daily POTD Quests',
       leaderboard: 'World Leaderboard',
+      chat: 'Community & Voice Chat Hub',
       syllabus: 'Standard CS 201 Syllabus',
       profile: 'My Work & Live Stats',
       'lecture-studio': 'Lecture & VS Code Studio',
@@ -147,6 +150,20 @@ export const TopHeaderBar: React.FC = () => {
 
         {/* Live Notification Bell */}
         <NotificationBell />
+
+        {/* Quick Community Chat Trigger */}
+        <button
+          onClick={() => setActiveTab('chat')}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition cursor-pointer text-xs font-semibold ${
+            activeTab === 'chat'
+              ? 'bg-amber-400 text-slate-950 font-bold border-amber-300 shadow-sm'
+              : 'bg-[#0b0f19] hover:bg-slate-800 text-slate-300 border-slate-800'
+          }`}
+          title="Open Community & Voice Chat Hub"
+        >
+          <MessagesSquare className={`w-3.5 h-3.5 ${activeTab === 'chat' ? 'text-slate-950' : 'text-amber-400'}`} />
+          <span className="hidden sm:inline">Voice Chat</span>
+        </button>
 
         {/* LoFi Radio Widget Dropdown Pill */}
         <div className="hidden sm:block">

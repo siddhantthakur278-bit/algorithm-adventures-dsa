@@ -37,6 +37,7 @@ import {
   Command,
   LayoutGrid,
   Columns2,
+  MessagesSquare,
 } from 'lucide-react';
 import { FlameIcon } from '../common/Icons';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
@@ -100,6 +101,7 @@ export const VerticalSidebar: React.FC = () => {
       items: [
         { id: 'quest', label: 'Daily POTD Quests', icon: Sparkles, badge: '5 AM' },
         { id: 'leaderboard', label: 'World Leaderboard', icon: Trophy, badge: 'Live' },
+        { id: 'chat', label: 'Community & Voice Chat', icon: MessagesSquare, badge: 'Voice • Live', highlight: true },
         { id: 'syllabus', label: 'CS 201 Syllabus', icon: GraduationCap, badge: '10-Mod' },
         { id: 'profile', label: 'My Work & Live Stats', icon: UserCheck, badge: 'GH • CF • LC' },
       ],
