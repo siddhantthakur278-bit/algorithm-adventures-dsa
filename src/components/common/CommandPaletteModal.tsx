@@ -79,6 +79,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       },
     },
     {
+      id: 'tab-leaderboard',
+      title: 'Global Algorithm Leaderboard & World Ranks',
+      category: 'Navigation',
+      icon: Trophy,
+      badge: 'Worldwide Live',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('leaderboard');
+      },
+    },
+    {
       id: 'tab-syllabus',
       title: 'CS 201 Standard 10-Module Syllabus',
       category: 'Navigation',

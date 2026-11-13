@@ -36,6 +36,9 @@ const PowerCardDeck = React.lazy(() => import('./components/flashcards/PowerCard
 const CodeforcesHub = React.lazy(() => import('./components/codeforces/CodeforcesHub').then((m) => ({ default: m.CodeforcesHub })));
 const BossBattleModal = React.lazy(() => import('./components/boss/BossBattleModal').then((m) => ({ default: m.BossBattleModal })));
 const MegaCheatSheets = React.lazy(() => import('./components/cheatsheet/MegaCheatSheets').then((m) => ({ default: m.MegaCheatSheets })));
+const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/GlobalLeaderboardHub').then((m) => ({ default: m.GlobalLeaderboardHub })));
+import { isProfileSetupComplete } from './utils/universalLeaderboardService';
+import { GlobalOnboardingModal } from './components/common/GlobalOnboardingModal';
 
 const ComicSuspenseLoader: React.FC<{ label?: string }> = ({ label = 'Loading Adventure...' }) => (
   <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-3 animate-fadeIn">
@@ -114,6 +117,7 @@ const MainContent: React.FC = () => {
       {activeSaga === 'dsa' && (
         <main className="flex-1 pb-16">
           {activeTab === 'quest' && <DailyQuestHub />}
+          {activeTab === 'leaderboard' && <GlobalLeaderboardHub />}
           {activeTab === 'syllabus' && <StandardSyllabusHub />}
           {activeTab === 'profile' && <LiveDeveloperProfile />}
           {activeTab === 'skilltree' && <DsaSkillTree />}
@@ -338,6 +342,7 @@ const FooterContent: React.FC = () => {
 
 export const AppContent: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => !isProfileSetupComplete());
 
   useEffect(() => {
     applyTheme(getStoredTheme());
@@ -392,6 +397,13 @@ export const AppContent: React.FC = () => {
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
+      {/* First-Time Visitor Welcome & Universal Onboarding Modal */}
+      <GlobalOnboardingModal
+        isOpen={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+        isInitialWelcome={true}
       />
 
       {/* Dynamic Comic Footer */}

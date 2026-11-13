@@ -12,6 +12,10 @@ import {
 } from '../../utils/competitiveProfileService';
 import { loadGitHubConfig } from '../../utils/githubService';
 import {
+  getStoredUserProfile,
+} from '../../utils/universalLeaderboardService';
+import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import {
   Globe,
   ExternalLink,
   GitCommit as GitCommitIcon,
@@ -28,6 +32,7 @@ import {
   Bug,
   Swords,
   ArrowRight,
+  SlidersHorizontal,
   Clock,
   Calendar,
   Check,
@@ -51,10 +56,18 @@ export const LiveDeveloperProfile: React.FC = () => {
   } = useCourse();
   const gitConfig = loadGitHubConfig();
 
-  // Handles & Profile States
-  const [githubUser, setGithubUser] = useState<string>(gitConfig.owner || 'siddhantthakur278-bit');
-  const [cfHandle, setCfHandle] = useState<string>('siddhantthakur278');
-  const [lcHandle, setLcHandle] = useState<string>('siddhantkthakur');
+  // Universal Identity & Handles
+  const initialProfile = getStoredUserProfile();
+  const [githubUser, setGithubUser] = useState<string>(
+    initialProfile.githubUsername || gitConfig.owner || 'siddhantthakur278-bit'
+  );
+  const [cfHandle, setCfHandle] = useState<string>(
+    initialProfile.codeforcesHandle || 'siddhantthakur278'
+  );
+  const [lcHandle, setLcHandle] = useState<string>(
+    initialProfile.leetcodeUsername || 'siddhantkthakur'
+  );
+  const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
   const [inAppTab, setInAppTab] = useState<'today' | 'solved' | 'commits' | 'radar' | 'heatmap'>('today');
 
   const [githubData, setGithubData] = useState<GitHubProfileData | null>(null);
@@ -150,6 +163,14 @@ export const LiveDeveloperProfile: React.FC = () => {
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FBBF24] text-black border border-black shadow-comic-sm">
                   {stats.activeTitle}
                 </span>
+                <button
+                  onClick={() => setShowOnboardingModal(true)}
+                  className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400 shadow-comic-sm flex items-center gap-1 cursor-pointer transition"
+                  title="Configure your GitHub, Codeforces & LeetCode handles"
+                >
+                  <SlidersHorizontal className="w-3 h-3" />
+                  <span>Edit Universal Identity</span>
+                </button>
               </div>
               <p className="text-xs text-slate-300 font-mono">
                 @{githubUser} • Level {stats.level} Algorithm Adventurer
@@ -873,6 +894,21 @@ export const LiveDeveloperProfile: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Global Onboarding & Universal Identity Modal */}
+      <GlobalOnboardingModal
+        isOpen={showOnboardingModal}
+        onClose={() => {
+          setShowOnboardingModal(false);
+          const p = getStoredUserProfile();
+          if (p.githubUsername) setGithubUser(p.githubUsername);
+          if (p.codeforcesHandle) setCfHandle(p.codeforcesHandle);
+          if (p.leetcodeUsername) setLcHandle(p.leetcodeUsername);
+          if (p.githubUsername) loadGitHub(p.githubUsername);
+          if (p.codeforcesHandle) loadCodeforces(p.codeforcesHandle);
+          if (p.leetcodeUsername) loadLeetCode(p.leetcodeUsername);
+        }}
+      />
     </div>
   );
 };

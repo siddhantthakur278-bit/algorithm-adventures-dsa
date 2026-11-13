@@ -34,12 +34,14 @@ import {
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
+import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 
 export const Navbar: React.FC = () => {
   const { stats, activeTab, setActiveTab, soundEnabled, toggleSound, useShield, activeSaga, setActiveSaga, realStreak, dailyTargetStatus } = useCourse();
   const [showGitModal, setShowGitModal] = useState(false);
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [gitToken, setGitToken] = useState(() => loadGitHubConfig().token);
   const [gitOwner, setGitOwner] = useState(() => loadGitHubConfig().owner);
   const [gitRepo, setGitRepo] = useState(() => loadGitHubConfig().repo);
@@ -83,6 +85,7 @@ export const Navbar: React.FC = () => {
 
   const tabs = [
     { id: 'quest', label: 'Quests', icon: Sparkles, badge: '5 AM POTD' },
+    { id: 'leaderboard', label: 'World Leaderboard', icon: Trophy, badge: 'Live Global' },
     { id: 'syllabus', label: 'CS 201 Syllabus', icon: GraduationCap, badge: 'Standard 10-Mod' },
     { id: 'profile', label: 'My Work & Live Stats', icon: UserCheck, badge: 'GitHub • CF • LC' },
     { id: 'skilltree', label: 'Skill Tree', icon: GitBranch, badge: 'RPG Sphere' },
@@ -404,6 +407,16 @@ export const Navbar: React.FC = () => {
                 <span className="px-1.5 py-0.2 bg-yellow-400 text-black rounded text-[10px] font-black">
                   {stats.badges.length}
                 </span>
+              </button>
+
+              {/* Universal Identity & Handles Button */}
+              <button
+                onClick={() => setShowOnboardingModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-sky-500/20 to-blue-500/20 hover:from-sky-500/30 hover:to-blue-500/30 rounded-xl border-2 border-sky-400/60 shadow-comic-sm text-sky-300 font-bold text-xs transition cursor-pointer"
+                title="Configure Universal Handles & Leaderboard Identity"
+              >
+                <Globe className="w-4 h-4 text-sky-400" />
+                <span className="hidden lg:inline">My Identity</span>
               </button>
             </div>
           </div>
@@ -752,6 +765,12 @@ export const Navbar: React.FC = () => {
       <AchievementsModal
         isOpen={showAchievementsModal}
         onClose={() => setShowAchievementsModal(false)}
+      />
+
+      {/* Universal Identity & Onboarding Modal */}
+      <GlobalOnboardingModal
+        isOpen={showOnboardingModal}
+        onClose={() => setShowOnboardingModal(false)}
       />
     </>
   );
