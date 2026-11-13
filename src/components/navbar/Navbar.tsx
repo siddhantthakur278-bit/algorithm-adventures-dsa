@@ -122,7 +122,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="bg-[#0c101c] border-b-2 border-[#1b2236] sticky top-0 z-40 shadow-comic">
+      <header className="bg-[#070a12]/95 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40 shadow-comic-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Top Bar: Brand + Stats & Quick Actions */}
           <div className="flex items-center justify-between py-2.5 gap-4">
@@ -134,95 +134,95 @@ export const Navbar: React.FC = () => {
               className="flex items-center gap-2.5 cursor-pointer group"
             >
               {activeSaga === 'dsa' ? (
-                <ByteAvatar size="sm" mood="happy" className="transform group-hover:rotate-6 transition" />
+                <ByteAvatar size="sm" mood="happy" className="transform group-hover:scale-105 transition" />
               ) : activeSaga === 'sql' ? (
-                <ProfTupleAvatar size="sm" mood="wise" className="transform group-hover:rotate-6 transition" />
+                <ProfTupleAvatar size="sm" mood="wise" className="transform group-hover:scale-105 transition" />
               ) : activeSaga === 'prisma' ? (
-                <PriAvatar size="sm" mood="teaching" className="transform group-hover:rotate-6 transition" />
+                <PriAvatar size="sm" mood="teaching" className="transform group-hover:scale-105 transition" />
               ) : activeSaga === 'linear-algebra' ? (
-                <ProfPivotAvatar size="sm" mood="wise" className="transform group-hover:rotate-6 transition" />
+                <ProfPivotAvatar size="sm" mood="wise" className="transform group-hover:scale-105 transition" />
               ) : activeSaga === 'python-dsa' ? (
-                <ProfessorPyAvatar size="sm" mood="wise" className="transform group-hover:rotate-6 transition" />
+                <ProfessorPyAvatar size="sm" mood="wise" className="transform group-hover:scale-105 transition" />
               ) : activeSaga === 'roadmap' ? (
-                <ProfessorAvatar size="sm" mood="wise" className="transform group-hover:rotate-6 transition" />
+                <ProfessorAvatar size="sm" mood="wise" className="transform group-hover:scale-105 transition" />
               ) : (
-                <ProfTupleAvatar size="sm" mood="wise" className="transform group-hover:rotate-6 transition" />
+                <ProfTupleAvatar size="sm" mood="wise" className="transform group-hover:scale-105 transition" />
               )}
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bangers text-2xl text-[#FBBF24] tracking-wider drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-lg sm:text-xl text-white tracking-tight">
                     {activeSaga === 'dsa'
                       ? 'ALGORITHM ADVENTURES'
                       : activeSaga === 'sql'
-                      ? 'SQL & DATA ENGINEERING'
+                      ? 'SQL & DATA LAB'
                       : activeSaga === 'prisma'
                       ? 'PRISMA ORM v7'
                       : activeSaga === 'linear-algebra'
                       ? 'LINEAR ALGEBRA'
                       : activeSaga === 'python-dsa'
-                      ? 'PYTHON + DSA COMIC'
+                      ? 'PYTHON + DSA STUDIO'
                       : activeSaga === 'roadmap'
-                      ? '40-WEEK MASTER ROADMAP'
+                      ? 'MASTER ROADMAP'
                       : 'WEB DEV UNIVERSE'}
                   </span>
                   <span
-                    className={`text-white text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded border border-black shadow-comic-sm ${
+                    className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                       activeSaga === 'dsa'
-                        ? 'bg-[#F43F5E]'
+                        ? 'bg-amber-400/15 text-amber-300 border-amber-400/30'
                         : activeSaga === 'sql'
-                        ? 'bg-[#8B5CF6]'
+                        ? 'bg-purple-500/15 text-purple-300 border-purple-400/30'
                         : activeSaga === 'prisma'
-                        ? 'bg-[#06B6D4]'
+                        ? 'bg-cyan-500/15 text-cyan-300 border-cyan-400/30'
                         : activeSaga === 'linear-algebra'
-                        ? 'bg-[#10B981]'
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30'
                         : activeSaga === 'python-dsa'
-                        ? 'bg-[#EAB308] text-black'
+                        ? 'bg-amber-500/15 text-amber-300 border-amber-400/30'
                         : activeSaga === 'roadmap'
-                        ? 'bg-[#10B981]'
-                        : 'bg-[#F59E0B]'
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30'
+                        : 'bg-amber-500/15 text-amber-300 border-amber-400/30'
                     }`}
                   >
                     {activeSaga === 'dsa'
-                      ? 'DSA Saga'
+                      ? 'DSA Studio'
                       : activeSaga === 'sql'
-                      ? 'Comic Classic'
+                      ? 'PostgreSQL'
                       : activeSaga === 'prisma'
-                      ? 'Node & Express'
+                      ? 'ORM v7'
                       : activeSaga === 'linear-algebra'
-                      ? 'Comic Adventure'
+                      ? 'LinAlg'
                       : activeSaga === 'python-dsa'
-                      ? 'Vol. 1 Adventure'
+                      ? 'Vol. 1'
                       : activeSaga === 'roadmap'
-                      ? 'Full-Stack & AI'
-                      : '5 Comic Books'}
+                      ? 'Full-Stack'
+                      : 'Web Dev'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-[11px] text-slate-400 font-normal">
                   {activeSaga === 'dsa'
-                    ? 'Issue #1: Master Structures & Algorithms with Byte'
+                    ? 'Gamified Data Structures, Real-Time Algorithms & Competitive Quests'
                     : activeSaga === 'sql'
                     ? 'Semester 3 Survival Guide • PostgreSQL Edition'
                     : activeSaga === 'prisma'
-                    ? 'The Full Comic Book • Node.js + Express + Prisma v7'
+                    ? 'The Full Guide • Node.js + Express + Prisma v7'
                     : activeSaga === 'linear-algebra'
                     ? 'From Systems of Equations to the Four Fundamental Subspaces'
                     : activeSaga === 'python-dsa'
                     ? 'The Ultimate Study Adventure • Sid, Prof. Py & Buggy'
                     : activeSaga === 'roadmap'
-                    ? '10 Phases • 6 Ladder Projects • 20h/Week Rhythm • 150+ Clickable Resources'
-                    : 'HTML • CSS • Tailwind • React • TypeScript Comic Classics'}
+                    ? '10 Phases • 6 Ladder Projects • 20h/Week Rhythm'
+                    : 'HTML • CSS • Tailwind • React • TypeScript Classics'}
                 </p>
               </div>
             </div>
 
-            {/* Comic Saga Switcher Pill */}
-            <div className="flex items-center p-0.5 sm:p-1 bg-[#060810] rounded-xl border-2 border-[#1c2237] shadow-comic-sm">
+            {/* Classic Saga Switcher Segmented Control */}
+            <div className="flex items-center p-1 bg-[#05070e] rounded-xl border border-slate-800/80 shadow-inner">
               <button
                 onClick={() => setActiveSaga('dsa')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'dsa'
-                    ? 'bg-[#FBBF24] text-black shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
@@ -231,10 +231,10 @@ export const Navbar: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveSaga('sql')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'sql'
-                    ? 'bg-[#8B5CF6] text-white shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-purple-600 text-white font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <Database className="w-3.5 h-3.5" />
@@ -243,22 +243,22 @@ export const Navbar: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveSaga('prisma')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'prisma'
-                    ? 'bg-[#06B6D4] text-black shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <Code2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Prisma v7 (Node)</span>
+                <span className="hidden sm:inline">Prisma v7</span>
                 <span className="sm:hidden">Prisma</span>
               </button>
               <button
                 onClick={() => setActiveSaga('linear-algebra')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'linear-algebra'
-                    ? 'bg-[#10B981] text-black shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <Calculator className="w-3.5 h-3.5" />
@@ -267,34 +267,34 @@ export const Navbar: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveSaga('web-dev')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'web-dev'
-                    ? 'bg-[#38BDF8] text-black shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-sky-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Web Dev (5 Books)</span>
+                <span className="hidden sm:inline">Web Dev</span>
                 <span className="sm:hidden">WebDev</span>
               </button>
               <button
                 onClick={() => setActiveSaga('python-dsa')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'python-dsa'
-                    ? 'bg-[#EAB308] text-black shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Python + DSA Comic</span>
+                <span className="hidden sm:inline">Python + DSA</span>
                 <span className="sm:hidden">Py+DSA</span>
               </button>
               <button
                 onClick={() => setActiveSaga('roadmap')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSaga === 'roadmap'
-                    ? 'bg-[#10B981] text-black shadow-comic-sm scale-105'
-                    : 'text-slate-400 hover:text-white hover:scale-102'
+                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5" />
@@ -304,23 +304,23 @@ export const Navbar: React.FC = () => {
             </div>
 
             {/* Gamification Stats: Streak, Shields, XP, Level */}
-            <div className="flex items-center gap-3 sm:gap-5">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               {/* Streak Flame */}
               <button
                 onClick={() => setShowStreakModal(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-[#121626] hover:bg-[#1a2035] rounded-xl border-2 border-[#1e2538] hover:border-[#FB923C]/60 shadow-comic-sm transition cursor-pointer text-left"
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#0d111a] hover:bg-[#141a28] rounded-xl border border-slate-800 hover:border-amber-500/50 shadow-sm transition cursor-pointer text-left"
                 title="Click to view Real Streak Target status & policy"
               >
                 <div className="animate-flame">
-                  <FlameIcon className="w-5 h-5 text-[#FB923C]" />
+                  <FlameIcon className="w-4 h-4 text-amber-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1">
-                    <span className="font-bangers text-lg text-[#FBBF24] leading-none">{realStreak.currentStreak}</span>
-                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Days</span>
+                    <span className="font-extrabold text-sm text-amber-300 leading-none">{realStreak.currentStreak}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">d</span>
                   </div>
-                  <div className="text-[9px] text-[#FB923C] font-semibold flex items-center gap-1">
-                    <span>{dailyTargetStatus.isTargetComplete ? '🔥 Secured' : '⚠️ Pending'}</span>
+                  <div className="text-[9px] text-amber-400/90 font-medium flex items-center gap-1">
+                    <span>{dailyTargetStatus.isTargetComplete ? '🔥 Done' : '⚠️ Pending'}</span>
                   </div>
                 </div>
               </button>
@@ -329,28 +329,26 @@ export const Navbar: React.FC = () => {
               <button
                 onClick={useShield}
                 disabled={stats.shieldCount <= 0}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#121626] hover:bg-[#1b2137] rounded-xl border-2 border-[#1e2538] shadow-comic-sm transition disabled:opacity-60 cursor-pointer"
-                title={`${stats.shieldCount} Streak Freeze Shields available. Protects your streak if you miss a day.`}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0d111a] hover:bg-[#141a28] rounded-xl border border-slate-800 shadow-sm transition disabled:opacity-50 cursor-pointer"
+                title={`${stats.shieldCount} Streak Freeze Shields available.`}
               >
-                <Shield className="w-4 h-4 text-[#38BDF8]" />
+                <Shield className="w-4 h-4 text-sky-400" />
                 <span className="text-xs font-bold text-sky-300">{stats.shieldCount}</span>
               </button>
 
               {/* Level & XP Bar */}
-              <div className="hidden md:flex flex-col w-36">
-                <div className="flex justify-between items-center text-[11px] mb-1">
-                  <span className="font-bold text-[#FBBF24]">Lv {currentLevel}</span>
-                  <span className="text-slate-300 font-mono text-[10px]">{stats.xp} XP</span>
+              <div className="hidden md:flex flex-col w-32">
+                <div className="flex justify-between items-center text-[10px] mb-1">
+                  <span className="font-bold text-amber-400">Lv {currentLevel}</span>
+                  <span className="text-slate-400 font-mono text-[9px]">{stats.xp} XP</span>
                 </div>
-                <div className="w-full bg-[#121626] h-2.5 rounded-full overflow-hidden border border-[#20273d] p-[1px] relative">
+                <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 p-[1px] relative">
                   <div
-                    className="bg-gradient-to-r from-[#FBBF24] via-[#FB923C] to-[#F43F5E] h-full rounded-full transition-all duration-500 relative overflow-hidden"
+                    className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
-                  >
-                    <div className="absolute inset-0 animate-xp-shimmer" />
-                  </div>
+                  />
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{getLevelTitle(currentLevel)}</span>
+                <span className="text-[9px] text-slate-400 font-medium truncate mt-0.5">{getLevelTitle(currentLevel)}</span>
               </div>
 
               {/* Universal Command Palette Trigger (⌘K) */}
@@ -358,12 +356,12 @@ export const Navbar: React.FC = () => {
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent('open-command-palette'));
                 }}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#141b2e] hover:bg-[#1d2742] rounded-xl border-2 border-[#1f2b48] hover:border-cyan-400/50 shadow-comic-sm text-slate-200 font-medium text-xs transition cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0d111a] hover:bg-[#151c2c] rounded-xl border border-slate-800 hover:border-amber-400/50 shadow-sm text-slate-300 text-xs font-medium transition cursor-pointer"
                 title="Universal Command Palette (⌘K / Ctrl+K)"
               >
-                <Command className="w-3.5 h-3.5 text-cyan-400" />
+                <Command className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden xl:inline text-slate-300">Quick Actions</span>
-                <kbd className="hidden sm:inline-block font-mono text-[9px] px-1.5 py-0.2 bg-[#090d18] text-cyan-300 rounded border border-cyan-500/30 font-bold">
+                <kbd className="hidden sm:inline-block font-mono text-[9px] px-1.5 py-0.2 bg-slate-950 text-amber-300 rounded border border-amber-400/20 font-bold">
                   ⌘K
                 </kbd>
               </button>
@@ -377,34 +375,34 @@ export const Navbar: React.FC = () => {
               {/* Sound Toggle */}
               <button
                 onClick={toggleSound}
-                className="p-2 rounded-xl bg-[#1b1f33] hover:bg-[#252b47] border-2 border-black shadow-comic-sm text-gray-300 hover:text-white transition"
+                className="p-2 rounded-xl bg-[#0d111a] hover:bg-[#141a28] border border-slate-800 text-slate-300 hover:text-white transition"
                 title={soundEnabled ? 'Mute Procedural Web Audio' : 'Unmute Sound Effects'}
               >
-                {soundEnabled ? <Volume2 className="w-4 h-4 text-[#7ED957]" /> : <VolumeX className="w-4 h-4 text-gray-500" />}
+                {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
               </button>
 
               {/* GitHub Direct Commit Config Button */}
               <button
                 onClick={() => setShowGitModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#24292e] hover:bg-[#2f363d] rounded-xl border-2 border-black shadow-comic-sm text-white font-medium text-xs transition cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0d111a] hover:bg-[#141a28] rounded-xl border border-slate-800 text-slate-200 text-xs font-medium transition cursor-pointer"
                 title="Configure GitHub direct commits"
               >
-                <GithubIcon className="w-4 h-4 text-[#FFDE59]" />
+                <GithubIcon className="w-3.5 h-3.5 text-slate-200" />
                 <span className="hidden lg:inline">GitHub</span>
                 {loadGitHubConfig().token && (
-                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 )}
               </button>
 
               {/* Achievements & Trophies Button */}
               <button
                 onClick={() => setShowAchievementsModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 rounded-xl border-2 border-yellow-500/60 shadow-comic-sm text-yellow-300 font-bold text-xs transition cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl border border-amber-400/30 text-amber-300 font-semibold text-xs transition cursor-pointer"
                 title="Open Achievements & Trophies Vault"
               >
-                <Trophy className="w-4 h-4 text-yellow-400" />
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden lg:inline">Trophies</span>
-                <span className="px-1.5 py-0.2 bg-yellow-400 text-black rounded text-[10px] font-black">
+                <span className="px-1.5 py-0.2 bg-amber-400 text-slate-950 rounded text-[9px] font-extrabold">
                   {stats.badges.length}
                 </span>
               </button>
@@ -412,10 +410,10 @@ export const Navbar: React.FC = () => {
               {/* Universal Identity & Handles Button */}
               <button
                 onClick={() => setShowOnboardingModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-sky-500/20 to-blue-500/20 hover:from-sky-500/30 hover:to-blue-500/30 rounded-xl border-2 border-sky-400/60 shadow-comic-sm text-sky-300 font-bold text-xs transition cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 rounded-xl border border-sky-400/30 text-sky-300 font-semibold text-xs transition cursor-pointer"
                 title="Configure Universal Handles & Leaderboard Identity"
               >
-                <Globe className="w-4 h-4 text-sky-400" />
+                <Globe className="w-3.5 h-3.5 text-sky-400" />
                 <span className="hidden lg:inline">My Identity</span>
               </button>
             </div>
@@ -423,7 +421,7 @@ export const Navbar: React.FC = () => {
 
           {/* Navigation Tabs Bar */}
           {activeSaga === 'dsa' && (
-            <nav className="flex items-center gap-1 overflow-x-auto py-2 no-scrollbar border-t border-[#1e2337]">
+            <nav className="flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar border-t border-slate-800/80">
               {tabs.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -431,18 +429,20 @@ export const Navbar: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-medium text-xs whitespace-nowrap transition-all border-2 cursor-pointer ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-medium text-xs whitespace-nowrap transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-[#FFDE59] text-black border-black font-bold shadow-comic-sm -translate-y-0.5 scale-102'
-                        : 'bg-transparent text-gray-300 border-transparent hover:bg-[#1b1f33] hover:text-white hover:-translate-y-0.5'
+                        ? 'bg-amber-400/15 text-amber-300 border border-amber-400/40 shadow-sm font-bold'
+                        : 'bg-transparent text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-gray-400'}`} />
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
                     <span>{tab.label}</span>
                     {tab.badge && (
                       <span
-                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded transition ${
-                          isActive ? 'bg-black text-[#FFDE59]' : 'bg-[#1b1f33] text-gray-400'
+                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded border transition ${
+                          isActive
+                            ? 'bg-amber-400 text-slate-950 border-amber-400 font-extrabold'
+                            : 'bg-slate-900 text-slate-400 border-slate-800'
                         }`}
                       >
                         {tab.badge}

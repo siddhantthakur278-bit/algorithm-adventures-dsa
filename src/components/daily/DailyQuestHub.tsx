@@ -74,22 +74,22 @@ export const DailyQuestHub: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8 animate-fadeIn font-comic">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 animate-fadeIn">
       {/* Pre-Launch Cohort Alert (shown if today is before user's start date) */}
       {scheduleState.isPreLaunch && (
-        <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-rose-500/20 border-3 border-amber-400 rounded-3xl p-6 sm:p-8 shadow-comic-lg flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-400/40 rounded-2xl p-6 sm:p-8 shadow-comic flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
-              <span className="px-3 py-1 bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-full border-2 border-slate-900 shadow-sm flex items-center gap-1">
+              <span className="px-3 py-1 bg-amber-400/15 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-full border border-amber-400/30 flex items-center gap-1 font-mono">
                 <Rocket className="w-3.5 h-3.5" /> Scheduled Cohort Start
               </span>
-              <span className="text-xs text-amber-300 font-bold">{scheduleState.cohortStartDateStr} at 05:00 AM</span>
+              <span className="text-xs text-amber-300 font-semibold">{scheduleState.cohortStartDateStr} at 05:00 AM</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">
-              Your Scheduled Cohort Adventure Awaits!
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Your Scheduled Cohort Adventure Awaits
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-              Your Day 1 is scheduled to unlock on <strong>{scheduleState.cohortStartDateStr}</strong> at 5:00 AM with <strong>Two Sum & Foundational Arrays</strong>. Want to start today or self-pace your schedule?
+              Your Day 1 is scheduled to unlock on <strong>{scheduleState.cohortStartDateStr}</strong> at 5:00 AM with <strong>Two Sum &amp; Foundational Arrays</strong>. Want to start today or self-pace your schedule?
             </p>
           </div>
 
@@ -99,7 +99,7 @@ export const DailyQuestHub: React.FC = () => {
                 resetCohortToToday();
                 sound.playCelebration();
               }}
-              className="btn-comic-push px-5 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase rounded-2xl border-3 border-slate-900 shadow-comic flex items-center gap-2 whitespace-nowrap cursor-pointer"
+              className="btn-comic-push px-5 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm flex items-center gap-2 whitespace-nowrap cursor-pointer"
             >
               <Rocket className="w-4 h-4" /> Start Today (Day 1) Now →
             </button>
@@ -108,7 +108,7 @@ export const DailyQuestHub: React.FC = () => {
                 updateCohortConfig({ isUnlockedAll: true, mode: 'self_paced' });
                 sound.playSuccess();
               }}
-              className="btn-comic-push px-5 py-3 bg-purple-600 hover:bg-purple-500 text-white font-black text-sm uppercase rounded-2xl border-3 border-slate-900 shadow-comic flex items-center gap-2 whitespace-nowrap cursor-pointer"
+              className="btn-comic-push px-5 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm flex items-center gap-2 whitespace-nowrap cursor-pointer"
             >
               <Zap className="w-4 h-4" /> Self-Paced Unlock
             </button>
@@ -116,34 +116,34 @@ export const DailyQuestHub: React.FC = () => {
         </div>
       )}
 
-      {/* Hero Comic Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0d1222] via-[#141b34] to-[#1a142c] border-3 border-black p-6 sm:p-8 shadow-comic-lg bg-halftone">
+      {/* Hero Classic Studio Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0a0e19] via-[#10172b] to-[#0c1222] border border-slate-800/80 p-6 sm:p-8 shadow-comic-lg bg-halftone">
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBBF24] text-black font-bangers text-sm border-2 border-black shadow-comic-sm font-bold">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/15 text-amber-300 font-extrabold text-xs border border-amber-400/30 font-mono tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" />
               {scheduleState.isPreLaunch ? 'COHORT PRE-LAUNCH LAUNCHPAD' : `COHORT DAY ${scheduleState.dayNumber || 1} QUEST STATION`}
             </div>
-            <h1 className="font-bangers text-3xl sm:text-4xl text-white tracking-wide">
-              DAY OF THE QUESTION & DYNAMIC HOMEWORK
+            <h1 className="font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
+              DAY OF THE QUESTION &amp; SEQUENTIAL QUESTS
             </h1>
-            <p className="text-slate-200 text-sm leading-relaxed font-medium">
-              Every morning at <strong className="text-[#FBBF24]">05:00 AM sharp</strong>, the legendary POTD vault
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Every morning at <strong className="text-amber-400">05:00 AM sharp</strong>, the legendary POTD vault
               unlocks. Your ongoing homework dynamically adapts to the hours remaining before midnight and{' '}
-              <strong className="text-[#38BDF8]">must be solved in sequential order</strong>!
+              <strong className="text-sky-400 font-medium">must be solved in sequential order</strong>.
             </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1">
-              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-[#080b14] px-3 py-1.5 rounded-xl border border-[#1b2236]">
-                <Clock className="w-4 h-4 text-[#FBBF24]" />
-                POTD Gate: <span className="text-[#FBBF24] font-bold">5:00 AM Daily</span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1">
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-[#070a12] px-3 py-1.5 rounded-lg border border-slate-800">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                POTD Gate: <span className="text-amber-400 font-bold">5:00 AM Daily</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-[#080b14] px-3 py-1.5 rounded-xl border border-[#1b2236]">
-                <Calendar className="w-4 h-4 text-[#38BDF8]" />
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-[#070a12] px-3 py-1.5 rounded-lg border border-slate-800">
+                <Calendar className="w-3.5 h-3.5 text-sky-400" />
                 Homework Quota:{' '}
                 <span className="text-white font-bold">{scheduleState.homeworkQuota} Problems (In Order)</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-[#080b14] px-3 py-1.5 rounded-xl border border-[#1b2236]">
-                <Target className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-[#070a12] px-3 py-1.5 rounded-lg border border-slate-800">
+                <Target className="w-3.5 h-3.5 text-emerald-400" />
                 Active Focus: <span className="text-emerald-300 font-bold">{scheduleState.potdProblem.category}</span>
               </div>
             </div>
@@ -157,9 +157,9 @@ export const DailyQuestHub: React.FC = () => {
       </div>
 
       {/* Live Digital Chronometer & Dates Command Bar */}
-      <div className="bg-[#0b0e1b] rounded-2xl border-2 border-black p-4 sm:p-5 shadow-comic flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-[#090d18] rounded-2xl border border-slate-800/80 p-4 sm:p-5 shadow-comic flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 w-full md:w-auto">
-          <div className="w-12 h-12 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-xl shadow-comic-sm border-2 border-black shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-xl shadow-sm border border-amber-300 shrink-0">
             ⏰
           </div>
           <div>

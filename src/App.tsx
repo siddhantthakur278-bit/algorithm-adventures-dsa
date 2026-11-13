@@ -145,25 +145,25 @@ const FooterContent: React.FC = () => {
   const { activeSaga } = useCourse();
 
   return (
-    <footer className="bg-[#0b0e18] border-t-2 border-[#1e2538] py-8 mt-auto text-xs text-slate-300">
+    <footer className="bg-[#060810] border-t border-slate-800/80 py-8 mt-auto text-xs text-slate-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         {activeSaga === 'dsa' && (
           <>
             <div className="flex items-center gap-3">
               <ByteAvatar size="sm" mood="happy" />
               <div>
-                <p className="font-bangers text-base text-white tracking-wide">
-                  ALGORITHM ADVENTURES — THE COMIC GUIDE TO DSA
+                <p className="font-extrabold text-sm text-white tracking-wide">
+                  ALGORITHM ADVENTURES — ADVANCED DSA STUDIO
                 </p>
                 <p className="text-xs text-slate-400">
-                  Issue #1: DSA Saga. Master Data Structures & Algorithms with Byte, Professor, and Bugsy!
+                  Master Data Structures &amp; Algorithms with Byte, Professor, and Bugsy.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-slate-400 text-xs">
-                Built with Python Pyodide Wasm & React
+              <span className="text-slate-400 text-xs font-mono">
+                CPython 3.12 Wasm Engine &amp; React
               </span>
               <div className="flex items-center gap-2">
                 <ProfessorAvatar size="sm" mood="wise" />
@@ -368,18 +368,15 @@ export const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#080a11] text-[#f1f5f9] flex flex-col font-sans selection:bg-[#FBBF24] selection:text-black relative">
-      {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
-      <MasterClockHud />
-
+    <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black relative">
       {/* Real-Time Live Telemetry Bar */}
       <RealTimeStatusBar />
 
-      {/* Developer Time Engine Quick Controls */}
-      <TimeTravelWidget />
-
       {/* Global Navigation Bar */}
       <Navbar />
+
+      {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
+      <MasterClockHud />
 
       {/* Dynamic Tab Router */}
       <MainContent />

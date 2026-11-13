@@ -2,76 +2,93 @@
 
 @layer base {
   body {
-    background-color: #090a10;
-    color: #f1f5f9;
+    background-color: #07090e;
+    color: #f8fafc;
     font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    letter-spacing: -0.025em;
   }
 }
 
-/* Standard Beautiful Comic Color Tokens */
+/* Classic High-Contrast Studio Tokens */
 :root {
-  --comic-yellow: #FBBF24; /* Warm Golden Amber */
-  --comic-orange: #FB923C; /* Radiant Coral Orange */
-  --comic-red: #F43F5E;    /* Modern Rose Crimson */
-  --comic-blue: #38BDF8;   /* Sky Neon Blue */
-  --comic-green: #10B981;  /* Crisp Emerald Green */
-  --comic-purple: #8B5CF6; /* Royal Cosmic Violet */
-  --comic-cyan: #06B6D4;   /* High-Tech Cyan */
-  --surface-0: #090a10;    /* Canvas */
-  --surface-1: #0f1322;    /* Card base */
-  --surface-2: #161c30;    /* Card inner / elevated */
-  --surface-3: #1e2642;    /* Hover / input state */
+  --comic-yellow: #F59E0B; /* Classic Imperial Amber Gold */
+  --comic-orange: #F97316; /* Warm Radiant Tangerine */
+  --comic-red: #EF4444;    /* Crimson Red */
+  --comic-blue: #38BDF8;   /* Precision Sky Sapphire */
+  --comic-green: #10B981;  /* Emerald Jade */
+  --comic-purple: #8B5CF6; /* Royal Iris */
+  --comic-cyan: #06B6D4;   /* Electric Teal */
+  --surface-0: #07090e;    /* Deep Obsidian Canvas */
+  --surface-1: #0d111a;    /* Studio Card Base */
+  --surface-2: #141a27;    /* Elevated Inner Card */
+  --surface-3: #1c2436;    /* Active Hover Surface */
+  --border-classic: rgba(255, 255, 255, 0.08);
+  --border-classic-hover: rgba(255, 255, 255, 0.18);
+  --border-gold: rgba(245, 158, 11, 0.35);
 }
 
-/* High-Contrast Comic Hard Shadows */
+/* Classic High-Contrast Studio Shadows */
 .shadow-comic {
-  box-shadow: 4px 4px 0px 0px #000000, 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .shadow-comic-sm {
-  box-shadow: 2px 2px 0px 0px #000000, 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .shadow-comic-lg {
-  box-shadow: 6px 6px 0px 0px #000000, 0 12px 32px -6px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 16px 48px -6px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .shadow-comic-yellow {
-  box-shadow: 4px 4px 0px 0px #000000, 0 0 20px rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.25), 0 0 0 1px rgba(245, 158, 11, 0.45);
 }
 
 .shadow-comic-cyan {
-  box-shadow: 4px 4px 0px 0px #000000, 0 0 20px rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.25), 0 0 0 1px rgba(6, 182, 212, 0.45);
 }
 
 .shadow-comic-rose {
-  box-shadow: 4px 4px 0px 0px #000000, 0 0 20px rgba(244, 63, 94, 0.35);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(239, 68, 68, 0.45);
 }
 
-/* Comic Halftone Dot Pattern - Subtle & Elegant */
+/* Classic Micro-Grid Blueprint & Texture */
 .bg-halftone {
-  background-image: radial-gradient(rgba(251, 191, 36, 0.08) 1.5px, transparent 1.5px);
-  background-size: 16px 16px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 .bg-halftone-blue {
-  background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.5px, transparent 1.5px);
-  background-size: 16px 16px;
+  background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 .bg-halftone-cyan {
-  background-image: radial-gradient(rgba(6, 182, 212, 0.08) 1.5px, transparent 1.5px);
-  background-size: 16px 16px;
+  background-image: radial-gradient(rgba(6, 182, 212, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-classic-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
 .bg-comic-stripes {
   background: repeating-linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.02) 10px,
-    rgba(0, 0, 0, 0.12) 10px,
-    rgba(0, 0, 0, 0.12) 20px
+    rgba(255, 255, 255, 0.015),
+    rgba(255, 255, 255, 0.015) 10px,
+    rgba(0, 0, 0, 0.08) 10px,
+    rgba(0, 0, 0, 0.08) 20px
   );
 }
 
@@ -90,10 +107,12 @@
   transform: rotateY(180deg);
 }
 
-/* Comic Fonts */
+/* Classic Modern Bold Editorial Typography */
 .font-bangers {
-  font-family: 'Bangers', cursive, sans-serif;
-  letter-spacing: 0.05em;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
 .font-code {
@@ -294,26 +313,27 @@
   animation: star-twinkle 1.5s infinite ease-in-out;
 }
 
-/* Tactile Comic Button Press */
+/* Tactile Classic Studio Button Interaction */
 .btn-comic-push {
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 .btn-comic-push:hover {
   transform: translateY(-2px);
-  box-shadow: 6px 6px 0px 0px #000000;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
 }
 .btn-comic-push:active {
-  transform: translateY(2px) translateX(2px);
-  box-shadow: 2px 2px 0px 0px #000000;
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
 }
 
-/* Hover Lift with Enhanced Comic Shadow */
+/* Hover Lift with Enhanced Studio Shadow */
 .hover-comic-lift {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hover-comic-lift:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 6px 6px 0px 0px #000000;
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 /* Glowing Comic Shadows */
