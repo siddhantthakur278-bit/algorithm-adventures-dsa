@@ -13,8 +13,12 @@ const STORAGE_KEY_CONFIG = 'ada_github_config';
 const STORAGE_KEY_COMMITS = 'ada_git_commits';
 
 // Default configured credentials
+export function sanitizeGitHubToken(token: string): string {
+  return (token || '').trim().replace(/^:\s*/, '').replace(/^['"]|['"]$/g, '');
+}
+
 export const DEFAULT_GITHUB_CONFIG: GitHubConfig = {
-  token: (import.meta as any).env?.VITE_GITHUB_TOKEN || '',
+  token: sanitizeGitHubToken((import.meta as any).env?.VITE_GITHUB_TOKEN || ''),
   owner: 'siddhantthakur278-bit',
   repo: 'algorithm-adventures-dsa',
   branch: 'main',
@@ -54,10 +58,10 @@ export function loadGitHubConfig(): GitHubConfig {
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
-        token: parsed.token || DEFAULT_GITHUB_CONFIG.token,
-        owner: parsed.owner || DEFAULT_GITHUB_CONFIG.owner,
-        repo: parsed.repo || DEFAULT_GITHUB_CONFIG.repo,
-        branch: parsed.branch || DEFAULT_GITHUB_CONFIG.branch,
+        token: sanitizeGitHubToken(parsed.token || DEFAULT_GITHUB_CONFIG.token),
+        owner: (parsed.owner || DEFAULT_GITHUB_CONFIG.owner).trim(),
+        repo: (parsed.repo || DEFAULT_GITHUB_CONFIG.repo).trim(),
+        branch: (parsed.branch || DEFAULT_GITHUB_CONFIG.branch).trim(),
       };
     }
   } catch {
@@ -67,7 +71,14 @@ export function loadGitHubConfig(): GitHubConfig {
 }
 
 export function saveGitHubConfig(cfg: GitHubConfig): void {
-  localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(cfg));
+  const sanitized = {
+    ...cfg,
+    token: sanitizeGitHubToken(cfg.token),
+    owner: (cfg.owner || '').trim(),
+    repo: (cfg.repo || '').trim(),
+    branch: (cfg.branch || 'main').trim(),
+  };
+  localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(sanitized));
 }
 
 export function loadStoredCommits(): GitCommit[] {
@@ -101,13 +112,17 @@ export async function testGitHubConnection(config: GitHubConfig): Promise<{
   message: string;
   repoUrl?: string;
 }> {
-  if (!config.token || !config.owner || !config.repo) {
+  const token = sanitizeGitHubToken(config.token);
+  const owner = (config.owner || '').trim();
+  const repo = (config.repo || '').trim();
+
+  if (!token || !owner || !repo) {
     return { ok: false, message: 'Please provide Token, Owner, and Repository Name.' };
   }
 
   try {
     const headers = {
-      Authorization: `Bearer ${config.token}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     };
@@ -185,15 +200,19 @@ export async function commitProblemSolution(
   };
 
   // Check if live GitHub API is configured
-  if (config.token && config.owner && config.repo) {
+  const token = sanitizeGitHubToken(config.token);
+  const owner = (config.owner || '').trim();
+  const repo = (config.repo || '').trim();
+
+  if (token && owner && repo) {
     try {
       const headers = {
-        Authorization: `Bearer ${config.token}`,
+        Authorization: `Bearer ${token}`,
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
       };
 
-      const apiUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${filePath}`;
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
       
       // Check if file exists first to get sha for update
       let existingFileSha: string | undefined = undefined;
@@ -283,7 +302,11 @@ export async function pushSolutionToGitHub(
   commitMessage: string
 ): Promise<{ success: boolean; commitUrl?: string; error?: string }> {
   const config = loadGitHubConfig();
-  if (!config.token || !config.owner || !config.repo) {
+  const token = sanitizeGitHubToken(config.token);
+  const owner = (config.owner || '').trim();
+  const repo = (config.repo || '').trim();
+
+  if (!token || !owner || !repo) {
     return {
       success: false,
       error: 'GitHub not configured. Click the GitHub button in the navbar to connect your Personal Access Token.',
@@ -292,11 +315,11 @@ export async function pushSolutionToGitHub(
 
   try {
     const headers = {
-      Authorization: `Bearer ${config.token}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     };
-    const apiUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${filePath}`;
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
 
     let existingSha: string | undefined = undefined;
     try {

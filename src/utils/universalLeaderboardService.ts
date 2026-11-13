@@ -6,6 +6,9 @@ export interface UniversalUserProfile {
   handle: string;
   displayName: string;
   avatarUrl?: string;
+  email?: string;
+  isEmailVerified?: boolean;
+  emailNotifications?: boolean;
   githubUsername: string;
   codeforcesHandle: string;
   leetcodeUsername: string;
@@ -150,6 +153,9 @@ export function getDefaultUserProfile(): UniversalUserProfile {
     handle: 'adventurer_' + Math.floor(100 + Math.random() * 900),
     displayName: 'New DSA Adventurer',
     avatarUrl: '',
+    email: '',
+    isEmailVerified: false,
+    emailNotifications: true,
     githubUsername: '',
     codeforcesHandle: '',
     leetcodeUsername: '',
@@ -317,6 +323,9 @@ export async function saveUniversalProfile(
           user_handle: profile.handle,
           display_name: profile.displayName,
           avatar_url: profile.avatarUrl,
+          email: profile.email || null,
+          is_email_verified: profile.isEmailVerified || false,
+          email_notifications: profile.emailNotifications !== false,
           github_username: profile.githubUsername,
           codeforces_handle: profile.codeforcesHandle,
           leetcode_username: profile.leetcodeUsername,
