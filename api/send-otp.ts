@@ -47,7 +47,7 @@ async function sendEmail({
 
   // 2. Gmail SMTP via nodemailer (if credentials exist in Vercel)
   const gmailUser = (process.env.GMAIL_USER || process.env.EMAIL_USER || '').trim();
-  const gmailPass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || '').trim();
+  const gmailPass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || '').replace(/\s+/g, '').trim();
   if (gmailUser && gmailPass) {
     try {
       const nodemailer = (await import('nodemailer')).default;
@@ -64,7 +64,8 @@ async function sendEmail({
       });
       return { success: true, provider: 'gmail_smtp' };
     } catch (e: any) {
-      console.warn('Gmail SMTP failed:', e.message);
+      console.error('Gmail SMTP failed:', e.message);
+      return { success: false, provider: 'gmail_smtp_error', error: e.message };
     }
   }
 
