@@ -199,13 +199,87 @@ export function isProfileSetupComplete(): boolean {
 }
 
 /**
- * Save user profile locally and sync to Supabase if available
+ * Check if a username/handle is available or already claimed by another adventurer
+ */
+export async function checkHandleAvailability(
+  handle: string,
+  currentProfileId?: string
+): Promise<{ available: boolean; message: string }> {
+  const clean = handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  if (!clean || clean.length < 3) {
+    return { available: false, message: 'Handle must be at least 3 characters.' };
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, user_handle')
+        .eq('user_handle', clean);
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const existing = data[0];
+        // If it matches current user's profile ID, they own it
+        if (currentProfileId && existing.id === currentProfileId) {
+          return { available: true, message: '✓ This is your current registered handle.' };
+        }
+        return { available: false, message: `✗ @${clean} is already taken! Please choose another.` };
+      }
+      return { available: true, message: `✓ @${clean} is available!` };
+    } catch {
+      // Offline fallback
+    }
+  }
+
+  // Check against default simulated roster if offline
+  const existsInLocal = DEFAULT_COMMUNITY_LEADERS.some(
+    (u) => u.handle.toLowerCase() === clean && u.id !== currentProfileId
+  );
+  if (existsInLocal) {
+    return { available: false, message: `✗ @${clean} is already claimed in the community.` };
+  }
+
+  return { available: true, message: `✓ @${clean} is available!` };
+}
+
+/**
+ * Save user profile locally and sync to Supabase if available (Strict Uniqueness Enforced)
  */
 export async function saveUniversalProfile(
   profile: UniversalUserProfile
 ): Promise<{ success: boolean; cloudSynced: boolean; message?: string }> {
   try {
-    // 1. Fetch live Codeforces & GitHub avatars/stats if handles are provided
+    const cleanHandle = profile.handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (!cleanHandle || cleanHandle.length < 3) {
+      return { success: false, cloudSynced: false, message: 'Username must be at least 3 characters long.' };
+    }
+    profile.handle = cleanHandle;
+
+    // 1. Strict Uniqueness Check in Cloud Database
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: existingRows } = await supabase
+          .from('profiles')
+          .select('id, user_handle')
+          .eq('user_handle', cleanHandle);
+
+        if (existingRows && existingRows.length > 0) {
+          const match = existingRows[0];
+          // If the handle exists under a different ID, refuse!
+          if (profile.id !== match.id) {
+            return {
+              success: false,
+              cloudSynced: false,
+              message: `The username @${cleanHandle} is already taken by another person! Please choose a unique handle.`,
+            };
+          }
+        }
+      } catch (checkErr: any) {
+        console.warn('Handle uniqueness pre-check warning:', checkErr.message);
+      }
+    }
+
+    // 2. Fetch live Codeforces & GitHub avatars/stats if handles are provided
     if (profile.codeforcesHandle && profile.codeforcesHandle.trim() !== '') {
       try {
         const cf = await fetchCodeforcesProfile(profile.codeforcesHandle.trim());
@@ -232,39 +306,66 @@ export async function saveUniversalProfile(
       }
     }
 
-    // 2. Persist locally
+    // 3. Persist locally
     localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
 
-    // 3. Sync to Supabase if configured
+    // 4. Sync to Supabase without risk of overwriting other users
     let cloudSynced = false;
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error } = await supabase.from('profiles').upsert(
-          {
-            id: profile.id.startsWith('local-') ? undefined : profile.id,
-            user_handle: profile.handle,
-            display_name: profile.displayName,
-            avatar_url: profile.avatarUrl,
-            github_username: profile.githubUsername,
-            codeforces_handle: profile.codeforcesHandle,
-            leetcode_username: profile.leetcodeUsername,
-            country_code: profile.country,
-            codeforces_rating: profile.codeforcesRating,
-            codeforces_rank: profile.codeforcesRank,
-            total_xp: profile.totalXp,
-            problems_solved: profile.problemsSolved,
-            current_streak: profile.streakDays,
-            cohort_mode: profile.cohortMode,
-            active_day: profile.activeDay,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_handle' }
-        );
+        const profilePayload = {
+          user_handle: profile.handle,
+          display_name: profile.displayName,
+          avatar_url: profile.avatarUrl,
+          github_username: profile.githubUsername,
+          codeforces_handle: profile.codeforcesHandle,
+          leetcode_username: profile.leetcodeUsername,
+          country_code: profile.country,
+          codeforces_rating: profile.codeforcesRating,
+          codeforces_rank: profile.codeforcesRank,
+          total_xp: profile.totalXp,
+          problems_solved: profile.problemsSolved,
+          current_streak: profile.streakDays,
+          cohort_mode: profile.cohortMode,
+          active_day: profile.activeDay,
+          updated_at: new Date().toISOString(),
+        };
 
-        if (!error) {
-          cloudSynced = true;
+        if (profile.id && !profile.id.startsWith('local-')) {
+          // Existing user with known UUID -> update own record
+          const { error } = await supabase
+            .from('profiles')
+            .update(profilePayload)
+            .eq('id', profile.id);
+
+          if (!error) {
+            cloudSynced = true;
+          } else if (error.code === '23505') {
+            return {
+              success: false,
+              cloudSynced: false,
+              message: `Username @${profile.handle} is already taken by another person.`,
+            };
+          }
         } else {
-          console.warn('Supabase upsert warning:', error.message);
+          // New visitor registration -> INSERT
+          const { data: inserted, error } = await supabase
+            .from('profiles')
+            .insert(profilePayload)
+            .select('id')
+            .single();
+
+          if (!error && inserted) {
+            profile.id = inserted.id; // Store official Supabase UUID
+            localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
+            cloudSynced = true;
+          } else if (error?.code === '23505') {
+            return {
+              success: false,
+              cloudSynced: false,
+              message: `Username @${profile.handle} is already taken by another person. Please choose a unique handle.`,
+            };
+          }
         }
       } catch (cloudErr: any) {
         console.warn('Cloud sync exception:', cloudErr.message);
@@ -275,7 +376,7 @@ export async function saveUniversalProfile(
       success: true,
       cloudSynced,
       message: cloudSynced
-        ? 'Profile saved locally & synced to World Leaderboard!'
+        ? 'Profile & unique handle verified & synced to World Leaderboard!'
         : 'Profile saved locally! (Configure Supabase keys in Vercel to broadcast live)',
     };
   } catch (err: any) {

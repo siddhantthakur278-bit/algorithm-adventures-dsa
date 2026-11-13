@@ -19,6 +19,7 @@ import {
   UniversalUserProfile,
   getStoredUserProfile,
   saveUniversalProfile,
+  checkHandleAvailability,
 } from '../../utils/universalLeaderboardService';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -39,6 +40,36 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
   const [formData, setFormData] = useState<UniversalUserProfile>(() => getStoredUserProfile());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [handleStatus, setHandleStatus] = useState<{
+    checking: boolean;
+    available?: boolean;
+    message?: string;
+  }>({ checking: false, available: true });
+
+  // Debounced real-time handle uniqueness check
+  useEffect(() => {
+    const clean = formData.handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (!clean || clean.length < 3) {
+      setHandleStatus({
+        checking: false,
+        available: false,
+        message: 'Handle must be at least 3 characters.',
+      });
+      return;
+    }
+
+    setHandleStatus({ checking: true });
+    const timer = setTimeout(async () => {
+      const res = await checkHandleAvailability(clean, formData.id);
+      setHandleStatus({
+        checking: false,
+        available: res.available,
+        message: res.message,
+      });
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [formData.handle, formData.id]);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,8 +89,15 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (handleStatus.available === false) {
+      sound.playThud();
+      setStatusMessage(handleStatus.message || 'Username is already taken by another adventurer.');
+      return;
+    }
+
     setIsSubmitting(true);
-    setStatusMessage('Connecting to GitHub, Codeforces & syncing leaderboard...');
+    setStatusMessage('Connecting to GitHub, Codeforces & verifying unique leaderboard spot...');
 
     // Apply schedule mode to CourseContext if changed
     if (formData.cohortMode === 'self_paced') {
@@ -138,10 +176,34 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
                       setFormData({ ...formData, handle: e.target.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') })
                     }
                     placeholder="algo_ninja"
-                    className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#090d1a] border border-[#2b3a67] text-white text-xs font-mono focus:border-amber-400 focus:outline-none"
+                    className={`w-full pl-7 pr-3 py-2 rounded-xl bg-[#090d1a] border text-white text-xs font-mono transition focus:outline-none ${
+                      handleStatus.available === true
+                        ? 'border-emerald-500/80 focus:border-emerald-400'
+                        : handleStatus.available === false
+                        ? 'border-rose-500/80 focus:border-rose-400'
+                        : 'border-[#2b3a67] focus:border-amber-400'
+                    }`}
                   />
                 </div>
-                <span className="text-[10px] text-slate-400">Unique identifier on the world leaderboard</span>
+                {/* Real-Time Unique Handle Verification Strip */}
+                <div className="mt-1 flex items-center justify-between text-[10px]">
+                  {handleStatus.checking ? (
+                    <span className="text-amber-400 font-mono flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 animate-spin" /> Checking global uniqueness...
+                    </span>
+                  ) : handleStatus.available === true ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Available &amp; Unique
+                    </span>
+                  ) : handleStatus.available === false ? (
+                    <span className="text-rose-400 font-bold flex items-center gap-1">
+                      ✕ {handleStatus.message}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">Unique identifier on the world leaderboard</span>
+                  )}
+                  <span className="text-slate-500 font-mono text-[9px]">strictly unique</span>
+                </div>
               </div>
 
               <div>
@@ -329,8 +391,8 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase tracking-wider border-2 border-slate-900 shadow-comic flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50"
+              disabled={isSubmitting || handleStatus.available === false || handleStatus.checking}
+              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase tracking-wider border-2 border-slate-900 shadow-comic flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
