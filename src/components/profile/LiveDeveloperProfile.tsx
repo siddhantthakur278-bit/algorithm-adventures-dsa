@@ -45,6 +45,7 @@ import { sound } from '../../utils/soundEffects';
 import { hallOfFameProblems } from '../../data/hallOfFameData';
 import { SkillRadarAndCertificate } from './SkillRadarAndCertificate';
 import { ContributionHeatmap } from './ContributionHeatmap';
+import { DeveloperPassportCard } from './DeveloperPassportCard';
 
 export const LiveDeveloperProfile: React.FC = () => {
   const {
@@ -69,7 +70,7 @@ export const LiveDeveloperProfile: React.FC = () => {
     initialProfile.leetcodeUsername || 'siddhantkthakur'
   );
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
-  const [inAppTab, setInAppTab] = useState<'today' | 'solved' | 'commits' | 'radar' | 'heatmap'>('today');
+  const [inAppTab, setInAppTab] = useState<'today' | 'solved' | 'commits' | 'radar' | 'heatmap' | 'passport'>('today');
 
   const [githubData, setGithubData] = useState<GitHubProfileData | null>(null);
   const [cfData, setCfData] = useState<CodeforcesProfile | null>(null);
@@ -553,6 +554,17 @@ export const LiveDeveloperProfile: React.FC = () => {
               Git Commits ({stats.gitCommits.length})
             </button>
             <button
+              onClick={() => setInAppTab('passport')}
+              className={`px-3 py-1.5 rounded-xl font-bangers text-xs transition border-2 flex items-center gap-1.5 ${
+                inAppTab === 'passport'
+                  ? 'bg-amber-400 text-black border-black shadow-comic-sm font-black'
+                  : 'bg-[#13182b] text-slate-300 border-[#222c48] hover:text-white'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5" />
+              Verified Passport
+            </button>
+            <button
               onClick={() => setInAppTab('radar')}
               className={`px-3 py-1.5 rounded-xl font-bangers text-xs transition border-2 flex items-center gap-1.5 ${
                 inAppTab === 'radar'
@@ -891,6 +903,13 @@ export const LiveDeveloperProfile: React.FC = () => {
         {inAppTab === 'heatmap' && (
           <div className="pt-2 animate-fadeIn">
             <ContributionHeatmap />
+          </div>
+        )}
+
+        {/* Tab 6: Verified Developer Passport */}
+        {inAppTab === 'passport' && (
+          <div className="pt-2 animate-fadeIn">
+            <DeveloperPassportCard />
           </div>
         )}
       </div>

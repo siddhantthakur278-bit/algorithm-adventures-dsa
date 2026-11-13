@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCourse } from '../../context/CourseContext';
 import {
   Briefcase,
@@ -19,11 +19,25 @@ import {
   ChevronRight,
   TrendingUp,
   Cpu,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Radio,
+  FileDown,
 } from 'lucide-react';
 import { ProfessorAvatar, ByteAvatar, BugsyAvatar, ComicBubble } from '../characters/Characters';
+import { HumanAvatar } from '../common/HumanAvatar';
 import { sound } from '../../utils/soundEffects';
 import { UniversalVSCodeEditor } from '../common/UniversalVSCodeEditor';
 import confetti from 'canvas-confetti';
+import {
+  speakText,
+  stopSpeaking,
+  startSpeechToText,
+  isSpeechRecognitionSupported,
+  isSpeechSynthesisSupported,
+} from '../../utils/speechService';
 
 interface InterviewMessage {
   id: string;
@@ -33,6 +47,81 @@ interface InterviewMessage {
   tag?: 'clarification' | 'approach' | 'hint' | 'feedback';
 }
 
+interface InterviewProblem {
+  id: string;
+  company: 'Google' | 'Meta' | 'Amazon' | 'OpenAI';
+  title: string;
+  difficulty: 'Medium' | 'Hard';
+  description: string;
+  constraints: string;
+  example: string;
+  starterCode: string;
+  suggestedQuestions: string[];
+}
+
+const FAANG_PROBLEMS: Record<string, InterviewProblem> = {
+  Google: {
+    id: 'google-k-distinct',
+    company: 'Google',
+    title: 'Longest Substring with At Most K Distinct Characters',
+    difficulty: 'Medium',
+    description: 'Given a string s and an integer k, return the length of the longest substring of s that contains at most k distinct characters using an optimal O(N) sliding window.',
+    constraints: '1 <= s.length <= 10^5, 0 <= k <= 50, Lowercase English letters',
+    example: 'Input: s = "eceba", k = 2 -> Output: 3 (Substring "ece")',
+    starterCode: `def length_of_longest_substring_k_distinct(s: str, k: int) -> int:\n    # FAANG Sliding Window Pattern\n    if not s or k == 0:\n        return 0\n    \n    char_count = {}\n    max_len = 0\n    left = 0\n    \n    for right, char in enumerate(s):\n        char_count[char] = char_count.get(char, 0) + 1\n        \n        while len(char_count) > k:\n            left_char = s[left]\n            char_count[left_char] -= 1\n            if char_count[left_char] == 0:\n                del char_count[left_char]\n            left += 1\n            \n        max_len = max(max_len, right - left + 1)\n        \n    return max_len\n\nprint(length_of_longest_substring_k_distinct("eceba", 2)) # 3\n`,
+    suggestedQuestions: [
+      'What should we return if k = 0 or s is empty?',
+      'Can the string contain uppercase characters or whitespace?',
+      'Are there strict memory limits for the auxiliary hash table?',
+    ],
+  },
+  Meta: {
+    id: 'meta-lca',
+    company: 'Meta',
+    title: 'Lowest Common Ancestor in Binary Tree',
+    difficulty: 'Medium',
+    description: 'Given a binary tree, find the lowest common ancestor (LCA) of two given nodes p and q. The LCA is defined as the lowest node in T that has both p and q as descendants.',
+    constraints: 'Nodes count <= 10^5, all Node values are unique, p != q',
+    example: 'Input: root = [3,5,1,6,2,0,8], p = 5, q = 1 -> Output: 3',
+    starterCode: `class TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\ndef lowest_common_ancestor(root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:\n    if not root or root == p or root == q:\n        return root\n    \n    left = lowest_common_ancestor(root.left, p, q)\n    right = lowest_common_ancestor(root.right, p, q)\n    \n    if left and right:\n        return root\n    return left if left else right\n`,
+    suggestedQuestions: [
+      'Can node p or q be the lowest common ancestor of themselves?',
+      'Are we guaranteed that both nodes exist in the tree?',
+      'Is the binary tree balanced or could it be skewed O(N)?',
+    ],
+  },
+  Amazon: {
+    id: 'amazon-lru',
+    company: 'Amazon',
+    title: 'Design In-Memory LRU Cache',
+    difficulty: 'Hard',
+    description: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache with O(1) average time complexity for both get and put operations.',
+    constraints: 'Capacity <= 3000, Key/Value integers <= 10^4, up to 2 * 10^5 calls',
+    example: 'LRUCache(2); put(1,1); put(2,2); get(1)->1; put(3,3); get(2)->-1',
+    starterCode: `class Node:\n    def __init__(self, key=0, val=0):\n        self.key = key\n        self.val = val\n        self.prev = None\n        self.next = None\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = {} # key -> Node\n        self.head = Node()\n        self.tail = Node()\n        self.head.next = self.tail\n        self.tail.prev = self.head\n\n    def get(self, key: int) -> int:\n        if key in self.cache:\n            node = self.cache[key]\n            self._remove(node)\n            self._add_to_head(node)\n            return node.val\n        return -1\n`,
+    suggestedQuestions: [
+      'What is the maximum capacity and expected concurrent thread access?',
+      'Should get() count as an access that moves an element to most-recent?',
+      'Should we raise an exception or return -1 on missing key?',
+    ],
+  },
+  OpenAI: {
+    id: 'openai-matrix',
+    company: 'OpenAI',
+    title: 'Rotate N x N Attention Matrix In-Place',
+    difficulty: 'Medium',
+    description: 'You are given an n x n 2D matrix representing an attention tensor. Rotate the matrix by 90 degrees clockwise in-place without allocating another 2D matrix.',
+    constraints: 'n == matrix.length == matrix[i].length, 1 <= n <= 50',
+    example: 'Input: [[1,2,3],[4,5,6],[7,8,9]] -> Output: [[7,4,1],[8,5,2],[9,6,3]]',
+    starterCode: `def rotate_attention_matrix(matrix: list[list[int]]) -> None:\n    # 1. Transpose the matrix\n    n = len(matrix)\n    for i in range(n):\n        for j in range(i + 1, n):\n            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]\n            \n    # 2. Reverse each row\n    for i in range(n):\n        matrix[i].reverse()\n\nm = [[1,2,3],[4,5,6],[7,8,9]]\nrotate_attention_matrix(m)\nprint(m)\n`,
+    suggestedQuestions: [
+      'Does "in-place" strictly mean O(1) auxiliary memory?',
+      'Can the matrix be non-square (M != N) or strictly square?',
+      'What are the minimum and maximum dimensions of N?',
+    ],
+  },
+};
+
 export const TechnicalInterviewRoom: React.FC = () => {
   const { addXP, triggerBurst } = useCourse();
 
@@ -40,12 +129,20 @@ export const TechnicalInterviewRoom: React.FC = () => {
   const [targetCompany, setTargetCompany] = useState<'Google' | 'Meta' | 'Amazon' | 'OpenAI'>('Google');
   const [interviewerPersona, setInterviewerPersona] = useState<'algorismus' | 'byte' | 'bugsy'>('algorismus');
 
+  const problem = FAANG_PROBLEMS[targetCompany] || FAANG_PROBLEMS.Google;
+
   // Stages: 1=Clarify, 2=Approach, 3=Code, 4=Debrief & Scorecard
   const [interviewStage, setInterviewStage] = useState<1 | 2 | 3 | 4>(1);
 
   // Timer: 45 min
   const [secondsRemaining, setSecondsRemaining] = useState<number>(45 * 60);
-  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
+
+  // Voice AI Controls
+  const [isVoiceAiEnabled, setIsVoiceAiEnabled] = useState<boolean>(true);
+  const [isInterviewerSpeaking, setIsInterviewerSpeaking] = useState<boolean>(false);
+  const [isRecordingSpeech, setIsRecordingSpeech] = useState<boolean>(false);
+  const speechRecognizerRef = useRef<any>(null);
 
   // Communication Dialog
   const [candidateInput, setCandidateInput] = useState<string>('');
@@ -53,23 +150,26 @@ export const TechnicalInterviewRoom: React.FC = () => {
     {
       id: 'm-0',
       sender: 'interviewer',
-      text: "Welcome! Today we'll be evaluating an algorithmic design challenge: 'Find the Length of the Longest Substring with At Most K Distinct Characters'. Before writing any code, what clarifying questions do you have regarding constraints and inputs?",
+      text: `Welcome! Today we will evaluate the algorithmic design problem: '${problem.title}'. Before writing code, what clarifying questions do you have regarding constraints and inputs?`,
       timestamp: '00:00',
       tag: 'clarification',
     },
   ]);
 
+  // Code state
+  const [userCode, setUserCode] = useState<string>(problem.starterCode);
+
   // Scores
   const [scores, setScores] = useState({
     problemSolving: 4.8,
-    communication: 4.6,
-    codeQuality: 4.7,
+    communication: 4.7,
+    codeQuality: 4.8,
     edgeCases: 4.9,
   });
 
   const [isFinished, setIsFinished] = useState<boolean>(false);
 
-  // Timer Tick
+  // Timer Loop
   useEffect(() => {
     let t: number | null = null;
     if (isTimerRunning && secondsRemaining > 0) {
@@ -82,10 +182,75 @@ export const TechnicalInterviewRoom: React.FC = () => {
     };
   }, [isTimerRunning, secondsRemaining]);
 
+  // Change problem code when company changes
+  useEffect(() => {
+    setUserCode(problem.starterCode);
+    const welcome = `Welcome to the ${targetCompany} technical interview! Today we are solving: '${problem.title}'. What edge cases or constraints would you like to clarify?`;
+    setMessages([
+      {
+        id: `m-${Date.now()}`,
+        sender: 'interviewer',
+        text: welcome,
+        timestamp: '00:00',
+        tag: 'clarification',
+      },
+    ]);
+    if (isVoiceAiEnabled) {
+      speakInterviewerText(welcome);
+    }
+  }, [targetCompany]);
+
   const formatTimer = (sec: number) => {
     const mins = Math.floor(sec / 60);
     const s = sec % 60;
     return `${mins.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Speaks interviewer text using Web Speech API
+  const speakInterviewerText = (text: string) => {
+    if (!isVoiceAiEnabled) return;
+    setIsInterviewerSpeaking(true);
+    speakText(text, {
+      onStart: () => setIsInterviewerSpeaking(true),
+      onEnd: () => setIsInterviewerSpeaking(false),
+      onError: () => setIsInterviewerSpeaking(false),
+    });
+  };
+
+  // Toggle Candidate Voice Dictation (Microphone)
+  const toggleSpeechRecognition = () => {
+    if (isRecordingSpeech) {
+      speechRecognizerRef.current?.stop?.();
+      setIsRecordingSpeech(false);
+      sound.playPop();
+      return;
+    }
+
+    if (!isSpeechRecognitionSupported()) {
+      alert('Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+
+    sound.playPop();
+    setIsRecordingSpeech(true);
+
+    const controller = startSpeechToText({
+      onResult: (transcript, isFinal) => {
+        setCandidateInput(transcript);
+        if (isFinal) {
+          setIsRecordingSpeech(false);
+        }
+      },
+      onError: (err) => {
+        console.warn('Speech recognition error:', err);
+        setIsRecordingSpeech(false);
+      },
+      onEnd: () => {
+        setIsRecordingSpeech(false);
+      },
+    });
+
+    speechRecognizerRef.current = controller;
   };
 
   const handleSendClarification = (customQuestion?: string) => {
@@ -103,17 +268,20 @@ export const TechnicalInterviewRoom: React.FC = () => {
     setMessages((prev) => [...prev, candidateMsg]);
     setCandidateInput('');
 
-    // Interviewer reply
+    // Dynamic Interviewer AI reply
     setTimeout(() => {
       let reply = '';
-      if (q.toLowerCase().includes('empty') || q.toLowerCase().includes('k=0')) {
-        reply = 'Excellent question! If the string is empty or K == 0, the output should immediately be 0.';
-      } else if (q.toLowerCase().includes('space') || q.toLowerCase().includes('memory')) {
-        reply = 'Memory constraint: aim for O(K) auxiliary space for your character frequency tracker.';
-      } else if (q.toLowerCase().includes('size') || q.toLowerCase().includes('n <=') || q.toLowerCase().includes('length')) {
-        reply = 'Constraints: string length N <= 10^5, K <= 50. Lowercase English letters only. Quadratic O(N^2) will TLE!';
+      const lower = q.toLowerCase();
+      if (lower.includes('empty') || lower.includes('k=0') || lower.includes('k == 0') || lower.includes('null')) {
+        reply = 'Excellent question! If the input is empty or null, immediately return 0 or None. Guarding base cases early shows senior maturity.';
+      } else if (lower.includes('space') || lower.includes('memory') || lower.includes('auxiliary')) {
+        reply = 'Target memory is O(1) or O(K) auxiliary space. Avoid duplicating the entire input array in memory.';
+      } else if (lower.includes('time') || lower.includes('scale') || lower.includes('n <=') || lower.includes('length')) {
+        reply = 'Input scale is N <= 10^5. A quadratic O(N^2) solution will definitely hit Time Limit Exceeded. Aim for O(N) or O(N log N).';
+      } else if (lower.includes('duplicate') || lower.includes('unique')) {
+        reply = 'All elements can contain duplicates unless specified otherwise. How would your algorithm handle repeated values without infinite loops?';
       } else {
-        reply = "Good clarification. Assume standard 8-bit ASCII characters. How would you structure your optimal approach to achieve O(N) time?";
+        reply = "Very perceptive clarification! That constraint holds. Now, can you outline your algorithmic approach and walk me through the time and space complexity tradeoffs?";
       }
 
       setMessages((prev) => [
@@ -126,7 +294,11 @@ export const TechnicalInterviewRoom: React.FC = () => {
           tag: 'hint',
         },
       ]);
+
       sound.playSuccess();
+      if (isVoiceAiEnabled) {
+        speakInterviewerText(reply);
+      }
     }, 800);
   };
 
@@ -134,36 +306,58 @@ export const TechnicalInterviewRoom: React.FC = () => {
     setIsFinished(true);
     setInterviewStage(4);
     setIsTimerRunning(false);
+    stopSpeaking();
     sound.playFanfare();
-    addXP(150);
-    triggerBurst('🏆 INTERVIEW PASSED!', 'Recommendation: STRONG HIRE! +150 XP', 'boom');
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    addXP(250, `Passed ${targetCompany} FAANG Mock Interview!`);
+    triggerBurst('🏆 INTERVIEW PASSED!', `Recommendation: STRONG HIRE at ${targetCompany}! +250 XP`, 'boom');
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Header */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 font-comic">
+      {/* HEADER & CONTROLS */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#12162a] via-[#1b2342] to-[#12162a] border-3 border-black shadow-comic-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider border border-black shadow-comic-sm flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5" /> FAANG Interview Simulation
             </span>
-            <span className="text-xs text-amber-300 font-bold">{targetCompany} Senior SWE Evaluation</span>
+            <span className="text-xs text-amber-300 font-bold">{targetCompany} Senior Evaluation</span>
             <span className="text-slate-500">•</span>
-            <span className="text-xs font-mono text-emerald-400 font-bold">Standard 45-Min Format</span>
+            <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1">
+              <Radio className="w-3 h-3 animate-pulse text-emerald-400" /> Real-Time Voice AI Active
+            </span>
           </div>
 
           <h1 className="font-bangers text-3xl sm:text-4xl text-white tracking-wide">
-            FAANG TECHNICAL CODING INTERVIEW ROOM
+            FAANG AI VOICE MOCK INTERVIEW ROOM
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Experience realistic technical interviews with live algorithmic problem formulation, clarifying constraint questions, real-time code review, and a formal hiring scorecard.
+          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-sans">
+            Speak directly with your AI examiner. Clarify algorithmic constraints, formulate Big-O complexity tradeoffs, code the live solution, and receive a FAANG hiring scorecard.
           </p>
         </div>
 
-        {/* Live Interview Clock & Controls */}
-        <div className="flex items-center gap-3 bg-[#0a0d18] p-4 rounded-2xl border border-slate-700">
+        {/* Live Interview Clock & Voice Toggle */}
+        <div className="flex flex-wrap items-center gap-3 bg-[#0a0d18] p-4 rounded-2xl border border-slate-700">
+          {/* Spoken AI Audio Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isVoiceAiEnabled) stopSpeaking();
+              setIsVoiceAiEnabled(!isVoiceAiEnabled);
+              sound.playPop();
+            }}
+            className={`p-2.5 rounded-xl border border-black font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
+              isVoiceAiEnabled
+                ? 'bg-emerald-500 text-slate-950 shadow-comic-sm'
+                : 'bg-slate-800 text-slate-400'
+            }`}
+            title="Toggle Interviewer Voice Speech"
+          >
+            {isVoiceAiEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            <span>{isVoiceAiEnabled ? 'AI Voice ON' : 'AI Muted'}</span>
+          </button>
+
           <div className="text-right font-mono">
             <span className="text-[10px] text-slate-400 block uppercase font-sans">Interview Clock</span>
             <span
@@ -271,35 +465,30 @@ export const TechnicalInterviewRoom: React.FC = () => {
           <div className="lg:col-span-5 p-6 rounded-3xl bg-[#0c101d] border-2 border-black shadow-comic space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-amber-400 uppercase">
-                Challenge Formulation
+                {problem.company} • {problem.difficulty}
               </span>
               <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">
-                Medium (Target O(N))
+                Target: Optimal Big-O
               </span>
             </div>
 
             <h3 className="font-bangers text-2xl text-white">
-              LONGEST SUBSTRING WITH AT MOST K DISTINCT CHARACTERS
+              {problem.title.toUpperCase()}
             </h3>
 
             <p className="text-xs text-slate-300 leading-relaxed font-sans">
-              Given a string <code className="text-amber-400">s</code> and an integer <code className="text-amber-400">k</code>, return the length of the longest substring of <code className="text-amber-400">s</code> that contains at most <code className="text-amber-400">k</code> distinct characters.
+              {problem.description}
             </p>
 
             <div className="p-3.5 rounded-xl bg-[#070a14] border border-[#1b233a] font-mono text-xs text-slate-300 space-y-1">
-              <div><strong>Input:</strong> s = "eceba", k = 2</div>
-              <div><strong>Output:</strong> 3 (Substring: "ece")</div>
-              <div><strong>Constraint:</strong> 1 &le; s.length &le; 10^5, 0 &le; k &le; 50</div>
+              <div><strong>Example:</strong> {problem.example}</div>
+              <div><strong>Constraints:</strong> {problem.constraints}</div>
             </div>
 
             <div className="space-y-1.5 text-xs">
               <span className="font-bold text-slate-400 uppercase tracking-wider font-mono">Suggested Clarifying Questions:</span>
               <div className="flex flex-col gap-1.5">
-                {[
-                  "What should we return if k = 0 or s is empty?",
-                  "Can the string contain uppercase letters or spaces?",
-                  "Are there strict memory constraints on auxiliary maps?",
-                ].map((q, i) => (
+                {problem.suggestedQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => handleSendClarification(q)}
@@ -316,7 +505,7 @@ export const TechnicalInterviewRoom: React.FC = () => {
                 setInterviewStage(3);
                 sound.playSuccess();
               }}
-              className="w-full btn-comic-push py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider border border-black shadow-comic flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider border border-black shadow-comic flex items-center justify-center gap-2 cursor-pointer font-sans"
             >
               <span>Approach Aligned ➔ Start Coding in Stage 3</span>
               <ChevronRight className="w-4 h-4" />
@@ -327,10 +516,14 @@ export const TechnicalInterviewRoom: React.FC = () => {
           <div className="lg:col-span-7 p-6 rounded-3xl bg-[#0c101d] border-2 border-black shadow-comic flex flex-col justify-between h-[520px]">
             <div className="flex items-center justify-between pb-3 border-b border-[#1b233a]">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                <span className="font-bangers text-lg text-white">INTERVIEW LOG &amp; TRANSCRIPT</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${isInterviewerSpeaking ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
+                <span className="font-bangers text-lg text-white">INTERVIEW TRANSCRIPT & VOICE AI</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-mono">Real-time Feedback</span>
+              {isInterviewerSpeaking && (
+                <span className="text-[10px] text-amber-300 font-mono flex items-center gap-1 animate-pulse">
+                  <Volume2 className="w-3.5 h-3.5" /> Interviewer Speaking...
+                </span>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto py-3 space-y-3 font-sans pr-1">
@@ -341,7 +534,7 @@ export const TechnicalInterviewRoom: React.FC = () => {
                 >
                   <div className="text-xl shrink-0">
                     {m.sender === 'candidate' ? (
-                      '👤'
+                      <HumanAvatar seed="adventurer" size="sm" />
                     ) : interviewerPersona === 'algorismus' ? (
                       <ProfessorAvatar size="sm" mood="wise" />
                     ) : interviewerPersona === 'byte' ? (
@@ -359,24 +552,47 @@ export const TechnicalInterviewRoom: React.FC = () => {
                     }`}
                   >
                     <p>{m.text}</p>
-                    <span className="text-[9px] text-slate-400 font-mono block text-right mt-1">
-                      {m.timestamp}
-                    </span>
+                    <div className="flex items-center justify-between mt-1 text-[9px] text-slate-400 font-mono">
+                      {m.sender === 'interviewer' && (
+                        <button
+                          type="button"
+                          onClick={() => speakInterviewerText(m.text)}
+                          className="hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Volume2 className="w-3 h-3" /> Read Aloud
+                        </button>
+                      )}
+                      <span>{m.timestamp}</span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Input Bar */}
+            {/* Input Bar with Mic Voice Dictation */}
             <div className="pt-3 border-t border-[#1b233a] flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleSpeechRecognition}
+                className={`p-2.5 rounded-xl border border-black transition cursor-pointer flex items-center gap-1 ${
+                  isRecordingSpeech
+                    ? 'bg-rose-500 text-white animate-pulse shadow-comic-sm'
+                    : 'bg-slate-800 text-slate-300 hover:text-white'
+                }`}
+                title="Speak to dictate your question"
+              >
+                {isRecordingSpeech ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+
               <input
                 type="text"
                 value={candidateInput}
                 onChange={(e) => setCandidateInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendClarification()}
-                placeholder="Ask your interviewer a clarifying question..."
-                className="flex-1 bg-[#060810] border border-[#1e2744] focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs text-white outline-none"
+                placeholder={isRecordingSpeech ? 'Listening to your voice... Speak now...' : 'Ask clarifying question or dictate with mic...'}
+                className="flex-1 bg-[#060810] border border-[#1e2744] focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs text-white outline-none font-sans"
               />
+
               <button
                 onClick={() => handleSendClarification()}
                 className="p-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold border border-black shadow-comic-sm cursor-pointer"
@@ -396,149 +612,100 @@ export const TechnicalInterviewRoom: React.FC = () => {
               <Code2 className="w-5 h-5 text-amber-400" />
               <div>
                 <h3 className="font-bangers text-lg text-white">STAGE 3: LIVE CODING IMPLEMENTATION</h3>
-                <p className="text-xs text-slate-400">Implement the optimal O(N) sliding window solution with test cases.</p>
+                <p className="text-xs text-slate-400 font-sans">
+                  Implement the optimal algorithm for {problem.title}. Explain your line-by-line reasoning as you write.
+                </p>
               </div>
             </div>
 
             <button
               onClick={finishInterview}
-              className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider border border-black shadow-comic cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl border border-black shadow-comic-sm cursor-pointer font-sans"
             >
-              <CheckCircle2 className="w-4 h-4" /> Complete Interview &amp; Generate Scorecard
+              Submit Code ➔ Proceed to Scorecard
             </button>
           </div>
 
-          <UniversalVSCodeEditor
-            language="python"
-            starterCode={`# FAANG Interview Problem: Longest Substring with At Most K Distinct Characters
-# Optimal: O(N) Time, O(K) Space (Sliding Window + Frequency Map)
-
-def length_of_longest_substring_k_distinct(s: str, k: int) -> int:
-    if k == 0 or not s:
-        return 0
-        
-    counts = {}
-    left = 0
-    max_len = 0
-    
-    for right in range(len(s)):
-        char = s[right]
-        counts[char] = counts.get(char, 0) + 1
-        
-        while len(counts) > k:
-            left_char = s[left]
-            counts[left_char] -= 1
-            if counts[left_char] == 0:
-                del counts[left_char]
-            left += 1
-            
-        max_len = max(max_len, right - left + 1)
-        
-    return max_len
-
-# Test Cases:
-print("Test 1 (eceba, k=2):", length_of_longest_substring_k_distinct("eceba", 2)) # Expected: 3
-print("Test 2 (aa, k=1):", length_of_longest_substring_k_distinct("aa", 1))       # Expected: 2
-`}
-            solutionCode={`def length_of_longest_substring_k_distinct(s: str, k: int) -> int:
-    if k == 0 or not s:
-        return 0
-    counts = {}
-    left = 0
-    max_len = 0
-    for right, char in enumerate(s):
-        counts[char] = counts.get(char, 0) + 1
-        while len(counts) > k:
-            left_char = s[left]
-            counts[left_char] -= 1
-            if counts[left_char] == 0:
-                del counts[left_char]
-            left += 1
-        max_len = max(max_len, right - left + 1)
-    return max_len
-`}
-            problemTitle="Longest Substring with At Most K Distinct Characters"
-            problemId="mock-faang-1"
-            fileName="faang_interview_solution.py"
-          />
+          <div className="bg-[#090d1a] border-2 border-black rounded-2xl p-4 shadow-comic">
+            <UniversalVSCodeEditor
+              key={`${problem.id}-${targetCompany}`}
+              language="python"
+              starterCode={problem.starterCode}
+              problemTitle={problem.title}
+              problemId={problem.id}
+              onSolve={finishInterview}
+            />
+          </div>
         </div>
       )}
 
-      {/* STAGE 4: Official FAANG Hiring Packet Scorecard */}
+      {/* STAGE 4: Evaluation Scorecard & FAANG Rubric */}
       {interviewStage === 4 && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0c101d] border-3 border-black shadow-comic-lg space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-slate-800 pb-4">
+        <div className="p-8 rounded-3xl bg-[#0c101d] border-3 border-black shadow-comic-lg space-y-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-slate-800">
             <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-amber-400 font-bold">
-                Official Hiring Packet
+              <span className="text-xs font-mono uppercase text-emerald-400 font-bold">
+                Official Hiring Recommendation
               </span>
-              <h2 className="font-bangers text-3xl sm:text-4xl text-white">
-                CANDIDATE TECHNICAL EVALUATION REPORT
+              <h2 className="font-bangers text-4xl text-amber-300 mt-1">
+                {targetCompany.toUpperCase()} DECISION: STRONG HIRE!
               </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Candidate Track: Siddhant Thakur • Role: Senior Software Engineer (L5 / E5) • Company: {targetCompany}
+              <p className="text-xs text-slate-300 font-sans mt-1">
+                Evaluated against FAANG L4/L5 standard competencies in algorithmic efficiency, edge cases, and technical communication.
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500/50 text-center">
-              <span className="text-[10px] uppercase font-mono text-emerald-300 font-bold block">Final Decision</span>
-              <div className="text-2xl font-bangers text-emerald-400">STRONG HIRE (L5)</div>
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/40 text-center">
+              <span className="text-[11px] font-mono text-emerald-300 block uppercase">Composite Score</span>
+              <span className="font-bangers text-4xl text-emerald-400">4.8 / 5.0</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Problem Solving', score: scores.problemSolving, desc: 'Identified optimal O(N) sliding window without prompting.' },
-              { label: 'Communication', score: scores.communication, desc: 'Proactive clarification on k=0 and ASCII constraints.' },
-              { label: 'Code Cleanliness', score: scores.codeQuality, desc: 'Proper dictionary pruning and descriptive pointer naming.' },
-              { label: 'Invariants & Edges', score: scores.edgeCases, desc: 'Guarded while loop invariant len(counts) <= k rigorously.' },
-            ].map((cat, i) => (
-              <div key={i} className="p-4 rounded-2xl bg-[#0f1424] border border-[#1c243a] space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">{cat.label}</span>
-                  <span className="font-mono text-sm font-black text-amber-400">{cat.score} / 5.0</span>
-                </div>
-                <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
-                  <div
-                    className="bg-emerald-400 h-full rounded-full"
-                    style={{ width: `${(cat.score / 5) * 100}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">{cat.desc}</p>
-              </div>
-            ))}
+          {/* Rubric Breakdown Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+            <div className="p-4 rounded-2xl bg-[#12182b] border border-slate-800 space-y-1">
+              <span className="text-xs text-slate-400 font-bold">Problem Solving</span>
+              <div className="text-2xl font-black text-amber-300 font-mono">4.8 / 5.0</div>
+              <p className="text-[11px] text-slate-400">Identified optimal O(N) pattern without brute-force delay.</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#12182b] border border-slate-800 space-y-1">
+              <span className="text-xs text-slate-400 font-bold">Communication & Clarity</span>
+              <div className="text-2xl font-black text-amber-300 font-mono">4.7 / 5.0</div>
+              <p className="text-[11px] text-slate-400">Asked clarifying questions on constraints before writing code.</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#12182b] border border-slate-800 space-y-1">
+              <span className="text-xs text-slate-400 font-bold">Code Quality & Style</span>
+              <div className="text-2xl font-black text-amber-300 font-mono">4.8 / 5.0</div>
+              <p className="text-[11px] text-slate-400">Clean modular variable naming and structured helper methods.</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#12182b] border border-slate-800 space-y-1">
+              <span className="text-xs text-slate-400 font-bold">Edge Case Coverage</span>
+              <div className="text-2xl font-black text-amber-300 font-mono">4.9 / 5.0</div>
+              <p className="text-[11px] text-slate-400">Guarded empty strings, zero K, and boundary pointer conditions.</p>
+            </div>
           </div>
 
-          {/* Qualitative Written Summary */}
-          <div className="p-5 rounded-2xl bg-[#090d18] border border-[#1b233a] space-y-2 text-xs text-slate-300">
-            <h4 className="font-bold text-white uppercase tracking-wider font-mono">
-              Debrief Written Feedback from {interviewerPersona.toUpperCase()}:
-            </h4>
-            <p className="leading-relaxed font-sans">
-              "The candidate exhibited exceptional algorithmic maturity. Rather than jumping into code, they accurately scoped edge cases (empty strings, zero distinct character thresholds). When executing the sliding window, they correctly reasoned about both worst-case $O(N)$ amortized iteration and $O(K)$ space. Recommend proceeding with senior offer packet."
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              onClick={() => {
-                window.print();
-                sound.playPop();
-              }}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 cursor-pointer"
-            >
-              Export Report Card (PDF)
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-800 font-sans">
             <button
               onClick={() => {
                 setInterviewStage(1);
                 setSecondsRemaining(45 * 60);
-                setIsFinished(false);
+                setIsTimerRunning(true);
                 sound.playPop();
               }}
-              className="btn-comic-push px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider border border-black shadow-comic cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-600 transition cursor-pointer flex items-center gap-2"
             >
-              Start New Mock Interview
+              <RotateCcw className="w-4 h-4" /> Start Another Interview
+            </button>
+
+            <button
+              onClick={() => {
+                sound.playFanfare();
+                triggerBurst('📜 PASSPORT CERTIFIED', 'Interview verification attached to your profile!', 'star');
+              }}
+              className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider border border-black shadow-comic-sm transition cursor-pointer"
+            >
+              Add Verification Badge to Profile
             </button>
           </div>
         </div>
