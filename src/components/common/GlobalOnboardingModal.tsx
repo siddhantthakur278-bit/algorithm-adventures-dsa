@@ -32,6 +32,7 @@ import {
 } from '../../utils/universalLeaderboardService';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
+import { HumanAvatar } from './HumanAvatar';
 
 interface GlobalOnboardingModalProps {
   isOpen: boolean;
@@ -300,8 +301,34 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
           {/* Section 1: Core Identity */}
           <div className="p-4 rounded-2xl bg-[#131b35] border border-[#223059] space-y-4">
             <h3 className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5" /> 1. Adventurer Identity
+              <User className="w-3.5 h-3.5" /> 1. Adventurer Identity &amp; Human Logo
             </h3>
+
+            {/* Live Human Avatar Preview */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-[#090d1a] border border-[#223059]">
+              <HumanAvatar
+                seed={formData.handle || 'adventurer'}
+                name={formData.displayName || formData.handle || 'Adventurer'}
+                avatarUrl={formData.avatarUrl}
+                size="lg"
+                aura="amber"
+                showStatus={true}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-white flex items-center gap-2">
+                  <span className="truncate">{formData.displayName || 'Adventurer'}</span>
+                  <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.5 rounded border border-amber-400/30">
+                    Human Logo Active
+                  </span>
+                </div>
+                <div className="text-[11px] font-mono text-slate-400">
+                  @{formData.handle || 'handle'}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Unique vector human developer logo generated for the world leaderboard &amp; workspace.
+                </p>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>

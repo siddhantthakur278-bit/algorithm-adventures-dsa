@@ -37,6 +37,8 @@ import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { HumanAvatar } from '../common/HumanAvatar';
+import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
 
 export const Navbar: React.FC = () => {
   const {
@@ -57,6 +59,7 @@ export const Navbar: React.FC = () => {
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const myProfile = getStoredUserProfile();
   const [gitToken, setGitToken] = useState(() => loadGitHubConfig().token);
   const [gitOwner, setGitOwner] = useState(() => loadGitHubConfig().owner);
   const [gitRepo, setGitRepo] = useState(() => loadGitHubConfig().repo);
@@ -423,14 +426,20 @@ export const Navbar: React.FC = () => {
                 </span>
               </button>
 
-              {/* Universal Identity & Handles Button */}
+              {/* Universal Identity & Human Avatar Button */}
               <button
                 onClick={() => setShowOnboardingModal(true)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 rounded-xl border border-sky-400/30 text-sky-300 font-semibold text-xs transition cursor-pointer"
-                title="Configure Universal Handles & Leaderboard Identity"
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 bg-[#0d111a] hover:bg-[#141a28] rounded-xl border border-slate-800 text-slate-200 text-xs font-medium transition cursor-pointer"
+                title={`Configure Identity: ${myProfile.displayName} (@${myProfile.handle})`}
               >
-                <Globe className="w-3.5 h-3.5 text-sky-400" />
-                <span className="hidden lg:inline">My Identity</span>
+                <HumanAvatar
+                  seed={myProfile.handle}
+                  name={myProfile.displayName}
+                  avatarUrl={myProfile.avatarUrl}
+                  size="xs"
+                  showStatus={true}
+                />
+                <span className="hidden lg:inline font-mono">@{myProfile.handle}</span>
               </button>
 
               {/* Layout Switcher: Vertical Panel Way */}

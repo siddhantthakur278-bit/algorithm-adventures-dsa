@@ -15,6 +15,7 @@ import {
   getStoredUserProfile,
 } from '../../utils/universalLeaderboardService';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { HumanAvatar } from '../common/HumanAvatar';
 import {
   Globe,
   ExternalLink,
@@ -145,15 +146,14 @@ export const LiveDeveloperProfile: React.FC = () => {
       <div className="bg-[#0c101d] border-2 border-[#1c243a] rounded-3xl p-6 sm:p-8 shadow-comic-lg bg-halftone">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-            {githubData?.avatarUrl ? (
-              <img
-                src={githubData.avatarUrl}
-                alt="GitHub Avatar"
-                className="w-20 h-20 rounded-2xl border-2 border-black shadow-comic-sm object-cover"
-              />
-            ) : (
-              <ByteAvatar size="lg" mood="victory" />
-            )}
+            <HumanAvatar
+              seed={githubUser || 'adventurer'}
+              name={githubData?.name || githubUser || 'Adventurer'}
+              avatarUrl={githubData?.avatarUrl}
+              size="2xl"
+              aura="amber"
+              showStatus={true}
+            />
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">

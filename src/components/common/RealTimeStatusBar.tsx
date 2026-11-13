@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { realTimeEngine, RealTimeEngineState, RealTimeTelemetryEvent } from '../../utils/realTimeEngine';
 import { useCourse } from '../../context/CourseContext';
+import { HumanAvatar } from './HumanAvatar';
 
 export const RealTimeStatusBar: React.FC = () => {
   const { simulatedDate, scheduleState, githubConfig } = useCourse();
@@ -192,7 +193,7 @@ export const RealTimeStatusBar: React.FC = () => {
                   key={ev.id}
                   className="p-2.5 rounded-lg bg-[#0e1322] border border-[#1b2236] hover:border-amber-500/40 transition-colors flex items-start gap-2.5"
                 >
-                  <span className="text-lg select-none">{ev.avatar}</span>
+                  <HumanAvatar seed={ev.user} name={ev.user} size="xs" showStatus={true} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
                       <span className="font-bold text-slate-200 truncate">{ev.user}</span>

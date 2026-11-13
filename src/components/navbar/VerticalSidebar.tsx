@@ -42,6 +42,8 @@ import { FlameIcon } from '../common/Icons';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { HumanAvatar } from '../common/HumanAvatar';
+import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
 
 interface NavGroup {
   label: string;
@@ -78,6 +80,7 @@ export const VerticalSidebar: React.FC = () => {
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showSagaDropdown, setShowSagaDropdown] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
+  const myProfile = getStoredUserProfile();
 
   const sagas = [
     { id: 'dsa', label: 'Advanced DSA Masterclass', badge: 'Core', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-400/10' },
@@ -376,6 +379,36 @@ export const VerticalSidebar: React.FC = () => {
 
         {/* Bottom Executive Dock: Stats, Streak, Shields & Layout Switcher */}
         <div className="p-2.5 border-t border-slate-800/80 bg-[#080b13] space-y-2">
+          {/* User Adventurer Identity Human Avatar Card */}
+          <div
+            onClick={() => setShowOnboardingModal(true)}
+            className={`p-2 rounded-xl bg-[#0d121f] hover:bg-[#131b2e] border border-slate-800 transition cursor-pointer flex items-center gap-2.5 group ${
+              isSidebarCollapsed ? 'justify-center p-1.5' : ''
+            }`}
+            title={`Adventurer: ${myProfile.displayName} (@${myProfile.handle}) - Click to edit profile`}
+          >
+            <HumanAvatar
+              seed={myProfile.handle}
+              name={myProfile.displayName}
+              avatarUrl={myProfile.avatarUrl}
+              size={isSidebarCollapsed ? 'xs' : 'sm'}
+              showStatus={true}
+            />
+            {!isSidebarCollapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-white group-hover:text-amber-300 transition truncate flex items-center justify-between">
+                  <span className="truncate">{myProfile.displayName}</span>
+                  <span className="text-[9px] font-mono text-amber-400 bg-amber-400/15 px-1 rounded">
+                    Lv.{stats.level}
+                  </span>
+                </div>
+                <div className="text-[10px] font-mono text-slate-400 truncate">
+                  @{myProfile.handle}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Streak & Shields Compact Bar */}
           <div
             className={`flex items-center gap-1.5 bg-[#0d121f] p-1.5 rounded-xl border border-slate-800/90 ${

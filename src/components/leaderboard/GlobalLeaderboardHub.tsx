@@ -29,6 +29,7 @@ import {
 import { isSupabaseConfigured } from '../../utils/supabaseClient';
 import { sound } from '../../utils/soundEffects';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { HumanAvatar } from '../common/HumanAvatar';
 
 export const GlobalLeaderboardHub: React.FC = () => {
   const { stats, realStreak, scheduleState } = useCourse();
@@ -189,10 +190,13 @@ export const GlobalLeaderboardHub: React.FC = () => {
               2
             </div>
             <div className="relative">
-              <img
-                src={filteredList[1].avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                alt=""
-                className="w-16 h-16 rounded-2xl border-2 border-slate-300 object-cover"
+              <HumanAvatar
+                seed={filteredList[1].handle}
+                name={filteredList[1].displayName}
+                avatarUrl={filteredList[1].avatarUrl}
+                size="xl"
+                aura="cyan"
+                showStatus={true}
               />
               <span className="absolute -bottom-2 -right-1 text-xs bg-slate-800 px-1.5 py-0.5 rounded border border-slate-600 font-mono">
                 {filteredList[1].country}
@@ -219,10 +223,13 @@ export const GlobalLeaderboardHub: React.FC = () => {
               1
             </div>
             <div className="relative">
-              <img
-                src={filteredList[0].avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                alt=""
-                className="w-20 h-20 rounded-2xl border-3 border-amber-400 object-cover"
+              <HumanAvatar
+                seed={filteredList[0].handle}
+                name={filteredList[0].displayName}
+                avatarUrl={filteredList[0].avatarUrl}
+                size="xl"
+                aura="amber"
+                showStatus={true}
               />
               <span className="absolute -bottom-2 -right-1 text-xs bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded border border-black font-mono">
                 {filteredList[0].country}
@@ -248,10 +255,13 @@ export const GlobalLeaderboardHub: React.FC = () => {
               3
             </div>
             <div className="relative">
-              <img
-                src={filteredList[2].avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
-                alt=""
-                className="w-16 h-16 rounded-2xl border-2 border-amber-600 object-cover"
+              <HumanAvatar
+                seed={filteredList[2].handle}
+                name={filteredList[2].displayName}
+                avatarUrl={filteredList[2].avatarUrl}
+                size="xl"
+                aura="purple"
+                showStatus={true}
               />
               <span className="absolute -bottom-2 -right-1 text-xs bg-slate-800 px-1.5 py-0.5 rounded border border-slate-600 font-mono">
                 {filteredList[2].country}
@@ -401,13 +411,13 @@ export const GlobalLeaderboardHub: React.FC = () => {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          <img
-                            src={
-                              user.avatarUrl ||
-                              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
-                            }
-                            alt=""
-                            className="w-9 h-9 rounded-xl border border-slate-700 object-cover"
+                          <HumanAvatar
+                            seed={user.handle}
+                            name={user.displayName}
+                            avatarUrl={user.avatarUrl}
+                            size="sm"
+                            aura={isMe ? 'amber' : 'none'}
+                            showStatus={true}
                           />
                           {user.country && (
                             <span className="absolute -bottom-1 -right-1 text-[9px] bg-black/80 px-1 rounded font-mono border border-slate-600">

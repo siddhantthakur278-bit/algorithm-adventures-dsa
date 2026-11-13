@@ -18,6 +18,9 @@ import {
 import { FlameIcon } from '../common/Icons';
 import { NotificationBell } from '../common/NotificationBell';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
+import { HumanAvatar } from '../common/HumanAvatar';
+import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
+import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 
 export const TopHeaderBar: React.FC = () => {
   const {
@@ -32,6 +35,9 @@ export const TopHeaderBar: React.FC = () => {
     layoutMode,
     setLayoutMode,
   } = useCourse();
+
+  const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
+  const myProfile = getStoredUserProfile();
 
   const getSagaTitle = (saga: string) => {
     switch (saga) {
@@ -156,7 +162,36 @@ export const TopHeaderBar: React.FC = () => {
           <Columns2 className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-[11px] text-slate-300">Vertical Panel</span>
         </button>
+
+        {/* User Human Avatar Button */}
+        <button
+          onClick={() => setShowOnboardingModal(true)}
+          className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl bg-[#0b0f19] hover:bg-[#121828] border border-slate-800 text-xs transition cursor-pointer shadow-sm group"
+          title={`Logged in as ${myProfile.displayName} (@${myProfile.handle}) - Click to configure identity`}
+        >
+          <HumanAvatar
+            seed={myProfile.handle}
+            name={myProfile.displayName}
+            avatarUrl={myProfile.avatarUrl}
+            size="xs"
+            showStatus={true}
+          />
+          <div className="hidden xl:flex flex-col text-left leading-tight">
+            <span className="text-[11px] font-bold text-white group-hover:text-amber-300 transition truncate max-w-[90px]">
+              {myProfile.displayName}
+            </span>
+            <span className="text-[9px] font-mono text-slate-400">
+              @{myProfile.handle}
+            </span>
+          </div>
+        </button>
       </div>
+
+      {/* Identity & Verification Modal */}
+      <GlobalOnboardingModal
+        isOpen={showOnboardingModal}
+        onClose={() => setShowOnboardingModal(false)}
+      />
     </header>
   );
 };
