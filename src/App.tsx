@@ -28,6 +28,7 @@ const AlgorithmBenchmarkStudio = React.lazy(() => import('./components/benchmark
 const HighTechLabHub = React.lazy(() => import('./components/hightech/HighTechLabHub').then((m) => ({ default: m.HighTechLabHub })));
 const BugHuntArena = React.lazy(() => import('./components/bughunt/BugHuntArena').then((m) => ({ default: m.BugHuntArena })));
 const VSCodeEditor = React.lazy(() => import('./components/editor/VSCodeEditor').then((m) => ({ default: m.VSCodeEditor })));
+const LectureStudioHub = React.lazy(() => import('./components/studio/LectureStudioHub').then((m) => ({ default: m.LectureStudioHub })));
 const SpeedBlitzArena = React.lazy(() => import('./components/blitz/SpeedBlitzArena').then((m) => ({ default: m.SpeedBlitzArena })));
 const CodeDuelArena = React.lazy(() => import('./components/duel/CodeDuelArena').then((m) => ({ default: m.CodeDuelArena })));
 const TechnicalInterviewRoom = React.lazy(() => import('./components/interview/TechnicalInterviewRoom').then((m) => ({ default: m.TechnicalInterviewRoom })));
@@ -127,6 +128,7 @@ const MainContent: React.FC = () => {
           {activeTab === 'hightech' && <HighTechLabHub />}
           {activeTab === 'bughunt' && <BugHuntArena />}
           {activeTab === 'ide' && <VSCodeEditor />}
+          {activeTab === 'lecture-studio' && <LectureStudioHub />}
           {activeTab === 'blitz' && <SpeedBlitzArena />}
           {activeTab === 'duel' && <CodeDuelArena />}
           {activeTab === 'interview' && <TechnicalInterviewRoom />}

@@ -30,6 +30,7 @@ import {
   Briefcase,
   Cpu,
   Command,
+  Video,
 } from 'lucide-react';
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
@@ -97,6 +98,7 @@ export const Navbar: React.FC = () => {
     { id: 'interview', label: 'FAANG Interview', icon: Briefcase, badge: 'Live Mock' },
     { id: 'bughunt', label: 'Bug Hunt', icon: Bug, badge: `${stats.bugHuntDefeated.length}/5` },
     { id: 'ide', label: 'Python IDE', icon: Code2, badge: 'VS Code' },
+    { id: 'lecture-studio', label: 'Lecture & VS Code Studio', icon: Video, badge: 'Side-by-Side' },
     { id: 'blitz', label: 'Speed Blitz', icon: Zap, badge: '60s' },
     { id: 'inventory', label: 'Loot & Arsenal', icon: Package, badge: `${stats.inventory.length}` },
     { id: 'flashcards', label: 'Flashcards', icon: Layers, badge: 'SRS' },
