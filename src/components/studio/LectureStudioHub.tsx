@@ -32,6 +32,10 @@ import {
   Eye,
   GitCommit,
   Bot,
+  Rows,
+  Split,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { executeUniversalCode, SupportedLanguage, CodeExecutionOutcome } from '../../utils/universalCodeRunner';
 import { pushSolutionToGitHub, loadGitHubConfig } from '../../utils/githubService';
@@ -414,6 +418,33 @@ export const LectureStudioHub: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Layout View State:
+  // Primary layout orientation: 'vertical' (Vertical Panels Stacked: Video Top, Code Bottom) vs 'horizontal' (Side-by-Side)
+  const [layoutOrientation, setLayoutOrientation] = useState<'vertical' | 'horizontal'>(() => {
+    try {
+      const saved = localStorage.getItem('ada_studio_orientation');
+      if (saved === 'vertical' || saved === 'horizontal') return saved;
+    } catch {}
+    return 'vertical'; // Default is VERTICAL PANEL WAY!
+  });
+
+  const handleSetOrientation = (mode: 'vertical' | 'horizontal') => {
+    setLayoutOrientation(mode);
+    try {
+      localStorage.setItem('ada_studio_orientation', mode);
+    } catch {}
+    sound.playPop();
+  };
+
+  // Video height presets for vertical panel mode
+  const [verticalVideoHeight, setVerticalVideoHeight] = useState<'compact' | 'balanced' | 'expanded'>('balanced');
+
+  // Terminal dock position inside bottom code workspace
+  const [terminalPosition, setTerminalPosition] = useState<'side' | 'bottom'>('side');
+
+  // Curated lecture vault drawer toggle in vertical mode
+  const [showLectureDrawer, setShowLectureDrawer] = useState<boolean>(true);
+
   // Layout View State: 'balanced' (50/50), 'video-focus' (65/35), 'code-focus' (35/65), 'video-only', 'code-only'
   const [splitMode, setSplitMode] = useState<'balanced' | 'video-focus' | 'code-focus' | 'video-only' | 'code-only'>('balanced');
   const [swapSides, setSwapSides] = useState<boolean>(false);
@@ -768,11 +799,24 @@ export const LectureStudioHub: React.FC = () => {
     }
   };
 
+  const getVideoHeightClass = () => {
+    switch (verticalVideoHeight) {
+      case 'compact':
+        return 'h-[260px] sm:h-[320px] md:h-[360px]';
+      case 'balanced':
+        return 'h-[340px] sm:h-[440px] md:h-[480px]';
+      case 'expanded':
+        return 'h-[440px] sm:h-[560px] md:h-[620px]';
+      default:
+        return 'h-[340px] sm:h-[440px] md:h-[480px]';
+    }
+  };
+
   return (
-    <div className="max-w-[1720px] mx-auto px-2 sm:px-4 py-4 space-y-4">
+    <div className="max-w-[1780px] mx-auto px-2 sm:px-4 py-4 space-y-4">
       {/* Studio Header Toolbar */}
       <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-comic flex flex-wrap items-center justify-between gap-3">
-        {/* Left: Insignia & Quick Title */}
+        {/* Left: Insignia & Title */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-lg shadow-sm border border-amber-300">
             🎬
@@ -782,76 +826,151 @@ export const LectureStudioHub: React.FC = () => {
               <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
                 <span>Lecture Theater &amp; VS Code Studio</span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30">
-                  Side-by-Side
+                  {layoutOrientation === 'vertical' ? 'Vertical Panels' : 'Horizontal Split'}
                 </span>
               </h1>
             </div>
             <p className="text-[11px] text-slate-400">
-              Watch algorithms, FAANG lectures &amp; MIT masterclasses while coding in a live compiler with local file access.
+              Watch algorithms &amp; MIT masterclasses while coding in a live compiler with local file management.
             </p>
           </div>
         </div>
 
-        {/* Center: Split Ratio & Layout View Controls */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#070a12] rounded-xl border border-slate-800 text-xs font-semibold">
-          <button
-            onClick={() => setSplitMode('video-focus')}
-            className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-              splitMode === 'video-focus'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Video Priority (62% Video / 38% Code)"
-          >
-            Video 60%
-          </button>
-          <button
-            onClick={() => setSplitMode('balanced')}
-            className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-              splitMode === 'balanced'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Balanced (50% Video / 50% Code)"
-          >
-            50 / 50
-          </button>
-          <button
-            onClick={() => setSplitMode('code-focus')}
-            className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-              splitMode === 'code-focus'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Code Priority (38% Video / 62% Code)"
-          >
-            Code 60%
-          </button>
-          <button
-            onClick={() => setSplitMode(splitMode === 'video-only' ? 'balanced' : 'video-only')}
-            className={`px-2 py-1 rounded-lg transition cursor-pointer ${
-              splitMode === 'video-only' ? 'bg-sky-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-            }`}
-            title="Theater Fullscreen Video"
-          >
-            <Video className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setSplitMode(splitMode === 'code-only' ? 'balanced' : 'code-only')}
-            className={`px-2 py-1 rounded-lg transition cursor-pointer ${
-              splitMode === 'code-only' ? 'bg-emerald-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-            }`}
-            title="Full IDE Mode"
-          >
-            <Code2 className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setSwapSides((prev) => !prev)}
-            className="px-2 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer ml-1"
-            title="Swap Left & Right Panes"
-          >
-            <Columns2 className="w-3.5 h-3.5" />
-          </button>
+        {/* Center: Layout Orientation & Height Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Layout Orientation Switcher: Vertical Panels ↕️ vs Horizontal Split ↔️ */}
+          <div className="flex items-center gap-1 p-1 bg-[#070a12] rounded-xl border border-slate-800 text-xs font-semibold">
+            <button
+              onClick={() => handleSetOrientation('vertical')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition cursor-pointer ${
+                layoutOrientation === 'vertical'
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Vertical Panel Layout: Video on Top, Full-Width VS Code on Bottom"
+            >
+              <Rows className="w-3.5 h-3.5" />
+              <span>Vertical Panels</span>
+            </button>
+            <button
+              onClick={() => handleSetOrientation('horizontal')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition cursor-pointer ${
+                layoutOrientation === 'horizontal'
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Horizontal Split: Video on Left, VS Code on Right"
+            >
+              <Columns2 className="w-3.5 h-3.5" />
+              <span>Horizontal Split</span>
+            </button>
+          </div>
+
+          {/* Proportions / Heights */}
+          {layoutOrientation === 'vertical' ? (
+            <div className="hidden sm:flex items-center gap-1 p-1 bg-[#070a12] rounded-xl border border-slate-800 text-xs font-semibold">
+              <button
+                onClick={() => setVerticalVideoHeight('compact')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  verticalVideoHeight === 'compact'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Compact Video (35% height)"
+              >
+                Compact (35%)
+              </button>
+              <button
+                onClick={() => setVerticalVideoHeight('balanced')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  verticalVideoHeight === 'balanced'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Balanced Video (50% height)"
+              >
+                Balanced (50%)
+              </button>
+              <button
+                onClick={() => setVerticalVideoHeight('expanded')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  verticalVideoHeight === 'expanded'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Theater Video (65% height)"
+              >
+                Theater (65%)
+              </button>
+            </div>
+          ) : (
+            <div className="hidden sm:flex items-center gap-1 p-1 bg-[#070a12] rounded-xl border border-slate-800 text-xs font-semibold">
+              <button
+                onClick={() => setSplitMode('video-focus')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  splitMode === 'video-focus'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Video Priority (62% Video / 38% Code)"
+              >
+                Video 60%
+              </button>
+              <button
+                onClick={() => setSplitMode('balanced')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  splitMode === 'balanced'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Balanced (50% Video / 50% Code)"
+              >
+                50 / 50
+              </button>
+              <button
+                onClick={() => setSplitMode('code-focus')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  splitMode === 'code-focus'
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Code Priority (38% Video / 62% Code)"
+              >
+                Code 60%
+              </button>
+            </div>
+          )}
+
+          {/* Fullscreen Video / Code Toggles */}
+          <div className="flex items-center gap-1 p-1 bg-[#070a12] rounded-xl border border-slate-800 text-xs font-semibold">
+            <button
+              onClick={() => setSplitMode(splitMode === 'video-only' ? 'balanced' : 'video-only')}
+              className={`px-2 py-1 rounded-lg transition cursor-pointer ${
+                splitMode === 'video-only' ? 'bg-sky-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              }`}
+              title="Theater Video Only"
+            >
+              <Video className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setSplitMode(splitMode === 'code-only' ? 'balanced' : 'code-only')}
+              className={`px-2 py-1 rounded-lg transition cursor-pointer ${
+                splitMode === 'code-only' ? 'bg-emerald-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              }`}
+              title="Full Code IDE Only"
+            >
+              <Code2 className="w-3.5 h-3.5" />
+            </button>
+            {layoutOrientation === 'horizontal' && (
+              <button
+                onClick={() => setSwapSides((prev) => !prev)}
+                className="px-2 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer ml-1"
+                title="Swap Left & Right Panes"
+              >
+                <Columns2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Right: Quick Action Buttons */}
@@ -884,407 +1003,846 @@ export const LectureStudioHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Split-Pane Workspace */}
-      <div
-        className={`flex flex-col lg:flex-row gap-4 items-stretch ${
-          swapSides ? 'lg:flex-row-reverse' : ''
-        }`}
-      >
-        {/* =================================================================== */}
-        {/* LEFT / LECTURE PANE: YouTube Video Player & Curated Lecture Library */}
-        {/* =================================================================== */}
-        <div className={`${getVideoWidthClass()} flex flex-col space-y-4`}>
-          {/* YouTube Video Embed Frame */}
-          <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic">
-            {/* Top Bar for Video */}
-            <div className="px-4 py-2.5 bg-[#070a12] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-xs font-extrabold text-white tracking-wide uppercase font-mono">
-                  Lecture Theater
-                </span>
-              </div>
+      {/* ===================================================================== */}
+      {/* 1. VERTICAL PANEL LAYOUT (STACKED: VIDEO ON TOP, FULL-WIDTH CODE BELOW) */}
+      {/* ===================================================================== */}
+      {layoutOrientation === 'vertical' && (
+        <div className="space-y-4">
+          {/* TOP PANEL: YouTube Lecture Theater */}
+          {splitMode !== 'code-only' && (
+            <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic">
+              {/* Top Bar for Video */}
+              <div className="px-4 py-2.5 bg-[#070a12] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-xs font-extrabold text-white tracking-wide uppercase font-mono">
+                    Lecture Theater • Top Panel
+                  </span>
+                  <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-bold uppercase hidden sm:inline">
+                    Live Stream
+                  </span>
+                </div>
 
-              {/* Custom YouTube URL Loader */}
-              <form onSubmit={handleLoadCustomVideo} className="flex items-center gap-1.5 flex-1 max-w-md ml-auto">
-                <input
-                  type="text"
-                  value={customUrlInput}
-                  onChange={(e) => setCustomUrlInput(e.target.value)}
-                  placeholder="Paste any YouTube video URL or ID..."
-                  className="w-full bg-[#0d121f] text-xs text-slate-200 placeholder-slate-500 px-3 py-1 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400"
-                />
-                <button
-                  type="submit"
-                  className="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold whitespace-nowrap transition cursor-pointer shadow-sm"
-                >
-                  Load
-                </button>
-              </form>
-            </div>
-
-            {/* 16:9 Aspect Ratio YouTube Embed */}
-            <div className="relative w-full pt-[56.25%] bg-black">
-              <iframe
-                className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1`}
-                title="Lecture Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
-            </div>
-          </div>
-
-          {/* Curated DSA Lecture Library Accordion */}
-          <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-4 shadow-comic space-y-3 flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-extrabold text-white tracking-wide uppercase">
-                  Curated Lecture Vault
-                </span>
-                <span className="text-[10px] text-slate-400">({filteredLectures.length} Available)</span>
-              </div>
-
-              {/* Category Filter Pills */}
-              <div className="flex items-center gap-1 text-[11px] font-semibold">
-                {['All', 'Core DSA', 'Algorithms', 'CS Fundamentals', 'System Design'].map((cat) => (
+                {/* Custom YouTube URL Loader */}
+                <form onSubmit={handleLoadCustomVideo} className="flex items-center gap-1.5 flex-1 max-w-md ml-auto">
+                  <input
+                    type="text"
+                    value={customUrlInput}
+                    onChange={(e) => setCustomUrlInput(e.target.value)}
+                    placeholder="Paste YouTube video URL or ID..."
+                    className="w-full bg-[#0d121f] text-xs text-slate-200 placeholder-slate-500 px-3 py-1 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400"
+                  />
                   <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
-                      activeCategory === cat
-                        ? 'bg-amber-400 text-slate-950 font-bold'
-                        : 'text-slate-400 hover:text-white bg-slate-900 border border-slate-800'
-                    }`}
+                    type="submit"
+                    className="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold whitespace-nowrap transition cursor-pointer shadow-sm"
                   >
-                    {cat}
+                    Load
                   </button>
-                ))}
+                </form>
+
+                {/* Toggle Vault Drawer Button */}
+                <button
+                  onClick={() => setShowLectureDrawer((prev) => !prev)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition border cursor-pointer ${
+                    showLectureDrawer
+                      ? 'bg-amber-400/15 text-amber-300 border-amber-400/40'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                  }`}
+                  title="Toggle Curated Lecture Vault"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Vault {showLectureDrawer ? '▲' : '▼'}</span>
+                </button>
               </div>
-            </div>
 
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search lectures by topic or instructor (e.g. Two Sum, NeetCode, Abdul Bari)..."
-                className="w-full bg-[#070a12] text-xs text-slate-200 placeholder-slate-500 pl-8 pr-3 py-1.5 rounded-xl border border-slate-800 focus:outline-none focus:border-amber-400"
-              />
-            </div>
+              {/* Video Player + Side Lecture Drawer */}
+              <div className="flex flex-col lg:flex-row items-stretch bg-black">
+                {/* 16:9 YouTube Embed */}
+                <div className={`flex-1 relative bg-black ${getVideoHeightClass()}`}>
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1`}
+                    title="Lecture Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
 
-            {/* Lecture Grid / List */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[340px] overflow-y-auto pr-1">
-              {filteredLectures.map((lec) => {
-                const isActive = activeVideoId === lec.videoId;
-                return (
-                  <div
-                    key={lec.id}
-                    onClick={() => handleSelectPreset(lec)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                      isActive
-                        ? 'bg-amber-400/15 border-amber-400/60 shadow-comic-sm'
-                        : 'bg-[#070a12] hover:bg-[#0f1424] border-slate-800/80'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                        <span className="font-mono text-amber-400 font-bold">{lec.category}</span>
-                        <span>{lec.duration}</span>
-                      </div>
-                      <div className="text-xs font-bold text-white line-clamp-2 leading-tight">
-                        {lec.title}
-                      </div>
-                    </div>
-
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400 font-medium">{lec.instructor}</span>
-                      <span className={`flex items-center gap-1 font-bold ${isActive ? 'text-amber-300' : 'text-slate-400'}`}>
-                        {isActive ? '● Playing' : 'Play & Code →'}
+                {/* Curated Lecture Vault Panel (Top Right) */}
+                {showLectureDrawer && (
+                  <div className="w-full lg:w-80 bg-[#090d16] border-t lg:border-t-0 lg:border-l border-slate-800 p-3 flex flex-col space-y-2.5 max-h-[480px] overflow-hidden">
+                    <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                      <span className="text-[11px] font-extrabold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                        Curated Vault
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {filteredLectures.length} Videos
                       </span>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
 
-        {/* =================================================================== */}
-        {/* RIGHT / IDE PANE: Local File Explorer + VS Code Compiler + Terminal */}
-        {/* =================================================================== */}
-        <div className={`${getCodeWidthClass()} flex flex-col space-y-4`}>
-          {/* File Explorer & Editor Window */}
-          <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDropFile}
-            className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic flex flex-col flex-1"
-          >
-            {/* Top Workspace Tab Bar & File Controls */}
-            <div className="px-3 py-2 bg-[#070a12] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
-              {/* File Tabs */}
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-                {files.map((file) => {
-                  const isActive = file.id === activeFileId;
-                  const isRenaming = editingFileId === file.id;
-
-                  return (
-                    <div
-                      key={file.id}
-                      onClick={() => setActiveFileId(file.id)}
-                      className={`group flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-medium transition cursor-pointer border ${
-                        isActive
-                          ? 'bg-amber-400/15 text-amber-300 border-amber-400/40 shadow-sm'
-                          : 'bg-[#0d121f] text-slate-400 hover:text-white border-slate-800'
-                      }`}
-                    >
-                      <FileCode className="w-3.5 h-3.5 text-amber-400" />
-                      {isRenaming ? (
-                        <input
-                          type="text"
-                          value={renameValue}
-                          autoFocus
-                          onChange={(e) => setRenameValue(e.target.value)}
-                          onBlur={() => handleFinishRename(file.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleFinishRename(file.id);
-                            if (e.key === 'Escape') setEditingFileId(null);
-                          }}
-                          className="bg-black text-amber-300 px-1 py-0.2 rounded border border-amber-400 focus:outline-none text-xs w-24"
-                        />
-                      ) : (
-                        <span onDoubleClick={(e) => handleStartRename(file, e)} title="Double click to rename">
-                          {file.name}
-                        </span>
-                      )}
-
-                      {/* Rename Icon */}
-                      <button
-                        onClick={(e) => handleStartRename(file, e)}
-                        className="opacity-0 group-hover:opacity-100 hover:text-white text-slate-500 transition ml-1"
-                        title="Rename file"
-                      >
-                        <Edit3 className="w-3 h-3" />
-                      </button>
-
-                      {/* Delete File */}
-                      {files.length > 1 && (
+                    {/* Category Filter */}
+                    <div className="flex flex-wrap gap-1 text-[10px]">
+                      {['All', 'Core DSA', 'Algorithms', 'System Design'].map((cat) => (
                         <button
-                          onClick={(e) => handleDeleteFile(file.id, e)}
-                          className="opacity-0 group-hover:opacity-100 hover:text-rose-400 text-slate-500 transition"
-                          title="Delete file"
+                          key={cat}
+                          onClick={() => setActiveCategory(cat)}
+                          className={`px-1.5 py-0.5 rounded transition cursor-pointer ${
+                            activeCategory === cat
+                              ? 'bg-amber-400 text-slate-950 font-bold'
+                              : 'text-slate-400 bg-slate-900 hover:text-white'
+                          }`}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          {cat}
                         </button>
-                      )}
+                      ))}
                     </div>
-                  );
-                })}
 
-                {/* Add New File Button */}
-                <button
-                  onClick={() => setShowNewFileModal(true)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs transition cursor-pointer"
-                  title="Create new file"
-                >
-                  <Plus className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden sm:inline">New File</span>
-                </button>
-              </div>
+                    {/* Search */}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2 top-2" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search lectures..."
+                        className="w-full bg-[#0d121f] text-[11px] text-slate-200 placeholder-slate-500 pl-7 pr-2 py-1 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
 
-              {/* Right: File Actions */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handleDownloadFile}
-                  className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition cursor-pointer"
-                  title={`Download ${activeFile?.name} to your local drive`}
-                >
-                  <Download className="w-3.5 h-3.5 text-sky-400" />
-                </button>
-
-                <button
-                  onClick={handlePushToGitHub}
-                  disabled={isCommitting}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition cursor-pointer disabled:opacity-50"
-                  title="Push solution to your GitHub repository"
-                >
-                  <GitCommit className="w-3.5 h-3.5 text-purple-400" />
-                  <span className="hidden md:inline">{isCommitting ? 'Pushing...' : 'GitHub'}</span>
-                </button>
-
-                <button
-                  onClick={handleAiExplain}
-                  disabled={isAiExplaining}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
-                  title="Ask Professor & Byte AI to explain this solution"
-                >
-                  <Bot className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden md:inline">{isAiExplaining ? 'Analyzing...' : 'AI Explain'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Git Status notification toast */}
-            {gitStatusMsg && (
-              <div className="px-4 py-1.5 bg-slate-900 border-b border-slate-800 text-xs font-medium text-amber-300 flex items-center justify-between">
-                <span>{gitStatusMsg}</span>
-                <button onClick={() => setGitStatusMsg(null)} className="text-slate-500 hover:text-white">✕</button>
-              </div>
-            )}
-
-            {/* Code Editor Body */}
-            <div className="relative flex-1 min-h-[380px] bg-[#070a12] flex">
-              {/* Line Numbers */}
-              <div className="w-11 py-3 bg-[#05070d] text-slate-600 font-mono text-xs select-none text-right pr-2.5 border-r border-slate-800/80 shrink-0">
-                {(activeFile?.content || '').split('\n').map((_, idx) => (
-                  <div key={idx} className="leading-6">
-                    {idx + 1}
+                    {/* Scrollable Lecture List */}
+                    <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 no-scrollbar max-h-[300px]">
+                      {filteredLectures.map((lec) => {
+                        const isActive = activeVideoId === lec.videoId;
+                        return (
+                          <div
+                            key={lec.id}
+                            onClick={() => handleSelectPreset(lec)}
+                            className={`p-2 rounded-lg border transition cursor-pointer text-left ${
+                              isActive
+                                ? 'bg-amber-400/20 border-amber-400 text-white shadow-sm'
+                                : 'bg-[#0d121f] hover:bg-slate-800/80 border-slate-800/80 text-slate-300'
+                            }`}
+                          >
+                            <div className="text-[10px] text-amber-400 font-mono font-bold flex items-center justify-between">
+                              <span>{lec.instructor}</span>
+                              <span>{lec.duration}</span>
+                            </div>
+                            <div className="text-xs font-semibold line-clamp-1 text-white">{lec.title}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
+            </div>
+          )}
 
-              {/* Textarea Code Input */}
-              <textarea
-                value={activeFile?.content || ''}
-                onChange={(e) => handleCodeChange(e.target.value)}
-                spellCheck={false}
-                className="w-full h-full min-h-[380px] p-3 bg-transparent text-slate-100 font-mono text-xs sm:text-sm leading-6 resize-none focus:outline-none selection:bg-amber-400/30 selection:text-white"
-                placeholder="Write your code or drop a local file here..."
-              />
+          {/* MIDDLE RESIZER / STATUS STRIP */}
+          <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-2.5 px-4 shadow-comic flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Code2 className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                VS Code Studio • Bottom Panel
+              </span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">
+                {activeFile?.name} ({activeFile?.language})
+              </span>
             </div>
 
-            {/* Editor Action Bottom Bar */}
-            <div className="px-4 py-2.5 bg-[#070a12] border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3 text-xs text-slate-400 font-mono">
-                <span>Language: <strong className="text-amber-400 uppercase">{activeFile?.language || 'python'}</strong></span>
-                <span>Lines: <strong className="text-slate-200">{(activeFile?.content || '').split('\n').length}</strong></span>
-              </div>
-
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {/* Terminal layout toggle */}
+              <div className="flex items-center gap-1 bg-[#070a12] p-1 rounded-xl border border-slate-800 text-xs font-semibold">
                 <button
-                  onClick={() => {
-                    handleCodeChange(DEFAULT_FILES[0].content);
-                    sound.playPop();
-                  }}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition cursor-pointer border border-slate-800"
-                  title="Reset code template"
+                  onClick={() => setTerminalPosition('side')}
+                  className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
+                    terminalPosition === 'side'
+                      ? 'bg-amber-400 text-slate-950 font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Terminal on Right Side"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset</span>
+                  Side Terminal
                 </button>
-
                 <button
-                  onClick={handleRunCode}
-                  disabled={isRunning}
-                  className="btn-comic-push flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shadow-sm disabled:opacity-50"
-                  title="Run code (Ctrl/Cmd + Enter)"
+                  onClick={() => setTerminalPosition('bottom')}
+                  className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
+                    terminalPosition === 'bottom'
+                      ? 'bg-amber-400 text-slate-950 font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Terminal on Bottom"
                 >
-                  <Play className="w-4 h-4 fill-slate-950" />
-                  <span>{isRunning ? 'Compiling...' : 'Run Code'}</span>
+                  Bottom Terminal
                 </button>
               </div>
+
+              {/* Run Code Button */}
+              <button
+                onClick={handleRunCode}
+                disabled={isRunning}
+                className="btn-comic-push flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shadow-sm disabled:opacity-50"
+                title="Run code (Ctrl/Cmd + Enter)"
+              >
+                <Play className="w-3.5 h-3.5 fill-slate-950" />
+                <span>{isRunning ? 'Running...' : 'Run (⌘Enter)'}</span>
+              </button>
             </div>
           </div>
 
-          {/* Integrated Interactive Terminal & Output Console */}
-          <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic">
-            {/* Terminal Tab Bar */}
-            <div className="px-4 py-2 bg-[#070a12] border-b border-slate-800/80 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-emerald-400" />
-                <button
-                  onClick={() => setActiveConsoleTab('output')}
-                  className={`font-mono font-bold uppercase transition cursor-pointer ${
-                    activeConsoleTab === 'output' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Terminal (stdout)
-                </button>
-                <button
-                  onClick={() => setActiveConsoleTab('stdin')}
-                  className={`font-mono font-bold uppercase ml-3 transition cursor-pointer ${
-                    activeConsoleTab === 'stdin' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Input (stdin)
-                </button>
-                {domPreviewHtml && (
+          {/* BOTTOM PANEL: Full-Width VS Code Studio Workspace */}
+          {splitMode !== 'video-only' && (
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDropFile}
+              className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic flex flex-col"
+            >
+              {/* Workspace Top File Tabs */}
+              <div className="px-3 py-2 bg-[#070a12] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                {/* File Tabs */}
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                  {files.map((file) => {
+                    const isActive = file.id === activeFileId;
+                    const isRenaming = editingFileId === file.id;
+
+                    return (
+                      <div
+                        key={file.id}
+                        onClick={() => setActiveFileId(file.id)}
+                        className={`group flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-medium transition cursor-pointer border ${
+                          isActive
+                            ? 'bg-amber-400/15 text-amber-300 border-amber-400/40 shadow-sm'
+                            : 'bg-[#0d121f] text-slate-400 hover:text-white border-slate-800'
+                        }`}
+                      >
+                        <FileCode className="w-3.5 h-3.5 text-amber-400" />
+                        {isRenaming ? (
+                          <input
+                            type="text"
+                            value={renameValue}
+                            autoFocus
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => handleFinishRename(file.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleFinishRename(file.id);
+                              if (e.key === 'Escape') setEditingFileId(null);
+                            }}
+                            className="bg-black text-amber-300 px-1 py-0.2 rounded border border-amber-400 focus:outline-none text-xs w-24"
+                          />
+                        ) : (
+                          <span onDoubleClick={(e) => handleStartRename(file, e)} title="Double click to rename">
+                            {file.name}
+                          </span>
+                        )}
+
+                        {/* Rename */}
+                        <button
+                          onClick={(e) => handleStartRename(file, e)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-white text-slate-500 transition ml-1"
+                          title="Rename file"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
+
+                        {/* Delete */}
+                        {files.length > 1 && (
+                          <button
+                            onClick={(e) => handleDeleteFile(file.id, e)}
+                            className="opacity-0 group-hover:opacity-100 hover:text-rose-400 text-slate-500 transition"
+                            title="Delete file"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Add File Button */}
                   <button
-                    onClick={() => setActiveConsoleTab('preview')}
-                    className={`font-mono font-bold uppercase ml-3 transition cursor-pointer ${
-                      activeConsoleTab === 'preview' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
-                    }`}
+                    onClick={() => setShowNewFileModal(true)}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs transition cursor-pointer"
+                    title="Create new file"
                   >
-                    HTML Preview
+                    <Plus className="w-3.5 h-3.5 text-amber-400" />
+                    <span>New File</span>
                   </button>
-                )}
+                </div>
+
+                {/* Right Actions: GitHub & AI Explain */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleDownloadFile}
+                    className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition cursor-pointer"
+                    title={`Download ${activeFile?.name} to your local drive`}
+                  >
+                    <Download className="w-3.5 h-3.5 text-sky-400" />
+                  </button>
+
+                  <button
+                    onClick={handlePushToGitHub}
+                    disabled={isCommitting}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                    title="Push solution to your GitHub repository"
+                  >
+                    <GitCommit className="w-3.5 h-3.5 text-purple-400" />
+                    <span>{isCommitting ? 'Pushing...' : 'GitHub'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleAiExplain}
+                    disabled={isAiExplaining}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+                    title="Ask Professor & Byte AI to explain this solution"
+                  >
+                    <Bot className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{isAiExplaining ? 'Analyzing...' : 'AI Explain'}</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3 font-mono text-[11px]">
-                {executionTime !== null && (
-                  <span className="text-emerald-400 font-bold">
-                    ⏱️ {executionTime.toFixed(1)} ms
-                  </span>
-                )}
-                {executionError && (
-                  <span className="text-rose-400 font-bold flex items-center gap-1">
-                    <XCircle className="w-3.5 h-3.5" /> Error
-                  </span>
-                )}
-                <button
-                  onClick={() => {
-                    setTerminalOutput('');
-                    setExecutionTime(null);
-                    setExecutionError(null);
-                  }}
-                  className="text-slate-400 hover:text-white transition cursor-pointer"
-                  title="Clear terminal"
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-
-            {/* Terminal Body */}
-            <div className="p-3 bg-[#05070d] font-mono text-xs sm:text-sm min-h-[140px] max-h-[220px] overflow-y-auto">
-              {activeConsoleTab === 'output' && (
-                <pre
-                  className={`whitespace-pre-wrap leading-relaxed ${
-                    executionError ? 'text-rose-300' : 'text-emerald-300'
-                  }`}
-                >
-                  {terminalOutput}
-                </pre>
-              )}
-
-              {activeConsoleTab === 'stdin' && (
-                <div className="space-y-2">
-                  <div className="text-[11px] text-slate-400 font-sans">
-                    Provide mock inputs for standard input functions like Python \`input()\` or Node.js \`readline\`:
-                  </div>
-                  <textarea
-                    value={stdinInput}
-                    onChange={(e) => setStdinInput(e.target.value)}
-                    placeholder="Enter interactive input values (one per line)..."
-                    className="w-full h-24 p-2 bg-[#0d121f] text-slate-100 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400 resize-none"
-                  />
+              {/* Toast for Git Status */}
+              {gitStatusMsg && (
+                <div className="px-4 py-1.5 bg-slate-900 border-b border-slate-800 text-xs font-medium text-amber-300 flex items-center justify-between">
+                  <span>{gitStatusMsg}</span>
+                  <button onClick={() => setGitStatusMsg(null)} className="text-slate-500 hover:text-white">✕</button>
                 </div>
               )}
 
-              {activeConsoleTab === 'preview' && domPreviewHtml && (
+              {/* Workspace Body: Side-by-Side or Stacked Terminal */}
+              <div
+                className={`flex ${
+                  terminalPosition === 'side' ? 'flex-col lg:flex-row' : 'flex-col'
+                } items-stretch min-h-[420px]`}
+              >
+                {/* Editor Container */}
+                <div
+                  className={`flex flex-col ${
+                    terminalPosition === 'side' ? 'w-full lg:w-3/5 border-b lg:border-b-0 lg:border-r border-slate-800/80' : 'w-full border-b border-slate-800/80'
+                  }`}
+                >
+                  <div className="relative flex-1 bg-[#070a12] flex min-h-[380px]">
+                    {/* Line Numbers */}
+                    <div className="w-12 py-3 bg-[#05070d] text-slate-600 font-mono text-xs select-none text-right pr-2.5 border-r border-slate-800/80 shrink-0">
+                      {(activeFile?.content || '').split('\n').map((_, idx) => (
+                        <div key={idx} className="leading-6">
+                          {idx + 1}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Textarea Code Input */}
+                    <textarea
+                      value={activeFile?.content || ''}
+                      onChange={(e) => handleCodeChange(e.target.value)}
+                      spellCheck={false}
+                      className="w-full h-full min-h-[380px] p-3 bg-transparent text-slate-100 font-mono text-xs sm:text-sm leading-6 resize-none focus:outline-none selection:bg-amber-400/30 selection:text-white"
+                      placeholder="Write your code or drop a local file here..."
+                    />
+                  </div>
+
+                  {/* Editor Bottom Info */}
+                  <div className="px-4 py-2 bg-[#070a12] border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400 font-mono">
+                    <div className="flex items-center gap-3">
+                      <span>Language: <strong className="text-amber-400 uppercase">{activeFile?.language || 'python'}</strong></span>
+                      <span>Lines: <strong className="text-slate-200">{(activeFile?.content || '').split('\n').length}</strong></span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        handleCodeChange(DEFAULT_FILES[0].content);
+                        sound.playPop();
+                      }}
+                      className="text-slate-400 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reset</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Terminal Console */}
+                <div
+                  className={`flex flex-col bg-[#0b0f19] ${
+                    terminalPosition === 'side' ? 'w-full lg:w-2/5' : 'w-full'
+                  }`}
+                >
+                  {/* Terminal Tab Bar */}
+                  <div className="px-4 py-2 bg-[#070a12] border-b border-slate-800/80 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="w-4 h-4 text-emerald-400" />
+                      <button
+                        onClick={() => setActiveConsoleTab('output')}
+                        className={`font-mono font-bold uppercase transition cursor-pointer ${
+                          activeConsoleTab === 'output' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        Terminal (stdout)
+                      </button>
+                      <button
+                        onClick={() => setActiveConsoleTab('stdin')}
+                        className={`font-mono font-bold uppercase ml-2 transition cursor-pointer ${
+                          activeConsoleTab === 'stdin' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        Input (stdin)
+                      </button>
+                      {domPreviewHtml && (
+                        <button
+                          onClick={() => setActiveConsoleTab('preview')}
+                          className={`font-mono font-bold uppercase ml-2 transition cursor-pointer ${
+                            activeConsoleTab === 'preview' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Preview
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 font-mono text-[11px]">
+                      {executionTime !== null && (
+                        <span className="text-emerald-400 font-bold">⏱️ {executionTime.toFixed(1)} ms</span>
+                      )}
+                      {executionError && (
+                        <span className="text-rose-400 font-bold flex items-center gap-1">
+                          <XCircle className="w-3.5 h-3.5" /> Error
+                        </span>
+                      )}
+                      <button
+                        onClick={() => {
+                          setTerminalOutput('');
+                          setExecutionTime(null);
+                          setExecutionError(null);
+                        }}
+                        className="text-slate-400 hover:text-white transition cursor-pointer text-[10px]"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Terminal Body */}
+                  <div className="p-3 bg-[#05070d] font-mono text-xs sm:text-sm flex-1 min-h-[220px] max-h-[460px] overflow-y-auto">
+                    {activeConsoleTab === 'output' && (
+                      <pre
+                        className={`whitespace-pre-wrap leading-relaxed ${
+                          executionError ? 'text-rose-300' : 'text-emerald-300'
+                        }`}
+                      >
+                        {terminalOutput}
+                      </pre>
+                    )}
+
+                    {activeConsoleTab === 'stdin' && (
+                      <div className="space-y-2">
+                        <div className="text-[11px] text-slate-400 font-sans">
+                          Provide mock inputs for standard input functions:
+                        </div>
+                        <textarea
+                          value={stdinInput}
+                          onChange={(e) => setStdinInput(e.target.value)}
+                          placeholder="Enter interactive input values (one per line)..."
+                          className="w-full h-32 p-2 bg-[#0d121f] text-slate-100 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400 resize-none"
+                        />
+                      </div>
+                    )}
+
+                    {activeConsoleTab === 'preview' && domPreviewHtml && (
+                      <iframe
+                        srcDoc={domPreviewHtml}
+                        title="Live HTML DOM Preview"
+                        className="w-full h-56 bg-white rounded-lg border-0"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* 2. HORIZONTAL SPLIT LAYOUT (SIDE-BY-SIDE: VIDEO LEFT, VS CODE RIGHT)    */}
+      {/* ======================================================================= */}
+      {layoutOrientation === 'horizontal' && (
+        <div
+          className={`flex flex-col lg:flex-row gap-4 items-stretch ${
+            swapSides ? 'lg:flex-row-reverse' : ''
+          }`}
+        >
+          {/* LEFT / LECTURE PANE */}
+          <div className={`${getVideoWidthClass()} flex flex-col space-y-4`}>
+            {/* YouTube Video Embed Frame */}
+            <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic">
+              <div className="px-4 py-2.5 bg-[#070a12] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-xs font-extrabold text-white tracking-wide uppercase font-mono">
+                    Lecture Theater
+                  </span>
+                </div>
+
+                <form onSubmit={handleLoadCustomVideo} className="flex items-center gap-1.5 flex-1 max-w-md ml-auto">
+                  <input
+                    type="text"
+                    value={customUrlInput}
+                    onChange={(e) => setCustomUrlInput(e.target.value)}
+                    placeholder="Paste any YouTube video URL or ID..."
+                    className="w-full bg-[#0d121f] text-xs text-slate-200 placeholder-slate-500 px-3 py-1 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400"
+                  />
+                  <button
+                    type="submit"
+                    className="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold whitespace-nowrap transition cursor-pointer shadow-sm"
+                  >
+                    Load
+                  </button>
+                </form>
+              </div>
+
+              <div className="relative w-full pt-[56.25%] bg-black">
                 <iframe
-                  srcDoc={domPreviewHtml}
-                  title="Live HTML DOM Preview"
-                  className="w-full h-36 bg-white rounded-lg border-0"
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1`}
+                  title="Lecture Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
                 />
+              </div>
+            </div>
+
+            {/* Curated DSA Lecture Library Accordion */}
+            <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-4 shadow-comic space-y-3 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-extrabold text-white tracking-wide uppercase">
+                    Curated Lecture Vault
+                  </span>
+                  <span className="text-[10px] text-slate-400">({filteredLectures.length} Available)</span>
+                </div>
+
+                <div className="flex items-center gap-1 text-[11px] font-semibold">
+                  {['All', 'Core DSA', 'Algorithms', 'CS Fundamentals', 'System Design'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
+                        activeCategory === cat
+                          ? 'bg-amber-400 text-slate-950 font-bold'
+                          : 'text-slate-400 hover:text-white bg-slate-900 border border-slate-800'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search lectures by topic or instructor..."
+                  className="w-full bg-[#070a12] text-xs text-slate-200 placeholder-slate-500 pl-8 pr-3 py-1.5 rounded-xl border border-slate-800 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[340px] overflow-y-auto pr-1">
+                {filteredLectures.map((lec) => {
+                  const isActive = activeVideoId === lec.videoId;
+                  return (
+                    <div
+                      key={lec.id}
+                      onClick={() => handleSelectPreset(lec)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                        isActive
+                          ? 'bg-amber-400/15 border-amber-400/60 shadow-comic-sm'
+                          : 'bg-[#070a12] hover:bg-[#0f1424] border-slate-800/80'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                          <span className="font-mono text-amber-400 font-bold">{lec.category}</span>
+                          <span>{lec.duration}</span>
+                        </div>
+                        <div className="text-xs font-bold text-white line-clamp-2 leading-tight">
+                          {lec.title}
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400 font-medium">{lec.instructor}</span>
+                        <span className={`flex items-center gap-1 font-bold ${isActive ? 'text-amber-300' : 'text-slate-400'}`}>
+                          {isActive ? '● Playing' : 'Play & Code →'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT / IDE PANE */}
+          <div className={`${getCodeWidthClass()} flex flex-col space-y-4`}>
+            {/* File Explorer & Editor Window */}
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDropFile}
+              className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic flex flex-col flex-1"
+            >
+              <div className="px-3 py-2 bg-[#070a12] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                  {files.map((file) => {
+                    const isActive = file.id === activeFileId;
+                    const isRenaming = editingFileId === file.id;
+
+                    return (
+                      <div
+                        key={file.id}
+                        onClick={() => setActiveFileId(file.id)}
+                        className={`group flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-medium transition cursor-pointer border ${
+                          isActive
+                            ? 'bg-amber-400/15 text-amber-300 border-amber-400/40 shadow-sm'
+                            : 'bg-[#0d121f] text-slate-400 hover:text-white border-slate-800'
+                        }`}
+                      >
+                        <FileCode className="w-3.5 h-3.5 text-amber-400" />
+                        {isRenaming ? (
+                          <input
+                            type="text"
+                            value={renameValue}
+                            autoFocus
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => handleFinishRename(file.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleFinishRename(file.id);
+                              if (e.key === 'Escape') setEditingFileId(null);
+                            }}
+                            className="bg-black text-amber-300 px-1 py-0.2 rounded border border-amber-400 focus:outline-none text-xs w-24"
+                          />
+                        ) : (
+                          <span onDoubleClick={(e) => handleStartRename(file, e)} title="Double click to rename">
+                            {file.name}
+                          </span>
+                        )}
+
+                        <button
+                          onClick={(e) => handleStartRename(file, e)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-white text-slate-500 transition ml-1"
+                          title="Rename file"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
+
+                        {files.length > 1 && (
+                          <button
+                            onClick={(e) => handleDeleteFile(file.id, e)}
+                            className="opacity-0 group-hover:opacity-100 hover:text-rose-400 text-slate-500 transition"
+                            title="Delete file"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setShowNewFileModal(true)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs transition cursor-pointer"
+                    title="Create new file"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden sm:inline">New File</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleDownloadFile}
+                    className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition cursor-pointer"
+                    title={`Download ${activeFile?.name} to your local drive`}
+                  >
+                    <Download className="w-3.5 h-3.5 text-sky-400" />
+                  </button>
+
+                  <button
+                    onClick={handlePushToGitHub}
+                    disabled={isCommitting}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                    title="Push solution to your GitHub repository"
+                  >
+                    <GitCommit className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="hidden md:inline">{isCommitting ? 'Pushing...' : 'GitHub'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleAiExplain}
+                    disabled={isAiExplaining}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+                    title="Ask Professor & Byte AI to explain this solution"
+                  >
+                    <Bot className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden md:inline">{isAiExplaining ? 'Analyzing...' : 'AI Explain'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {gitStatusMsg && (
+                <div className="px-4 py-1.5 bg-slate-900 border-b border-slate-800 text-xs font-medium text-amber-300 flex items-center justify-between">
+                  <span>{gitStatusMsg}</span>
+                  <button onClick={() => setGitStatusMsg(null)} className="text-slate-500 hover:text-white">✕</button>
+                </div>
               )}
+
+              <div className="relative flex-1 min-h-[380px] bg-[#070a12] flex">
+                <div className="w-11 py-3 bg-[#05070d] text-slate-600 font-mono text-xs select-none text-right pr-2.5 border-r border-slate-800/80 shrink-0">
+                  {(activeFile?.content || '').split('\n').map((_, idx) => (
+                    <div key={idx} className="leading-6">
+                      {idx + 1}
+                    </div>
+                  ))}
+                </div>
+
+                <textarea
+                  value={activeFile?.content || ''}
+                  onChange={(e) => handleCodeChange(e.target.value)}
+                  spellCheck={false}
+                  className="w-full h-full min-h-[380px] p-3 bg-transparent text-slate-100 font-mono text-xs sm:text-sm leading-6 resize-none focus:outline-none selection:bg-amber-400/30 selection:text-white"
+                  placeholder="Write your code or drop a local file here..."
+                />
+              </div>
+
+              <div className="px-4 py-2.5 bg-[#070a12] border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3 text-xs text-slate-400 font-mono">
+                  <span>Language: <strong className="text-amber-400 uppercase">{activeFile?.language || 'python'}</strong></span>
+                  <span>Lines: <strong className="text-slate-200">{(activeFile?.content || '').split('\n').length}</strong></span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      handleCodeChange(DEFAULT_FILES[0].content);
+                      sound.playPop();
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition cursor-pointer border border-slate-800"
+                    title="Reset code template"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset</span>
+                  </button>
+
+                  <button
+                    onClick={handleRunCode}
+                    disabled={isRunning}
+                    className="btn-comic-push flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shadow-sm disabled:opacity-50"
+                    title="Run code (Ctrl/Cmd + Enter)"
+                  >
+                    <Play className="w-4 h-4 fill-slate-950" />
+                    <span>{isRunning ? 'Compiling...' : 'Run Code'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Terminal Console */}
+            <div className="bg-[#0b0f19] border border-slate-800/80 rounded-2xl overflow-hidden shadow-comic">
+              <div className="px-4 py-2 bg-[#070a12] border-b border-slate-800/80 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-emerald-400" />
+                  <button
+                    onClick={() => setActiveConsoleTab('output')}
+                    className={`font-mono font-bold uppercase transition cursor-pointer ${
+                      activeConsoleTab === 'output' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Terminal (stdout)
+                  </button>
+                  <button
+                    onClick={() => setActiveConsoleTab('stdin')}
+                    className={`font-mono font-bold uppercase ml-3 transition cursor-pointer ${
+                      activeConsoleTab === 'stdin' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Input (stdin)
+                  </button>
+                  {domPreviewHtml && (
+                    <button
+                      onClick={() => setActiveConsoleTab('preview')}
+                      className={`font-mono font-bold uppercase ml-3 transition cursor-pointer ${
+                        activeConsoleTab === 'preview' ? 'text-amber-300' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      HTML Preview
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 font-mono text-[11px]">
+                  {executionTime !== null && (
+                    <span className="text-emerald-400 font-bold">⏱️ {executionTime.toFixed(1)} ms</span>
+                  )}
+                  {executionError && (
+                    <span className="text-rose-400 font-bold flex items-center gap-1">
+                      <XCircle className="w-3.5 h-3.5" /> Error
+                    </span>
+                  )}
+                  <button
+                    onClick={() => {
+                      setTerminalOutput('');
+                      setExecutionTime(null);
+                      setExecutionError(null);
+                    }}
+                    className="text-slate-400 hover:text-white transition cursor-pointer"
+                    title="Clear terminal"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#05070d] font-mono text-xs sm:text-sm min-h-[140px] max-h-[220px] overflow-y-auto">
+                {activeConsoleTab === 'output' && (
+                  <pre
+                    className={`whitespace-pre-wrap leading-relaxed ${
+                      executionError ? 'text-rose-300' : 'text-emerald-300'
+                    }`}
+                  >
+                    {terminalOutput}
+                  </pre>
+                )}
+
+                {activeConsoleTab === 'stdin' && (
+                  <div className="space-y-2">
+                    <div className="text-[11px] text-slate-400 font-sans">
+                      Provide mock inputs for standard input functions like Python `input()` or Node.js `readline`:
+                    </div>
+                    <textarea
+                      value={stdinInput}
+                      onChange={(e) => setStdinInput(e.target.value)}
+                      placeholder="Enter interactive input values (one per line)..."
+                      className="w-full h-24 p-2 bg-[#0d121f] text-slate-100 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400 resize-none"
+                    />
+                  </div>
+                )}
+
+                {activeConsoleTab === 'preview' && domPreviewHtml && (
+                  <iframe
+                    srcDoc={domPreviewHtml}
+                    title="Live HTML DOM Preview"
+                    className="w-full h-36 bg-white rounded-lg border-0"
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* New File Modal */}
       {showNewFileModal && (

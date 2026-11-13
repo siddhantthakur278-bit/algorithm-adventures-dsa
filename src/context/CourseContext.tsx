@@ -35,10 +35,17 @@ import { sound } from '../utils/soundEffects';
 import confetti from 'canvas-confetti';
 
 export type ActiveSaga = 'dsa' | 'sql' | 'prisma' | 'linear-algebra' | 'web-dev' | 'python-dsa' | 'roadmap';
+export type LayoutMode = 'vertical-panel' | 'top-bar';
 
 interface CourseContextType {
   activeSaga: ActiveSaga;
   setActiveSaga: (saga: ActiveSaga) => void;
+  layoutMode: LayoutMode;
+  setLayoutMode: (mode: LayoutMode) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean | ((prev: boolean) => boolean)) => void;
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
   roadmapCheckedTopics: string[];
   toggleRoadmapTopic: (topicId: string) => void;
   readinessChecked: string[];
@@ -303,6 +310,42 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const [activeTab, setActiveTab] = useState<string>('quest');
+
+  // Vertical Panel vs Classic Top Bar layout state
+  const [layoutMode, setLayoutModeState] = useState<LayoutMode>(() => {
+    try {
+      const saved = localStorage.getItem('ada_layout_mode');
+      if (saved === 'vertical-panel' || saved === 'top-bar') return saved;
+    } catch {}
+    return 'vertical-panel'; // Primary default is Vertical Panel Layout!
+  });
+
+  const setLayoutMode = (mode: LayoutMode) => {
+    setLayoutModeState(mode);
+    try {
+      localStorage.setItem('ada_layout_mode', mode);
+    } catch {}
+  };
+
+  const [isSidebarCollapsed, setIsSidebarCollapsedState] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('ada_sidebar_collapsed');
+      if (saved !== null) return JSON.parse(saved);
+    } catch {}
+    return false;
+  });
+
+  const setIsSidebarCollapsed = (collapsed: boolean | ((prev: boolean) => boolean)) => {
+    setIsSidebarCollapsedState((prev) => {
+      const nextVal = typeof collapsed === 'function' ? collapsed(prev) : collapsed;
+      try {
+        localStorage.setItem('ada_sidebar_collapsed', JSON.stringify(nextVal));
+      } catch {}
+      return nextVal;
+    });
+  };
+
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(() => hallOfFameProblems[0]);
   const [simulatedDate, setSimulatedDate] = useState<Date | null>(() => {
     try {
@@ -797,6 +840,12 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       value={{
         activeSaga,
         setActiveSaga,
+        layoutMode,
+        setLayoutMode,
+        isSidebarCollapsed,
+        setIsSidebarCollapsed,
+        isMobileSidebarOpen,
+        setIsMobileSidebarOpen,
         roadmapCheckedTopics,
         toggleRoadmapTopic,
         readinessChecked,

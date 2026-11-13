@@ -31,6 +31,7 @@ import {
   Cpu,
   Command,
   Video,
+  Columns2,
 } from 'lucide-react';
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
@@ -38,7 +39,20 @@ import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 
 export const Navbar: React.FC = () => {
-  const { stats, activeTab, setActiveTab, soundEnabled, toggleSound, useShield, activeSaga, setActiveSaga, realStreak, dailyTargetStatus } = useCourse();
+  const {
+    stats,
+    activeTab,
+    setActiveTab,
+    soundEnabled,
+    toggleSound,
+    useShield,
+    activeSaga,
+    setActiveSaga,
+    realStreak,
+    dailyTargetStatus,
+    layoutMode,
+    setLayoutMode,
+  } = useCourse();
   const [showGitModal, setShowGitModal] = useState(false);
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
@@ -417,6 +431,16 @@ export const Navbar: React.FC = () => {
               >
                 <Globe className="w-3.5 h-3.5 text-sky-400" />
                 <span className="hidden lg:inline">My Identity</span>
+              </button>
+
+              {/* Layout Switcher: Vertical Panel Way */}
+              <button
+                onClick={() => setLayoutMode('vertical-panel')}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-400/10 hover:bg-amber-400/20 rounded-xl border border-amber-400/30 text-amber-300 font-semibold text-xs transition cursor-pointer"
+                title="Switch to Vertical Panel Navigation Layout (Sidebar)"
+              >
+                <Columns2 className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden lg:inline">Vertical Panel</span>
               </button>
             </div>
           </div>

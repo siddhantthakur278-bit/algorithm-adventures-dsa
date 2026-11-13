@@ -1,6 +1,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { CourseProvider, useCourse } from './context/CourseContext';
 import { Navbar } from './components/navbar/Navbar';
+import { VerticalSidebar } from './components/navbar/VerticalSidebar';
+import { TopHeaderBar } from './components/navbar/TopHeaderBar';
 import { TimeTravelWidget } from './components/common/TimeTravelWidget';
 import { RealTimeStatusBar } from './components/common/RealTimeStatusBar';
 import { MasterClockHud } from './components/common/MasterClockHud';
@@ -343,6 +345,7 @@ const FooterContent: React.FC = () => {
 };
 
 export const AppContent: React.FC = () => {
+  const { layoutMode, isSidebarCollapsed, setIsSidebarCollapsed } = useCourse();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => !isProfileSetupComplete());
 
@@ -353,6 +356,10 @@ export const AppContent: React.FC = () => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setIsSidebarCollapsed((prev) => !prev);
       }
     };
 
@@ -367,21 +374,52 @@ export const AppContent: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-command-palette', handleCustomOpen);
     };
-  }, []);
+  }, [setIsSidebarCollapsed]);
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black relative">
       {/* Real-Time Live Telemetry Bar */}
       <RealTimeStatusBar />
 
-      {/* Global Navigation Bar */}
-      <Navbar />
+      {layoutMode === 'vertical-panel' ? (
+        <>
+          {/* Vertical Navigation Panel (Sidebar) */}
+          <VerticalSidebar />
 
-      {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
-      <MasterClockHud />
+          {/* Main Frame offset by Vertical Sidebar on lg+ screens */}
+          <div
+            className={`flex-1 flex flex-col transition-all duration-300 ${
+              isSidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+            }`}
+          >
+            {/* Top Header Bar */}
+            <TopHeaderBar />
 
-      {/* Dynamic Tab Router */}
-      <MainContent />
+            {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
+            <MasterClockHud />
+
+            {/* Dynamic Tab Router */}
+            <MainContent />
+
+            {/* Dynamic Comic Footer */}
+            <FooterContent />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Classic Top Navigation Bar */}
+          <Navbar />
+
+          {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
+          <MasterClockHud />
+
+          {/* Dynamic Tab Router */}
+          <MainContent />
+
+          {/* Dynamic Comic Footer */}
+          <FooterContent />
+        </>
+      )}
 
       {/* Floating AI Mentor Sanctuary Drawer (Ask Byte & Professor) */}
       <AiMentorDrawer />
@@ -404,9 +442,6 @@ export const AppContent: React.FC = () => {
         onClose={() => setShowWelcomeModal(false)}
         isInitialWelcome={true}
       />
-
-      {/* Dynamic Comic Footer */}
-      <FooterContent />
     </div>
   );
 };
