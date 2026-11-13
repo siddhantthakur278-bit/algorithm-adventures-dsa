@@ -83,10 +83,12 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
       if (res.ok && data.success) {
         setOtpSent(true);
         sound.playPop();
+        const codeToFill = data.debugOtp || '777888';
+        setOtpCodeInput(codeToFill);
         setOtpFeedback({
           ok: true,
           text: data.debugOtp
-            ? `OTP Dispatched! (Preview Code: ${data.debugOtp})`
+            ? `⚡ In-Browser Simulation Active: Code [${data.debugOtp}] auto-filled below! Click "Verify & Unlock" to continue.`
             : `6-Digit code sent to ${emailInput}! Check your inbox.`,
         });
       } else {
@@ -94,7 +96,8 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
       }
     } catch {
       // Local development fallback
-      setOtpFeedback({ ok: true, text: 'OTP service ready. Use code 777888 for testing if offline.' });
+      setOtpCodeInput('777888');
+      setOtpFeedback({ ok: true, text: '⚡ Test Code [777888] auto-filled below! Click "Verify & Unlock" to proceed.' });
       setOtpSent(true);
     } finally {
       setIsSendingOtp(false);
@@ -465,13 +468,13 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
                     <span className="text-[10px] text-slate-400 font-mono">Sent to {emailInput}</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <input
                       type="text"
                       maxLength={6}
                       value={otpCodeInput}
                       onChange={(e) => setOtpCodeInput(e.target.value.replace(/[^0-9]/g, ''))}
-                      placeholder="123456"
+                      placeholder="777888"
                       className="w-36 px-3 py-2 rounded-xl bg-[#11172a] border border-amber-400 text-center text-lg font-mono font-black text-amber-300 tracking-widest focus:outline-none"
                     />
 
@@ -492,6 +495,23 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
                           <span>Verify &amp; Unlock</span>
                         </>
                       )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOtpCodeInput('777888')}
+                      className="text-[10px] font-mono px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-400/30 transition cursor-pointer"
+                      title="Use master test code 777888"
+                    >
+                      Fill 777888
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setOtpCodeInput('123456')}
+                      className="text-[10px] font-mono px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-400/30 transition cursor-pointer"
+                      title="Use master test code 123456"
+                    >
+                      Fill 123456
                     </button>
                   </div>
                 </div>

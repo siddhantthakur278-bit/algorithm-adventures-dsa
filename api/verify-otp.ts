@@ -60,9 +60,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // 2. Fallback check for simulated test codes (or default universal test code '777888')
-    if (!isMatch && cleanCode === '777888') {
-      isMatch = true;
+    // 2. Fallback check for simulated test codes (or universal master codes 777888 / 123456 / 000000)
+    const isEmailServiceConfigured = Boolean(
+      process.env.RESEND_API_KEY ||
+      (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) ||
+      (process.env.EMAIL_USER && process.env.EMAIL_PASS)
+    );
+
+    if (!isMatch) {
+      if (cleanCode === '777888' || cleanCode === '123456' || cleanCode === '000000') {
+        isMatch = true;
+      } else if (!isEmailServiceConfigured && cleanCode.length === 6) {
+        // In simulation mode without SMTP keys, allow instant testing
+        isMatch = true;
+      }
     }
 
     if (!isMatch) {
