@@ -319,56 +319,54 @@ export async function saveUniversalProfile(
     let cloudSynced = false;
     if (isSupabaseConfigured && supabase) {
       try {
-        const profilePayload = {
+        const basePayload: any = {
           user_handle: profile.handle,
-          display_name: profile.displayName,
-          avatar_url: profile.avatarUrl,
-          email: profile.email || null,
-          is_email_verified: profile.isEmailVerified || false,
-          email_notifications: profile.emailNotifications !== false,
-          github_username: profile.githubUsername,
-          codeforces_handle: profile.codeforcesHandle,
-          leetcode_username: profile.leetcodeUsername,
-          country_code: profile.country,
-          codeforces_rating: profile.codeforcesRating,
-          codeforces_rank: profile.codeforcesRank,
-          total_xp: profile.totalXp,
-          problems_solved: profile.problemsSolved,
-          current_streak: profile.streakDays,
-          cohort_mode: profile.cohortMode,
-          active_day: profile.activeDay,
+          display_name: profile.displayName || profile.handle,
+          avatar_url: profile.avatarUrl || null,
+          github_username: profile.githubUsername || null,
+          codeforces_handle: profile.codeforcesHandle || null,
+          leetcode_username: profile.leetcodeUsername || null,
+          country_code: profile.country || 'GLOBAL',
+          codeforces_rating: profile.codeforcesRating || 0,
+          codeforces_rank: profile.codeforcesRank || 'unrated',
+          total_xp: profile.totalXp || 0,
+          problems_solved: profile.problemsSolved || 0,
+          current_streak: profile.streakDays || 0,
+          cohort_mode: profile.cohortMode || 'automatic',
+          active_day: profile.activeDay || 1,
           updated_at: new Date().toISOString(),
         };
 
-        if (profile.id && !profile.id.startsWith('local-')) {
-          // Existing user with known UUID -> update own record
-          const { error } = await supabase
-            .from('profiles')
-            .update(profilePayload)
-            .eq('id', profile.id);
+        // Upsert into Supabase using unique user_handle
+        const { data: upserted, error: upsertErr } = await supabase
+          .from('profiles')
+          .upsert(basePayload, { onConflict: 'user_handle' })
+          .select('id')
+          .single();
 
-          if (!error) {
-            cloudSynced = true;
-          } else if (error.code === '23505') {
-            return {
-              success: false,
-              cloudSynced: false,
-              message: `Username @${profile.handle} is already taken by another person.`,
-            };
+        if (!upsertErr && upserted) {
+          profile.id = upserted.id; // Store official Supabase UUID
+          localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
+          cloudSynced = true;
+
+          // Attempt non-fatal email update if schema columns exist
+          if (profile.email) {
+            try {
+              await supabase
+                .from('profiles')
+                .update({
+                  email: profile.email,
+                  is_email_verified: profile.isEmailVerified || false,
+                  email_notifications: profile.emailNotifications !== false,
+                })
+                .eq('id', upserted.id);
+            } catch {
+              // Non-blocking if email column is not yet migrated in Supabase
+            }
           }
-        } else {
-          // New visitor registration -> INSERT
-          const { data: inserted, error } = await supabase
-            .from('profiles')
-            .insert(profilePayload)
-            .select('id')
-            .single();
-
-          if (!error && inserted) {
-            profile.id = inserted.id; // Store official Supabase UUID
-            localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
-            cloudSynced = true;
-          } else if (error?.code === '23505') {
+        } else if (upsertErr) {
+          console.warn('Supabase profile upsert warning:', upsertErr.message);
+          if (upsertErr.code === '23505') {
             return {
               success: false,
               cloudSynced: false,
@@ -385,7 +383,7 @@ export async function saveUniversalProfile(
       success: true,
       cloudSynced,
       message: cloudSynced
-        ? 'Profile & unique handle verified & synced to World Leaderboard!'
+        ? '✓ Profile & unique handle verified & synced to World Leaderboard!'
         : 'Profile saved locally! (Configure Supabase keys in Vercel to broadcast live)',
     };
   } catch (err: any) {
