@@ -152,12 +152,24 @@ export async function runPythonTests(
   let globalStdout = '';
 
   try {
-    // Extract function name if not provided
+    // Extract function or class method name if not provided
     let funcName = entryFunctionName;
+    let isClassMethod = false;
+
     if (!funcName) {
-      const match = userCode.match(/def\s+([a-zA-Z0-9_]+)\s*\(/);
-      if (match) {
-        funcName = match[1];
+      const classMethodMatch = userCode.match(/class\s+Solution[\s\S]*?def\s+([a-zA-Z0-9_]+)\s*\(\s*self/);
+      if (classMethodMatch) {
+        funcName = classMethodMatch[1];
+        isClassMethod = true;
+      } else {
+        const match = userCode.match(/def\s+([a-zA-Z0-9_]+)\s*\(/);
+        if (match) {
+          funcName = match[1];
+        }
+      }
+    } else {
+      if (userCode.includes('class Solution')) {
+        isClassMethod = true;
       }
     }
 
@@ -198,11 +210,49 @@ sys.stdout = _catcher
 
     for (const tc of testCases) {
       const tcStart = performance.now();
-      
+      const escapedInput = JSON.stringify(tc.input);
+
       const runnerScript = `
 _catcher.buffer = io.StringIO()
 try:
-    _res = ${funcName}(${tc.input})
+    _raw_in = ${escapedInput}
+    try:
+        _parsed_in = json.loads(_raw_in)
+    except Exception:
+        _parsed_in = None
+
+    if 'Solution' in globals() and hasattr(globals()['Solution'], '${funcName}'):
+        _inst = globals()['Solution']()
+        _method = getattr(_inst, '${funcName}')
+        if isinstance(_parsed_in, dict):
+            try:
+                _res = _method(**_parsed_in)
+            except TypeError:
+                _res = _method(_parsed_in)
+        elif isinstance(_parsed_in, list):
+            try:
+                _res = _method(*_parsed_in)
+            except TypeError:
+                _res = _method(_parsed_in)
+        else:
+            _res = _method(_parsed_in if _parsed_in is not None else ${tc.input || 'None'})
+    elif '${funcName}' in globals():
+        _fn = globals()['${funcName}']
+        if isinstance(_parsed_in, dict):
+            try:
+                _res = _fn(**_parsed_in)
+            except TypeError:
+                _res = _fn(_parsed_in)
+        elif isinstance(_parsed_in, list):
+            try:
+                _res = _fn(*_parsed_in)
+            except TypeError:
+                _res = _fn(_parsed_in)
+        else:
+            _res = _fn(_parsed_in if _parsed_in is not None else ${tc.input || 'None'})
+    else:
+        raise NameError("Function or method '${funcName}' not found.")
+
     _res_str = json.dumps(_res) if not isinstance(_res, str) else _res
     _err = None
 except Exception as e:

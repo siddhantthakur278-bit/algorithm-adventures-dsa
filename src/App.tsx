@@ -39,6 +39,7 @@ const PowerCardDeck = React.lazy(() => import('./components/flashcards/PowerCard
 const CodeforcesHub = React.lazy(() => import('./components/codeforces/CodeforcesHub').then((m) => ({ default: m.CodeforcesHub })));
 const BossBattleModal = React.lazy(() => import('./components/boss/BossBattleModal').then((m) => ({ default: m.BossBattleModal })));
 const MegaCheatSheets = React.lazy(() => import('./components/cheatsheet/MegaCheatSheets').then((m) => ({ default: m.MegaCheatSheets })));
+const ProblemLibraryHub = React.lazy(() => import('./components/problems/ProblemLibraryHub').then((m) => ({ default: m.ProblemLibraryHub })));
 const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/GlobalLeaderboardHub').then((m) => ({ default: m.GlobalLeaderboardHub })));
 const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityChatHub').then((m) => ({ default: m.CommunityChatHub })));
 import { isProfileSetupComplete } from './utils/universalLeaderboardService';
@@ -141,6 +142,7 @@ const MainContent: React.FC = () => {
           {activeTab === 'codeforces' && <CodeforcesHub />}
           {activeTab === 'boss' && <BossBattleModal />}
           {activeTab === 'cheatsheet' && <MegaCheatSheets />}
+          {activeTab === 'problems' && <ProblemLibraryHub />}
         </main>
       )}
     </Suspense>
