@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, user_handle, display_name, email, is_email_verified, total_xp, problems_solved, current_streak, codeforces_handle, github_username, leetcode_username, country_code, created_at, updated_at')
+      .select('id, user_handle, display_name, avatar_url, country_code, github_username, codeforces_handle, leetcode_username, codeforces_rating, codeforces_rank, total_xp, problems_solved, current_streak, highest_streak, cohort_mode, active_day, created_at, updated_at')
       .order('total_xp', { ascending: false });
 
     if (error) {
