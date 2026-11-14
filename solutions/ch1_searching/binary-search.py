@@ -1,9 +1,7 @@
 def search(nums: list[int], target: int) -> int:
     n=len(nums)
     l,r=0,n-1
-    if nums[0]==target:
-        return 0
-    while l<r:
+    while l<=r:
         m=(l+r)//2
         if nums[m]==target:
             return m 
