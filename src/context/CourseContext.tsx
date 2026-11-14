@@ -33,6 +33,7 @@ import {
 } from '../utils/streakEngine';
 import { sound } from '../utils/soundEffects';
 import confetti from 'canvas-confetti';
+import { syncActiveScores } from '../utils/universalLeaderboardService';
 
 export type ActiveSaga = 'dsa' | 'sql' | 'prisma' | 'linear-algebra' | 'web-dev' | 'python-dsa' | 'roadmap';
 export type LayoutMode = 'vertical-panel' | 'top-bar';
@@ -435,6 +436,27 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Compute Real-time Daily Target Status and Real Streak
   const dailyTargetStatus = evaluateDailyTarget(effectiveDate, stats.solvedProblemIds, scheduleState);
   const realStreak = computeRealStreak(stats.completedDailyTargetDates || [], effectiveDate, stats.shieldCount);
+
+  // Auto-sync stats and completed work to Supabase cloud in background
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      syncActiveScores(
+        stats.xp,
+        stats.solvedProblemIds.length,
+        realStreak.currentStreak,
+        scheduleState.dayNumber || 1,
+        {
+          solvedProblemIds: stats.solvedProblemIds,
+          completedDailyTargetDates: stats.completedDailyTargetDates,
+          gitCommits: stats.gitCommits,
+          bugHuntDefeated: stats.bugHuntDefeated,
+          blitzHighScore: stats.blitzHighScore,
+          inventory: stats.inventory,
+        }
+      );
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [stats.xp, stats.solvedProblemIds.length, stats.gitCommits.length, realStreak.currentStreak, scheduleState.dayNumber]);
 
   const addXP = (amount: number, reason?: string) => {
     setStats(prev => {

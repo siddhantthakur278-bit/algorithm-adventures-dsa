@@ -1,5 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+
+const OTP_SECRET = process.env.OTP_SECRET || process.env.VITE_SUPABASE_ANON_KEY || 'ada-super-secret-key-2026';
+
+function generateOtpToken(email: string, code: string, expiresAt: number): string {
+  const data = `${email.trim().toLowerCase()}:${code.trim()}:${expiresAt}`;
+  const hmac = crypto.createHmac('sha256', OTP_SECRET).update(data).digest('hex');
+  return `${expiresAt}.${hmac}`;
+}
 
 // Supabase client for serverless functions
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -177,10 +186,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       text: `Your Algorithm Adventures verification code is: ${otpCode}. It is valid for 10 minutes.`,
     });
 
+    const otpToken = generateOtpToken(cleanEmail, otpCode, expiresAt);
+
     return res.status(200).json({
       success: true,
       message: `Verification code sent to ${cleanEmail}!`,
       provider: sendRes.provider,
+      otpToken,
       debugOtp: sendRes.provider === 'simulated' ? otpCode : undefined,
     });
   } catch (err: any) {

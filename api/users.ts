@@ -33,17 +33,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, user_handle, display_name, avatar_url, country_code, github_username, codeforces_handle, leetcode_username, codeforces_rating, codeforces_rank, total_xp, problems_solved, current_streak, highest_streak, cohort_mode, active_day, created_at, updated_at')
+      .select('*')
       .order('total_xp', { ascending: false });
 
     if (error) {
       return res.status(500).json({ success: false, error: error.message });
     }
 
+    // Filter out internal test handles
+    const realUsers = (data || []).filter(
+      (u: any) => !u.user_handle?.startsWith('test_friend_')
+    );
+
     return res.status(200).json({
       success: true,
-      totalUsers: data?.length || 0,
-      users: data || [],
+      totalUsers: realUsers.length,
+      users: realUsers,
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message || 'Failed to fetch users.' });

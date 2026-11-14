@@ -22,6 +22,14 @@ export interface UniversalUserProfile {
   cohortMode: 'automatic' | 'manual_day' | 'self_paced';
   activeDay: number;
   lastActive: string;
+  // Detailed work & performance telemetry:
+  solvedProblemIds?: string[];
+  completedDailyTargets?: string[];
+  gitCommitsCount?: number;
+  gitCommitsLog?: any[];
+  inventory?: any[];
+  bugHuntDefeated?: string[];
+  blitzHighScore?: number;
 }
 
 const LOCAL_PROFILE_KEY = 'ada_universal_user_profile';
@@ -392,13 +400,21 @@ export async function saveUniversalProfile(
 }
 
 /**
- * Sync active in-app stats (XP, solved count, streak) into the universal profile
+ * Sync active in-app stats (XP, solved count, streak, and complete work history) into the universal profile & Supabase
  */
 export async function syncActiveScores(
   xp: number,
   solvedCount: number,
   streak: number,
-  dayNumber: number
+  dayNumber: number,
+  detailedWork?: {
+    solvedProblemIds?: string[];
+    completedDailyTargetDates?: string[];
+    gitCommits?: any[];
+    bugHuntDefeated?: string[];
+    blitzHighScore?: number;
+    inventory?: any[];
+  }
 ): Promise<void> {
   const profile = getStoredUserProfile();
   profile.totalXp = Math.max(profile.totalXp, xp);
@@ -407,22 +423,50 @@ export async function syncActiveScores(
   profile.activeDay = dayNumber;
   profile.lastActive = 'Just now';
 
+  if (detailedWork?.solvedProblemIds) profile.solvedProblemIds = detailedWork.solvedProblemIds;
+  if (detailedWork?.completedDailyTargetDates) profile.completedDailyTargets = detailedWork.completedDailyTargetDates;
+  if (detailedWork?.gitCommits) {
+    profile.gitCommitsCount = detailedWork.gitCommits.length;
+    profile.gitCommitsLog = detailedWork.gitCommits.slice(-20);
+  }
+  if (detailedWork?.bugHuntDefeated) profile.bugHuntDefeated = detailedWork.bugHuntDefeated;
+  if (detailedWork?.blitzHighScore) profile.blitzHighScore = detailedWork.blitzHighScore;
+  if (detailedWork?.inventory) profile.inventory = detailedWork.inventory;
+
   localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
 
   if (isSupabaseConfigured && supabase) {
     try {
-      await supabase.from('profiles').upsert(
-        {
-          user_handle: profile.handle,
-          display_name: profile.displayName,
-          total_xp: profile.totalXp,
-          problems_solved: profile.problemsSolved,
-          current_streak: profile.streakDays,
-          active_day: profile.activeDay,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_handle' }
-      );
+      // 1. Core telemetry payload (guaranteed to succeed on base schema)
+      const basePayload: any = {
+        user_handle: profile.handle,
+        display_name: profile.displayName,
+        total_xp: profile.totalXp,
+        problems_solved: profile.problemsSolved,
+        current_streak: profile.streakDays,
+        active_day: profile.activeDay,
+        updated_at: new Date().toISOString(),
+      };
+
+      await supabase.from('profiles').upsert(basePayload, { onConflict: 'user_handle' });
+
+      // 2. Comprehensive rich work telemetry payload (synced if columns exist)
+      if (detailedWork) {
+        try {
+          await supabase.from('profiles').update({
+            solved_problem_ids: detailedWork.solvedProblemIds || [],
+            completed_daily_targets: detailedWork.completedDailyTargetDates || [],
+            git_commits_count: detailedWork.gitCommits?.length || 0,
+            git_commits_log: detailedWork.gitCommits?.slice(-15) || [],
+            bug_hunt_defeated: detailedWork.bugHuntDefeated || [],
+            blitz_high_score: detailedWork.blitzHighScore || 0,
+            inventory: detailedWork.inventory || [],
+            last_active_at: new Date().toISOString(),
+          }).eq('user_handle', profile.handle);
+        } catch {
+          // non-blocking if rich columns are pending SQL migration
+        }
+      }
     } catch {
       // ignore offline sync
     }
@@ -452,7 +496,8 @@ export async function getGlobalLeaderboard(
 
       const { data, error } = await query.limit(50);
       if (!error && Array.isArray(data) && data.length > 0) {
-        const cloudProfiles: UniversalUserProfile[] = data.map((d: any) => ({
+        const realCloudData = data.filter((d: any) => !d.user_handle?.startsWith('test_friend_'));
+        const cloudProfiles: UniversalUserProfile[] = realCloudData.map((d: any) => ({
           id: d.id,
           handle: d.user_handle,
           displayName: d.display_name,

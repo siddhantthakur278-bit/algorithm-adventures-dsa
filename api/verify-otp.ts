@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+
+const OTP_SECRET = process.env.OTP_SECRET || process.env.VITE_SUPABASE_ANON_KEY || 'ada-super-secret-key-2026';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
@@ -24,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { email, code, handle } = req.body || {};
+    const { email, code, handle, otpToken } = req.body || {};
 
     if (!email || !code) {
       return res.status(400).json({ error: 'Email and 6-digit verification code are required.' });
@@ -35,8 +38,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let isMatch = false;
 
-    // 1. Check Supabase email_otps table
-    if (supabase) {
+    // 1. Cryptographic HMAC Token Verification (Stateless & 100% reliable across serverless lambdas)
+    if (otpToken && typeof otpToken === 'string' && otpToken.includes('.')) {
+      try {
+        const [expiresStr, expectedHash] = otpToken.split('.');
+        const expiresAt = parseInt(expiresStr, 10);
+        if (!isNaN(expiresAt) && Date.now() <= expiresAt) {
+          const data = `${cleanEmail}:${cleanCode}:${expiresAt}`;
+          const actualHash = crypto.createHmac('sha256', OTP_SECRET).update(data).digest('hex');
+          if (actualHash === expectedHash) {
+            isMatch = true;
+          }
+        }
+      } catch (tokenErr) {
+        console.warn('OTP token verification failed:', tokenErr);
+      }
+    }
+
+    // 2. Check Supabase email_otps table if it exists
+    if (!isMatch && supabase) {
       try {
         const { data } = await supabase
           .from('email_otps')
@@ -60,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // 2. Fallback check for simulated test codes (or universal master codes 777888 / 123456 / 000000)
+    // 3. Fallback check for simulated test codes (or universal master codes 777888 / 123456 / 000000)
     const isEmailServiceConfigured = Boolean(
       process.env.RESEND_API_KEY ||
       (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) ||

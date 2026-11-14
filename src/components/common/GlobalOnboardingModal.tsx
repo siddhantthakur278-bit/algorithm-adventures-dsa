@@ -65,6 +65,7 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
   const [otpSent, setOtpSent] = useState<boolean>(false);
   const [otpFeedback, setOtpFeedback] = useState<{ ok?: boolean; text: string } | null>(null);
   const [testSending, setTestSending] = useState<'morning' | 'evening' | null>(null);
+  const [otpToken, setOtpToken] = useState<string>('');
 
   const handleSendOtp = async () => {
     if (!emailInput || !emailInput.includes('@')) {
@@ -83,6 +84,9 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
       const data = await res.json();
       if (res.ok && data.success) {
         setOtpSent(true);
+        if (data.otpToken) {
+          setOtpToken(data.otpToken);
+        }
         sound.playPop();
         const codeToFill = data.debugOtp || '777888';
         setOtpCodeInput(codeToFill);
@@ -120,6 +124,7 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
           email: emailInput.trim(),
           code: otpCodeInput.trim(),
           handle: formData.handle,
+          otpToken,
         }),
       });
       const data = await res.json();
