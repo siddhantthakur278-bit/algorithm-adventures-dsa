@@ -19,7 +19,15 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/data/(.*)",
+      "destination": "/data/$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/((?!api|data|assets|favicon.ico|.*\\.).*)",
       "destination": "/index.html"
     }
   ],
@@ -38,6 +46,15 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
+        }
+      ]
+    },
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
         }
       ]
     },
