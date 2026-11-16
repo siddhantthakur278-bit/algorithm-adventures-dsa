@@ -1,39 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RotateCcw } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
 
-interface PreviewProblem {
+interface ProblemData {
   id: string;
   title: string;
-  difficulty: 'Easy' | 'Med' | 'Hard';
-  diffClass: 'E' | 'M' | 'H';
-  isDone?: boolean;
-  fileName: string;
-  codeHtml: string[];
-  terminalLogs: string[];
   descHtml: string;
   chips: string[];
   constraints: string;
   byteTip: string;
+  code: string[];
+  terminalLogs: { text: string; isPend?: boolean }[];
 }
 
-const PREVIEW_THEMES: [string, string][] = [
-  ['#06B6D4', '#38BDF8'], // 0: Teal
-  ['#8B5CF6', '#38BDF8'], // 1: Tokyo Midnight Purple
-  ['#10B981', '#34D399'], // 2: Emerald Green
-  ['#F43F5E', '#FB7185'], // 3: Crimson Rose
-  ['#FBBF24', '#FB923C'], // 4: Amber Gold
-];
-
-const PREVIEW_PROBLEMS: PreviewProblem[] = [
-  {
+const PROBLEMS: Record<string, ProblemData> = {
+  'bin-search': {
     id: 'bin-search',
     title: 'Binary Search',
-    difficulty: 'Easy',
-    diffClass: 'E',
-    isDone: false,
-    fileName: 'binary-search.py',
-    codeHtml: [
+    descHtml: 'Given a sorted array <code>nums</code> and a <code>target</code>, return its index or -1.',
+    chips: ['arrays', 'Amazon', 'Google', 'acceptance 62%'],
+    constraints: '1 ≤ n ≤ 10⁴, values are unique.',
+    byteTip: 'Halve the range each step. That is why it runs in O(log n).',
+    code: [
       '<span class="kw">def</span> <span class="fn">search</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>], target: <span class="ty">int</span>) -&gt; <span class="ty">int</span>:',
       '    l, r = <span class="nu">0</span>, <span class="fn">len</span>(nums) - <span class="nu">1</span>',
       '    <span class="kw">while</span> l &lt;= r:',
@@ -47,54 +34,21 @@ const PREVIEW_PROBLEMS: PreviewProblem[] = [
       '    <span class="kw">return</span> -<span class="nu">1</span>',
     ],
     terminalLogs: [
-      '$ run tests',
-      '✓ sample 1  nums=[-1,0,3,5,9,12] target=9  → 4',
-      '✓ sample 2  nums=[-1,0,3,5,9,12] target=2  → -1',
-      '✓ hidden 28/28 passed · 0 ms · O(log n)',
-      '⟶ committed to GitHub · a3f9c21',
+      { text: '$ run tests', isPend: true },
+      { text: '✓ sample 1  nums=[-1,0,3,5,9,12] target=9  → 4' },
+      { text: '✓ sample 2  nums=[-1,0,3,5,9,12] target=2  → -1' },
+      { text: '✓ hidden 28/28 passed · 0 ms · O(log n)' },
+      { text: '⟶ committed to GitHub · a3f9c21' },
     ],
-    descHtml: 'Given a sorted array <code>nums</code> and a <code>target</code>, return its index or -1.',
-    chips: ['arrays', 'Amazon', 'Google', 'acceptance 62%'],
-    constraints: '1 ≤ n ≤ 10⁴, values are unique.',
-    byteTip: 'Halve the range each step. That is why it runs in O(log n).',
   },
-  {
-    id: 'contains-dup',
-    title: 'Array Contains Duplicate',
-    difficulty: 'Easy',
-    diffClass: 'E',
-    isDone: true,
-    fileName: 'contains-duplicate.py',
-    codeHtml: [
-      '<span class="kw">class</span> <span class="fn">Solution</span>:',
-      '    <span class="kw">def</span> <span class="fn">containsDuplicate</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>]) -&gt; <span class="ty">bool</span>:',
-      '        seen = <span class="ty">set</span>()',
-      '        <span class="kw">for</span> x <span class="kw">in</span> nums:',
-      '            <span class="kw">if</span> x <span class="kw">in</span> seen:',
-      '                <span class="kw">return</span> <span class="nu">True</span>',
-      '            seen.<span class="fn">add</span>(x)',
-      '        <span class="kw">return</span> <span class="nu">False</span>',
-    ],
-    terminalLogs: [
-      '$ run tests',
-      '✓ sample 1  nums=[1,2,3,1]  → True',
-      '✓ sample 2  nums=[1,2,3,4]  → False',
-      '✓ hidden 30/30 passed · 12 ms · O(n)',
-      '⟶ committed to GitHub · 8b4e190',
-    ],
-    descHtml: 'Given an integer array <code>nums</code>, return true if any value appears at least twice in the array.',
-    chips: ['hash-table', 'Apple', 'Meta', 'acceptance 61%'],
-    constraints: '1 ≤ nums.length ≤ 10⁵, -10⁹ ≤ nums[i] ≤ 10⁹.',
-    byteTip: 'A hash set gives O(1) average lookup time for instant duplicate checking!',
-  },
-  {
+  'two-sum': {
     id: 'two-sum',
     title: 'Two Sum',
-    difficulty: 'Easy',
-    diffClass: 'E',
-    isDone: false,
-    fileName: 'two-sum.py',
-    codeHtml: [
+    descHtml: 'Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of two numbers adding to target.',
+    chips: ['two-pointers', 'Apple', 'Meta', 'acceptance 54%'],
+    constraints: '2 ≤ nums.length ≤ 10⁴, exactly one solution exists.',
+    byteTip: 'Store complement values in a hash table for an instant O(n) single pass!',
+    code: [
       '<span class="kw">class</span> <span class="fn">Solution</span>:',
       '    <span class="kw">def</span> <span class="fn">twoSum</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>], target: <span class="ty">int</span>) -&gt; <span class="ty">list</span>[<span class="ty">int</span>]:',
       '        seen = {}',
@@ -106,645 +60,442 @@ const PREVIEW_PROBLEMS: PreviewProblem[] = [
       '        <span class="kw">return</span> []',
     ],
     terminalLogs: [
-      '$ run tests',
-      '✓ sample 1  nums=[2,7,11,15] target=9  → [0, 1]',
-      '✓ sample 2  nums=[3,2,4] target=6  → [1, 2]',
-      '✓ hidden 25/25 passed · 1 ms · O(n)',
-      '⟶ committed to GitHub · 9f2c8d4',
+      { text: '$ run tests', isPend: true },
+      { text: '✓ sample 1  nums=[2,7,11,15] target=9  → [0, 1]' },
+      { text: '✓ sample 2  nums=[3,2,4] target=6  → [1, 2]' },
+      { text: '✓ hidden 25/25 passed · 1 ms · O(n)' },
+      { text: '⟶ committed to GitHub · 9f2c8d4' },
     ],
-    descHtml: 'Return indices of the two numbers such that they add up to target. Each input has exactly one solution.',
-    chips: ['two-pointers', 'Microsoft', 'Bloomberg', 'acceptance 54%'],
-    constraints: '2 ≤ nums.length ≤ 10⁴, exactly one valid answer exists.',
-    byteTip: 'Store complement values (target - n) in a dictionary for a single O(n) pass!',
   },
-  {
-    id: 'course-sched',
-    title: 'Course Schedule',
-    difficulty: 'Med',
-    diffClass: 'M',
-    isDone: false,
-    fileName: 'course-schedule.py',
-    codeHtml: [
+  'contains-dup': {
+    id: 'contains-dup',
+    title: 'Array Contains Duplicate',
+    descHtml: 'Given an integer array <code>nums</code>, return true if any value appears at least twice in the array.',
+    chips: ['hash-table', 'Google', 'acceptance 61%'],
+    constraints: '1 ≤ nums.length ≤ 10⁵, -10⁹ ≤ nums[i] ≤ 10⁹.',
+    byteTip: 'A hash set gives O(1) average lookup time for instant duplicate checking!',
+    code: [
       '<span class="kw">class</span> <span class="fn">Solution</span>:',
-      '    <span class="kw">def</span> <span class="fn">canFinish</span>(numCourses: <span class="ty">int</span>, prerequisites: <span class="ty">list</span>) -&gt; <span class="ty">bool</span>:',
-      '        <span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque',
-      '        adj = defaultdict(<span class="ty">list</span>)',
-      '        in_degree = [<span class="nu">0</span>] * numCourses',
-      '        <span class="kw">for</span> crs, pre <span class="kw">in</span> prerequisites:',
-      '            adj[pre].append(crs)',
-      '            in_degree[crs] += <span class="nu">1</span>',
-      '        q = deque([i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(numCourses) <span class="kw">if</span> in_degree[i] == <span class="nu">0</span>])',
-      '        count = <span class="nu">0</span>',
-      '        <span class="kw">while</span> q:',
-      '            node = q.popleft()',
-      '            count += <span class="nu">1</span>',
-      '            <span class="kw">for</span> neighbor <span class="kw">in</span> adj[node]:',
-      '                in_degree[neighbor] -= <span class="nu">1</span>',
-      '                <span class="kw">if</span> in_degree[neighbor] == <span class="nu">0</span>:',
-      '                    q.append(neighbor)',
-      '        <span class="kw">return</span> count == numCourses',
+      '    <span class="kw">def</span> <span class="fn">containsDuplicate</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>]) -&gt; <span class="ty">bool</span>:',
+      '        seen = <span class="ty">set</span>()',
+      '        <span class="kw">for</span> x <span class="kw">in</span> nums:',
+      '            <span class="kw">if</span> x <span class="kw">in</span> seen:',
+      '                <span class="kw">return</span> <span class="nu">True</span>',
+      '            seen.<span class="fn">add</span>(x)',
+      '        <span class="kw">return</span> <span class="nu">False</span>',
     ],
     terminalLogs: [
-      '$ run tests',
-      '✓ sample 1  numCourses=2 prereqs=[[1,0]]  → True',
-      '✓ sample 2  numCourses=2 prereqs=[[1,0],[0,1]]  → False',
-      '✓ hidden 42/42 passed · 8 ms · O(V+E)',
-      '⟶ committed to GitHub · 5a81e33',
+      { text: '$ run tests', isPend: true },
+      { text: '✓ sample 1  nums=[1,2,3,1]  → True' },
+      { text: '✓ sample 2  nums=[1,2,3,4]  → False' },
+      { text: '✓ hidden 30/30 passed · 12 ms · O(n)' },
+      { text: '⟶ committed to GitHub · 8b4e190' },
     ],
-    descHtml: 'Determine if you can finish all courses given prerequisite dependencies (Kahn Topological Sort).',
-    chips: ['graphs', 'Google', 'Meta', 'Uber', 'acceptance 46%'],
-    constraints: '1 ≤ numCourses ≤ 2000, 0 ≤ prerequisites.length ≤ 5000.',
-    byteTip: 'Use in-degree array for Kahn algorithm: any cycle will leave in-degree > 0!',
   },
-  {
-    id: 'kth-largest',
-    title: 'Kth Largest in Stream',
-    difficulty: 'Med',
-    diffClass: 'M',
-    isDone: false,
-    fileName: 'kth-largest.py',
-    codeHtml: [
-      '<span class="kw">import</span> heapq',
-      '<span class="kw">class</span> <span class="fn">KthLargest</span>:',
-      '    <span class="kw">def</span> <span class="fn">__init__</span>(self, k: <span class="ty">int</span>, nums: <span class="ty">list</span>[<span class="ty">int</span>]):',
-      '        self.k = k',
-      '        self.min_heap = nums',
-      '        heapq.heapify(self.min_heap)',
-      '        <span class="kw">while</span> <span class="fn">len</span>(self.min_heap) &gt; k:',
-      '            heapq.heappop(self.min_heap)',
-      '    <span class="kw">def</span> <span class="fn">add</span>(self, val: <span class="ty">int</span>) -&gt; <span class="ty">int</span>:',
-      '        heapq.heappush(self.min_heap, val)',
-      '        <span class="kw">if</span> <span class="fn">len</span>(self.min_heap) &gt; self.k:',
-      '            heapq.heappop(self.min_heap)',
-      '        <span class="kw">return</span> self.min_heap[<span class="nu">0</span>]',
-    ],
-    terminalLogs: [
-      '$ run tests',
-      '✓ sample 1  k=3 nums=[4,5,8,2] add(3)  → 4',
-      '✓ sample 2  add(5) → 5, add(10) → 5, add(9) → 8',
-      '✓ hidden 20/20 passed · 4 ms · O(log k)',
-      '⟶ committed to GitHub · 3d7c41a',
-    ],
-    descHtml: 'Design a class to find the kth largest element in a stream of integers using a Min Heap of size k.',
-    chips: ['heap', 'Amazon', 'Adobe', 'acceptance 56%'],
-    constraints: '1 ≤ k ≤ 10⁴, 0 ≤ nums.length ≤ 10⁴.',
-    byteTip: 'A min-heap of size k ensures the root element is always the kth largest!',
-  },
-  {
-    id: 'word-ladder',
-    title: 'Word Ladder',
-    difficulty: 'Hard',
-    diffClass: 'H',
-    isDone: false,
-    fileName: 'word-ladder.py',
-    codeHtml: [
-      '<span class="kw">from</span> collections <span class="kw">import</span> deque',
-      '<span class="kw">def</span> <span class="fn">ladderLength</span>(beginWord: <span class="ty">str</span>, endWord: <span class="ty">str</span>, wordList: <span class="ty">list</span>[<span class="ty">str</span>]) -&gt; <span class="ty">int</span>:',
-      '    words = <span class="ty">set</span>(wordList)',
-      '    <span class="kw">if</span> endWord <span class="kw">not</span> <span class="kw">in</span> words: <span class="kw">return</span> <span class="nu">0</span>',
-      '    q = deque([(beginWord, <span class="nu">1</span>)])',
-      '    <span class="kw">while</span> q:',
-      '        word, dist = q.popleft()',
-      '        <span class="kw">if</span> word == endWord: <span class="kw">return</span> dist',
-      '        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(word)):',
-      '            <span class="kw">for</span> c <span class="kw">in</span> <span class="nu">"abcdefghijklmnopqrstuvwxyz"</span>:',
-      '                next_w = word[:i] + c + word[i+<span class="nu">1</span>:]',
-      '                <span class="kw">if</span> next_w <span class="kw">in</span> words:',
-      '                    words.remove(next_w)',
-      '                    q.append((next_w, dist + <span class="nu">1</span>))',
-      '    <span class="kw">return</span> <span class="nu">0</span>',
-    ],
-    terminalLogs: [
-      '$ run tests',
-      '✓ sample 1  "hit" → "cog" words=["hot","dot","dog","lot","log","cog"]  → 5',
-      '✓ sample 2  "hit" → "cog" words=["hot","dot","dog","lot","log"]  → 0',
-      '✓ hidden 35/35 passed · 48 ms · O(M²×N)',
-      '⟶ committed to GitHub · 7e11f09',
-    ],
-    descHtml: 'Given two words and a dictionary, find the length of shortest transformation sequence from begin to end.',
-    chips: ['bfs', 'Amazon', 'Google', 'Meta', 'acceptance 38%'],
-    constraints: '1 ≤ beginWord.length ≤ 10, all words have identical length.',
-    byteTip: 'Queue shortest path level by level. Removing visited words prevents infinite cycles!',
-  },
+};
+
+const THEMES: [string, string][] = [
+  ['#06B6D4', '#38BDF8'],
+  ['#8B5CF6', '#38BDF8'],
+  ['#10B981', '#34D399'],
+  ['#F43F5E', '#FB7185'],
+  ['#FBBF24', '#FB923C'],
 ];
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&');
-}
-
-function renderCode(codeLines: string[], n: number, partial: string | null): string {
-  const completed = codeLines.slice(0, n).map((l) => `<span class="ln">${l}</span>`).join('');
-  if (partial !== null) {
-    return completed + `<span class="ln">${partial}<i class="cur"></i></span>`;
-  }
-  return completed;
-}
-
 export const GlossyStudioHero: React.FC = () => {
-  const [selectedProbId, setSelectedProbId] = useState<string>('bin-search');
-  const [themeIdx, setThemeIdx] = useState<number>(1); // 1 = #8B5CF6 / #38BDF8
+  const [activeProblemId, setActiveProblemId] = useState<string>('bin-search');
   const [activeNavTab, setActiveNavTab] = useState<string>('Problems');
-  const [activeFileTab, setActiveFileTab] = useState<string>('binary-search.py');
 
-  // Animation states
-  const [codeHtml, setCodeHtml] = useState<string>('');
-  const [visibleLogsCount, setVisibleLogsCount] = useState<number>(0);
-  const [xpWidth, setXpWidth] = useState<number>(62);
-  const [xpText, setXpText] = useState<string>('1,240 XP');
-  const [showByteBubble, setShowByteBubble] = useState<boolean>(false);
-  const [showPop, setShowPop] = useState<boolean>(false);
-  const [showPalette, setShowPalette] = useState<boolean>(false);
-  const [paletteTyped, setPaletteTyped] = useState<string>('> ');
+  // DOM Refs
+  const stageRef = useRef<HTMLDivElement>(null);
+  const appRef = useRef<HTMLDivElement>(null);
+  const codeRef = useRef<HTMLPreElement>(null);
+  const termRef = useRef<HTMLDivElement>(null);
+  const bubRef = useRef<HTMLDivElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
+  const palRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const xpRef = useRef<HTMLElement>(null);
+  const xpnRef = useRef<HTMLDivElement>(null);
 
-  const runRef = useRef<number>(0);
-  const activeProblem =
-    PREVIEW_PROBLEMS.find((p) => p.id === selectedProbId) || PREVIEW_PROBLEMS[0];
+  const runIdRef = useRef<number>(0);
+  const currentProb = PROBLEMS[activeProblemId] || PROBLEMS['bin-search'];
 
-  const currentTheme = PREVIEW_THEMES[themeIdx];
+  const setTheme = (i: number) => {
+    const pair = THEMES[i];
+    if (!pair) return;
+    if (appRef.current) {
+      appRef.current.style.setProperty('--a', pair[0]);
+      appRef.current.style.setProperty('--a2', pair[1]);
+    }
+    if (stageRef.current) {
+      stageRef.current.style.setProperty('--a', pair[0]);
+      stageRef.current.style.setProperty('--a2', pair[1]);
+    }
+  };
 
-  // Helper wait function
-  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const plain = (h: string) => {
+    const d = document.createElement('div');
+    d.innerHTML = h;
+    return d.textContent || '';
+  };
 
-  // The Exact Choreographed Animation Sequence from the User's HTML Preview
-  const play = async (prob: PreviewProblem) => {
-    const myRun = ++runRef.current;
-    const isLive = () => myRun === runRef.current;
+  const render = (codeLines: string[], n: number, partial?: string | null) => {
+    if (!codeRef.current) return;
+    const completed = codeLines
+      .slice(0, n)
+      .map((l) => `<span class="ln">${l}</span>`)
+      .join('');
+    const curLine =
+      partial !== null && partial !== undefined
+        ? `<span class="ln">${partial}<i class="cur"></i></span>`
+        : '';
+    codeRef.current.innerHTML = completed + curLine;
+  };
 
-    // 1. Reset state
-    setThemeIdx(1);
-    setXpWidth(62);
-    setXpText('1,240 XP');
-    setVisibleLogsCount(0);
-    setShowByteBubble(false);
-    setShowPop(false);
-    setShowPalette(false);
-    setPaletteTyped('> ');
-    setCodeHtml(renderCode(prob.codeHtml, 0, ''));
+  const play = async (prob: ProblemData) => {
+    const myRun = ++runIdRef.current;
+    const isLive = () => myRun === runIdRef.current;
+
+    const termChildren = termRef.current?.children;
+
+    setTheme(1);
+    if (xpRef.current) xpRef.current.style.width = '62%';
+    if (xpnRef.current) xpnRef.current.textContent = '1,240 XP';
+
+    if (termChildren) {
+      Array.from(termChildren).forEach((t) => t.classList.remove('show'));
+    }
+    bubRef.current?.classList.remove('show');
+    popRef.current?.classList.remove('show');
+    palRef.current?.classList.remove('show');
+    render(prob.code, 0, '');
+
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    const wait = (ms: number) =>
+      new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+
+    if (reduce) {
+      render(prob.code, prob.code.length);
+      if (termChildren) {
+        Array.from(termChildren).forEach((t) => t.classList.add('show'));
+      }
+      if (xpRef.current) xpRef.current.style.width = '100%';
+      if (xpnRef.current) xpnRef.current.textContent = '1,290 XP';
+      return;
+    }
 
     await wait(500);
 
-    // 2. Type code line by line (45ms per step, 90ms per line)
-    for (let i = 0; i < prob.codeHtml.length && isLive(); i++) {
-      const fullText = stripHtml(prob.codeHtml[i]);
-      const step = Math.max(1, Math.ceil(fullText.length / 9));
-
-      for (let c = step; c < fullText.length && isLive(); c += step) {
-        setCodeHtml(renderCode(prob.codeHtml, i, fullText.slice(0, c)));
+    // Progressive line typing
+    for (let i = 0; i < prob.code.length && isLive(); i++) {
+      const txt = plain(prob.code[i]);
+      const step = Math.ceil(txt.length / 9);
+      for (let c = step; c < txt.length && isLive(); c += step) {
+        render(prob.code, i, txt.slice(0, c));
         await wait(45);
       }
-
       if (!isLive()) return;
-      setCodeHtml(renderCode(prob.codeHtml, i + 1, null));
+      render(prob.code, i + 1);
       await wait(90);
-
-      // Byte bubble appears on line 3
-      if (i === 3) {
-        setShowByteBubble(true);
-      }
+      if (i === 3) bubRef.current?.classList.add('show');
     }
 
     if (!isLive()) return;
     await wait(500);
 
-    // 3. Sequential terminal logs (650ms delay each)
-    for (let i = 0; i < prob.terminalLogs.length && isLive(); i++) {
-      setVisibleLogsCount(i + 1);
-      await wait(650);
+    // Sequential terminal tests
+    if (termChildren) {
+      for (let i = 0; i < termChildren.length && isLive(); i++) {
+        termChildren[i].classList.add('show');
+        await wait(650);
+      }
     }
 
     if (!isLive()) return;
-
-    // 4. XP bar to 100% and +50 XP! Pop banner
-    setXpWidth(100);
-    setXpText('1,290 XP');
-    setShowPop(true);
+    if (xpRef.current) xpRef.current.style.width = '100%';
+    if (xpnRef.current) xpnRef.current.textContent = '1,290 XP';
+    popRef.current?.classList.add('show');
 
     await wait(1800);
     if (!isLive()) return;
 
-    // 5. Hide pop, show Command Palette simulation
-    setShowPop(false);
-    setShowPalette(true);
+    popRef.current?.classList.remove('show');
+    palRef.current?.classList.add('show');
 
-    const command = '> theme midnight';
-    setPaletteTyped('> ');
-    for (const ch of command.slice(2)) {
+    const q = '> theme midnight';
+    if (pinRef.current) pinRef.current.textContent = '> ';
+    for (const ch of q.slice(2)) {
       if (!isLive()) return;
-      setPaletteTyped((prev) => prev + ch);
+      if (pinRef.current) pinRef.current.textContent += ch;
       await wait(70);
     }
 
     await wait(600);
     if (!isLive()) return;
-
-    // 6. Theme switches to Tokyo Midnight / Rose Theme
-    setThemeIdx(3);
+    setTheme(3);
 
     await wait(500);
-    setShowPalette(false);
+    palRef.current?.classList.remove('show');
 
-    // 7. Pause and auto loop
     await wait(2800);
-    if (isLive()) {
-      play(prob);
-    }
+    if (isLive()) play(prob);
   };
 
-  // Start on mount or when problem changes
   useEffect(() => {
-    play(activeProblem);
+    play(currentProb);
     return () => {
-      runRef.current++;
+      runIdRef.current++;
     };
-  }, [selectedProbId]);
+  }, [activeProblemId]);
 
-  // Manual replay button
   const handleReplay = () => {
     sound.playPop();
-    play(activeProblem);
+    play(currentProb);
   };
 
-  // Theme dot click
-  const handleThemeClick = (idx: number) => {
+  const handleThemeClick = (i: number) => {
     sound.playPop();
-    setThemeIdx(idx);
+    setTheme(i);
   };
 
-  // Problem click from left list
-  const handleSelectProblem = (id: string, fileName: string) => {
+  const handleSelectProblem = (id: string) => {
     sound.playPop();
-    setSelectedProbId(id);
-    setActiveFileTab(fileName);
+    setActiveProblemId(id);
   };
 
-  // Tab switch
-  const handleTabClick = (tabName: string) => {
+  const handleTabClick = (t: string) => {
     sound.playPop();
-    setActiveNavTab(tabName);
+    setActiveNavTab(t);
   };
 
-  // Toggle Command Palette
   const handleTogglePalette = () => {
     sound.playPop();
-    setShowPalette((prev) => !prev);
+    palRef.current?.classList.toggle('show');
   };
 
   return (
-    <div className="w-full max-w-[1120px] mx-auto my-2 select-none">
-      {/* Top Header bar with exact title and Replay button */}
-      <div className="flex justify-between items-center mb-3 gap-2 flex-wrap">
-        <h1 className="font-bold text-xl tracking-tight text-white m-0">
-          ADA Hub: interface preview
-        </h1>
-        <button
-          onClick={handleReplay}
-          type="button"
-          className="flex items-center gap-1.5 font-bold text-xs text-white border border-white/35 py-2 px-4 rounded-full cursor-pointer bg-gradient-to-b from-[#8f6bff] to-[#5b34e0] shadow-[0_6px_18px_rgba(110,70,255,0.45),inset_0_1px_0_rgba(255,255,255,0.55)] hover:brightness-110 active:scale-95 transition-all outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#38B6FF]"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Replay</span>
+    <div className="wrap">
+      <div className="top">
+        <h1>ADA Hub: interface preview</h1>
+        <button id="replay" type="button" onClick={handleReplay}>
+          Replay
         </button>
       </div>
-
-      {/* Responsive Horizontal Scroll Container */}
-      <div className="overflow-x-auto p-1">
-        <div
-          className="stage"
-          id="stage"
-          style={
-            {
-              '--a': currentTheme[0],
-              '--a2': currentTheme[1],
-              minWidth: '900px',
-            } as React.CSSProperties
-          }
-        >
-          {/* 3 Contained Floating Orbs */}
+      <div className="scroll">
+        <div className="stage" id="stage" ref={stageRef}>
           <div className="orb o1" />
           <div className="orb o2" />
           <div className="orb o3" />
-
-          {/* App Card Container with Specular Top Sheen */}
-          <div
-            className="app"
-            id="app"
-            style={
-              {
-                '--a': currentTheme[0],
-                '--a2': currentTheme[1],
-              } as React.CSSProperties
-            }
-          >
-            {/* Nav Header */}
+          <div className="app" id="app" ref={appRef}>
             <div className="nav">
-              <div className="logo cursor-pointer">
-                <b>⚡</b>
-                <span>Algorithm Adventures</span>
+              <div
+                className="logo cursor-pointer"
+                onClick={() => handleTabClick('Problems')}
+              >
+                <b>⚡</b>Algorithm Adventures
               </div>
-
-              {/* Pill Tabs */}
               <div className="tabs">
-                {['Problems', 'Sagas', 'Research Lab', 'Duel Arena', 'Mock Interview'].map(
-                  (tab) => (
-                    <span
-                      key={tab}
-                      className={activeNavTab === tab ? 'on' : ''}
-                      onClick={() => handleTabClick(tab)}
-                    >
-                      {tab}
-                    </span>
-                  )
-                )}
+                {[
+                  'Problems',
+                  'Sagas',
+                  'Research Lab',
+                  'Duel Arena',
+                  'Mock Interview',
+                ].map((tab) => (
+                  <span
+                    key={tab}
+                    className={activeNavTab === tab ? 'on' : ''}
+                    onClick={() => handleTabClick(tab)}
+                  >
+                    {tab}
+                  </span>
+                ))}
               </div>
-
               <div className="sp" />
-
-              {/* ⌘K Search Trigger */}
               <div className="k" onClick={handleTogglePalette}>
                 ⌘K Search
               </div>
-
-              {/* 5 Theme Dots */}
-              <div className="dots" aria-label="Themes">
+              <div className="dots" aria-hidden="true">
                 <i
                   style={{ background: '#06B6D4', color: '#06B6D4' }}
                   onClick={() => handleThemeClick(0)}
-                  title="Cyber Teal"
+                  title="Teal"
                 />
                 <i
                   style={{ background: '#FFDE59', color: '#FFDE59' }}
                   onClick={() => handleThemeClick(4)}
-                  title="Imperial Amber"
+                  title="Amber"
                 />
                 <i
                   style={{ background: '#10B981', color: '#10B981' }}
                   onClick={() => handleThemeClick(2)}
-                  title="Emerald Matrix"
+                  title="Emerald"
                 />
                 <i
                   style={{ background: '#8B5CF6', color: '#8B5CF6' }}
                   onClick={() => handleThemeClick(1)}
-                  title="Tokyo Midnight"
+                  title="Midnight"
                 />
                 <i
                   style={{ background: '#F43F5E', color: '#F43F5E' }}
                   onClick={() => handleThemeClick(3)}
-                  title="Crimson Rose"
+                  title="Rose"
                 />
               </div>
-
-              {/* Streak */}
               <div className="stat">🔥 12 days</div>
-
-              {/* XP Track with Shimmer Sweep */}
               <div className="xp">
-                <b id="xp" style={{ width: `${xpWidth}%` }} />
+                <b id="xp" ref={xpRef} />
               </div>
-
-              {/* XP Number */}
-              <div className="stat" id="xpn">
-                {xpText}
+              <div className="stat" id="xpn" ref={xpnRef}>
+                1,240 XP
               </div>
             </div>
-
-            {/* Main 3-Column Studio Grid */}
-            <div className="main-preview-grid">
-              {/* Left Column: Chapter 1 Problems */}
+            <div className="main">
               <div className="side glass">
                 <h3>Ch 1: Searching</h3>
                 <div
-                  className={`pr ${PREVIEW_PROBLEMS[1].isDone ? 'done' : ''} ${
-                    selectedProbId === 'contains-dup' ? 'on' : ''
+                  className={`pr done ${
+                    activeProblemId === 'contains-dup' ? 'on' : ''
                   }`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[1].id,
-                      PREVIEW_PROBLEMS[1].fileName
-                    )
-                  }
+                  onClick={() => handleSelectProblem('contains-dup')}
                 >
-                  <span className="truncate pr-1">Array Contains Duplicate</span>
-                  <em className="E">Easy</em>
+                  Array Contains Duplicate<em className="E">Easy</em>
                 </div>
-
                 <div
-                  className={`pr ${selectedProbId === 'bin-search' ? 'on' : ''}`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[0].id,
-                      PREVIEW_PROBLEMS[0].fileName
-                    )
-                  }
+                  className={`pr ${
+                    activeProblemId === 'bin-search' ? 'on' : ''
+                  }`}
+                  onClick={() => handleSelectProblem('bin-search')}
                 >
-                  <span className="truncate pr-1">Binary Search</span>
-                  <em className="E">Easy</em>
+                  Binary Search<em className="E">Easy</em>
                 </div>
-
                 <div
-                  className={`pr ${selectedProbId === 'two-sum' ? 'on' : ''}`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[2].id,
-                      PREVIEW_PROBLEMS[2].fileName
-                    )
-                  }
+                  className={`pr ${activeProblemId === 'two-sum' ? 'on' : ''}`}
+                  onClick={() => handleSelectProblem('two-sum')}
                 >
-                  <span className="truncate pr-1">Two Sum</span>
-                  <em className="E">Easy</em>
+                  Two Sum<em className="E">Easy</em>
                 </div>
-
                 <div
-                  className={`pr ${selectedProbId === 'course-sched' ? 'on' : ''}`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[3].id,
-                      PREVIEW_PROBLEMS[3].fileName
-                    )
-                  }
+                  className="pr"
+                  onClick={() => handleSelectProblem('bin-search')}
                 >
-                  <span className="truncate pr-1">Course Schedule</span>
-                  <em className="M">Med</em>
+                  Course Schedule<em className="M">Med</em>
                 </div>
-
                 <div
-                  className={`pr ${selectedProbId === 'array-div' ? 'on' : ''}`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[0].id,
-                      PREVIEW_PROBLEMS[0].fileName
-                    )
-                  }
+                  className="pr"
+                  onClick={() => handleSelectProblem('bin-search')}
                 >
-                  <span className="truncate pr-1">Array Pair Sum Divisibility</span>
-                  <em className="M">Med</em>
+                  Array Pair Sum Divisibility<em className="M">Med</em>
                 </div>
-
                 <div
-                  className={`pr ${selectedProbId === 'kth-largest' ? 'on' : ''}`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[4].id,
-                      PREVIEW_PROBLEMS[4].fileName
-                    )
-                  }
+                  className="pr"
+                  onClick={() => handleSelectProblem('bin-search')}
                 >
-                  <span className="truncate pr-1">Kth Largest in Stream</span>
-                  <em className="M">Med</em>
+                  Kth Largest in Stream<em className="M">Med</em>
                 </div>
-
                 <div
-                  className={`pr ${selectedProbId === 'word-ladder' ? 'on' : ''}`}
-                  onClick={() =>
-                    handleSelectProblem(
-                      PREVIEW_PROBLEMS[5].id,
-                      PREVIEW_PROBLEMS[5].fileName
-                    )
-                  }
+                  className="pr"
+                  onClick={() => handleSelectProblem('bin-search')}
                 >
-                  <span className="truncate pr-1">Word Ladder</span>
-                  <em className="H">Hard</em>
+                  Word Ladder<em className="H">Hard</em>
                 </div>
               </div>
-
-              {/* Center Column: IDE & Live Terminal */}
               <div className="ide glass">
                 <div className="etabs">
                   <span
-                    className={activeFileTab === 'binary-search.py' ? 'on' : ''}
-                    onClick={() =>
-                      handleSelectProblem(
-                        PREVIEW_PROBLEMS[0].id,
-                        'binary-search.py'
-                      )
-                    }
+                    className={activeProblemId === 'bin-search' ? 'on' : ''}
+                    onClick={() => handleSelectProblem('bin-search')}
                   >
                     binary-search.py
                   </span>
                   <span
-                    className={activeFileTab === 'two-sum.py' ? 'on' : ''}
-                    onClick={() =>
-                      handleSelectProblem(
-                        PREVIEW_PROBLEMS[2].id,
-                        'two-sum.py'
-                      )
-                    }
+                    className={activeProblemId === 'two-sum' ? 'on' : ''}
+                    onClick={() => handleSelectProblem('two-sum')}
                   >
                     two-sum.py
                   </span>
                 </div>
-
-                {/* Preformatted Line-Numbered Code Block */}
                 <pre
-                  className="code-pre"
                   id="code"
+                  ref={codeRef}
                   aria-label="Python editor"
-                  dangerouslySetInnerHTML={{ __html: codeHtml }}
                 />
-
-                {/* Terminal Window with Sequential Passes */}
-                <div className="term" id="term">
-                  {activeProblem.terminalLogs.map((log, lIdx) => (
+                <div className="term" id="term" ref={termRef}>
+                  {currentProb.terminalLogs.map((log, idx) => (
                     <div
-                      key={lIdx}
-                      className={`${lIdx < visibleLogsCount ? 'show' : ''} ${
-                        log.startsWith('$') ? 'pend' : 'ok'
-                      }`}
+                      key={idx}
+                      className={log.isPend ? 'pend' : 'ok'}
                     >
-                      {log}
+                      {log.text}
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Right Column: Problem Specs & Byte Companion */}
               <div className="right glass">
-                <h3>{activeProblem.title}</h3>
+                <h3>{currentProb.title}</h3>
                 <p
-                  dangerouslySetInnerHTML={{
-                    __html: activeProblem.descHtml,
-                  }}
+                  dangerouslySetInnerHTML={{ __html: currentProb.descHtml }}
                 />
-
-                <div>
-                  {activeProblem.chips.map((chip, cIdx) => (
-                    <span key={cIdx} className="chip">
-                      {chip}
-                    </span>
-                  ))}
-                </div>
-
+                {currentProb.chips.map((c) => (
+                  <span key={c} className="chip">
+                    {c}
+                  </span>
+                ))}
                 <p style={{ marginTop: '10px' }}>
-                  Constraints: {activeProblem.constraints}
+                  Constraints: {currentProb.constraints}
                 </p>
-
-                {/* Byte AI Mentor & Hop Animation */}
                 <div className="byte">
                   <div className="bot">🤖</div>
-                  <div className={`bub ${showByteBubble ? 'show' : ''}`} id="bub">
-                    {activeProblem.byteTip}
+                  <div className="bub" id="bub" ref={bubRef}>
+                    {currentProb.byteTip}
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Bangers +50 XP! Pop Overlay */}
-            <div className={`pop ${showPop ? 'show' : ''}`} id="pop">
+            <div className="pop" id="pop" ref={popRef}>
               +50 XP!
             </div>
-
-            {/* In-Preview Command Palette Overlay */}
-            <div
-              className={`pal ${showPalette ? 'show' : ''}`}
-              id="pal"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) setShowPalette(false);
-              }}
-            >
+            <div className="pal" id="pal" ref={palRef}>
               <div className="pbox">
-                <div className="pin" id="pin">
-                  {paletteTyped}
+                <div className="pin" id="pin" ref={pinRef}>
+                  &gt;{' '}
                 </div>
                 <div
                   className="pit on"
                   onClick={() => {
                     handleThemeClick(1);
-                    setShowPalette(false);
+                    palRef.current?.classList.remove('show');
                   }}
                 >
-                  <span>Theme: Tokyo Midnight</span>
-                  <small>theme</small>
+                  Theme: Tokyo Midnight<small>theme</small>
                 </div>
                 <div
                   className="pit"
                   onClick={() => {
-                    setActiveNavTab('Research Lab');
-                    setShowPalette(false);
+                    handleTabClick('Research Lab');
+                    palRef.current?.classList.remove('show');
                   }}
                 >
-                  <span>Open Raft Consensus Lab</span>
-                  <small>lab</small>
+                  Open Raft Consensus Lab<small>lab</small>
                 </div>
                 <div
                   className="pit"
                   onClick={() => {
-                    setActiveNavTab('Duel Arena');
-                    setShowPalette(false);
+                    handleTabClick('Duel Arena');
+                    palRef.current?.classList.remove('show');
                   }}
                 >
-                  <span>Start 1v1 Duel vs Bugsy</span>
-                  <small>arena</small>
+                  Start 1v1 Duel vs Bugsy<small>arena</small>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Exact Caption */}
       <div className="cap">
         Animated mock-up: write a solution, run the tests, earn XP, then switch
         themes with the command palette.

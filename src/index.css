@@ -375,23 +375,75 @@
   color: transparent !important;
 }
 
+
 /* ========================================================
    GLOSSY CYBER-GLASS DESIGN SYSTEM (HIGH-CONTRAST PREVIEW)
    ======================================================== */
 
 :root {
-  --a: #8B5CF6;
-  --a2: #38BDF8;
   --page: #05060a;
   --ink: #e8ecf5;
   --muted: #8a90a6;
+  --a: #8B5CF6;
+  --a2: #38BDF8;
 }
 
-/* Ambient Radial Stage & Drifting Orbs */
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.top h1 {
+  font: 700 20px "Space Grotesk", sans-serif;
+  margin: 0;
+  letter-spacing: -0.2px;
+  color: #fff;
+}
+
+.top button {
+  font: 700 13px "Space Grotesk", sans-serif;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #8f6bff, #5b34e0);
+  box-shadow: 0 6px 18px rgba(110, 70, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition: all 0.2s ease;
+}
+
+.top button:focus-visible {
+  outline: 3px solid #38B6FF;
+  outline-offset: 2px;
+}
+
+.top button:hover {
+  filter: brightness(1.1);
+}
+
+.top button:active {
+  transform: scale(0.97);
+}
+
+.scroll {
+  overflow-x: auto;
+  padding: 4px;
+}
+
 .stage, .ambient-stage {
+  min-width: 900px;
   position: relative;
   border-radius: 28px;
-  padding: 24px;
+  padding: 26px;
   background: radial-gradient(120% 90% at 15% 0%, #1b1440 0%, #0a0b17 55%, #060710 100%);
   overflow: hidden;
   box-shadow: 0 30px 80px rgba(20, 10, 60, 0.45);
@@ -403,9 +455,8 @@
   filter: blur(70px);
   opacity: 0.55;
   animation: drift 14s ease-in-out infinite alternate;
-  pointer-events: none;
   transition: background 1s ease;
-  z-index: 0;
+  pointer-events: none;
 }
 
 .o1 {
@@ -413,7 +464,7 @@
   height: 380px;
   left: -90px;
   top: -60px;
-  background: var(--a, #8B5CF6);
+  background: var(--a);
 }
 
 .o2 {
@@ -421,7 +472,7 @@
   height: 340px;
   right: -70px;
   bottom: -60px;
-  background: var(--a2, #38BDF8);
+  background: var(--a2);
   animation-delay: -5s;
 }
 
@@ -436,11 +487,11 @@
 }
 
 @keyframes drift {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, 36px) scale(1.12); }
+  to {
+    transform: translate(50px, 36px) scale(1.12);
+  }
 }
 
-/* Multi-layer Glossy Surface Container with Specular Top Sheen */
 .app, .glossy-app {
   --a: #8B5CF6;
   --a2: #38BDF8;
@@ -470,7 +521,6 @@
   z-index: 2;
 }
 
-/* Nav Header */
 .nav {
   display: flex;
   align-items: center;
@@ -484,7 +534,7 @@
   font: 700 17px "Space Grotesk", sans-serif;
   letter-spacing: -0.2px;
   white-space: nowrap;
-  background: linear-gradient(90deg, #fff, var(--a2, #38BDF8));
+  background: linear-gradient(90deg, #fff, var(--a2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -501,11 +551,10 @@
   margin-right: 8px;
   color: #fff;
   -webkit-text-fill-color: #fff;
-  background: linear-gradient(145deg, var(--a2, #38BDF8), var(--a, #8B5CF6));
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--a, #8B5CF6) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: linear-gradient(145deg, var(--a2), var(--a));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--a) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Glossy Capsule Tabs */
 .tabs, .tabs-capsule {
   display: flex;
   gap: 4px;
@@ -528,15 +577,14 @@
 .tabs .on, .tabs span.on, .tabs button.on, .tabs-capsule .on, .tabs-capsule button.on {
   color: #fff;
   font-weight: 700;
-  background: linear-gradient(180deg, var(--a2, #38BDF8), var(--a, #8B5CF6));
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--a, #8B5CF6) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, var(--a2), var(--a));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--a) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .sp {
   flex: 1;
 }
 
-/* Command Palette Trigger Pill (⌘K) */
 .k, .glossy-k {
   font: 12px "Fira Code", monospace;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -546,6 +594,7 @@
   color: #c3c8dd;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   cursor: pointer;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -558,7 +607,6 @@
   color: #fff;
 }
 
-/* Interactive Color Dot Switcher */
 .dots {
   display: flex;
   gap: 6px;
@@ -592,9 +640,9 @@
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+  color: #e8ecf5;
 }
 
-/* Shimmer XP Bar */
 .xp, .xp-track {
   width: 120px;
   height: 10px;
@@ -609,8 +657,8 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--a2, #38BDF8), var(--a, #8B5CF6));
-  box-shadow: 0 0 12px var(--a, #8B5CF6);
+  background: linear-gradient(90deg, var(--a2), var(--a));
+  box-shadow: 0 0 12px var(--a);
   transition: width 1.4s ease;
   position: relative;
   overflow: hidden;
@@ -631,23 +679,14 @@
   }
 }
 
-/* Studio 3-Column Grid */
-.main-preview-grid {
+.main {
   display: grid;
   grid-template-columns: 230px 1fr 280px;
   gap: 14px;
   padding: 14px;
-  min-height: 500px;
+  height: 500px;
 }
 
-@media (max-width: 900px) {
-  .main-preview-grid {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-}
-
-/* Glossy Glass Cards & Sidebars */
 .glass {
   border-radius: 16px;
   background: rgba(12, 13, 28, 0.5);
@@ -660,6 +699,7 @@
 
 .side {
   padding: 12px;
+  overflow-y: auto;
 }
 
 .side h3, .right h3 {
@@ -669,7 +709,6 @@
   opacity: 0.85;
 }
 
-/* Problem Items in Sidebar */
 .pr {
   display: flex;
   justify-content: space-between;
@@ -692,9 +731,9 @@
 
 .pr.on {
   color: #fff;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--a, #8B5CF6) 38%, transparent), rgba(255, 255, 255, 0.06));
-  border-color: color-mix(in srgb, var(--a2, #38BDF8) 60%, transparent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--a, #8B5CF6) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--a) 38%, transparent), rgba(255, 255, 255, 0.06));
+  border-color: color-mix(in srgb, var(--a2) 60%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--a) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .pr em {
@@ -726,7 +765,6 @@
   margin-right: 4px;
 }
 
-/* IDE & File Tabs */
 .ide {
   display: flex;
   flex-direction: column;
@@ -752,11 +790,10 @@
 .etabs .on, .etabs button.on {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
-  box-shadow: inset 0 2px 0 var(--a2, #38BDF8);
+  box-shadow: inset 0 2px 0 var(--a2);
 }
 
-/* Code Pre with Automatic Line Counter */
-pre.code-pre {
+.app pre, pre#code, pre.code-pre {
   margin: 0;
   padding: 14px 8px;
   font: 13px/1.7 "Fira Code", Consolas, monospace;
@@ -768,7 +805,7 @@ pre.code-pre {
   background: rgba(255, 255, 255, 0.03);
 }
 
-pre.code-pre .ln {
+.app pre .ln, pre#code .ln, pre.code-pre .ln {
   display: block;
   counter-increment: l;
   padding-left: 38px;
@@ -776,7 +813,7 @@ pre.code-pre .ln {
   min-height: 1.7em;
 }
 
-pre.code-pre .ln::before {
+.app pre .ln::before, pre#code .ln::before, pre.code-pre .ln::before {
   content: counter(l);
   position: absolute;
   left: 0;
@@ -785,20 +822,18 @@ pre.code-pre .ln::before {
   color: #59607a;
 }
 
-/* Syntax Highlighting */
 .kw { color: #d19bff; font-weight: 600; }
 .fn { color: #ffe9a6; }
 .nu { color: #9ef0c0; }
 .cm { color: #6a9955; }
 .ty { color: #7fe3ff; }
 
-/* Blinking Neon Cursor */
 .cur, .blinking-cursor {
   display: inline-block;
   width: 7px;
   height: 16px;
-  background: var(--a2, #38BDF8);
-  box-shadow: 0 0 10px var(--a2, #38BDF8);
+  background: var(--a2);
+  box-shadow: 0 0 10px var(--a2);
   vertical-align: -3px;
   animation: bl 1s steps(1) infinite;
 }
@@ -807,20 +842,19 @@ pre.code-pre .ln::before {
   50% { opacity: 0; }
 }
 
-/* Terminal */
 .term {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   padding: 10px 16px;
   font: 12px "Fira Code", monospace;
-  height: 120px;
-  overflow-y: auto;
+  height: 116px;
+  overflow: hidden;
   background: rgba(0, 0, 0, 0.28);
 }
 
 .term div {
   opacity: 0;
   transform: translateY(5px);
-  transition: 0.3s;
+  transition: 0.3s ease;
   margin-bottom: 2px;
 }
 
@@ -838,7 +872,6 @@ pre.code-pre .ln::before {
   color: #9aa0b8;
 }
 
-/* Right Panel: Spec & Mascot */
 .right {
   padding: 14px;
   font-size: 12px;
@@ -894,9 +927,9 @@ pre.code-pre .ln::before {
   transform: scale(0.92) translateY(6px);
   transform-origin: bottom left;
   transition: 0.4s cubic-bezier(0.3, 1.4, 0.5, 1);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--a2, #38BDF8) 85%, #fff 0%), var(--a, #8B5CF6));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--a2) 85%, #fff 0%), var(--a));
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--a, #8B5CF6) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--a) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .bub.show {
@@ -904,11 +937,10 @@ pre.code-pre .ln::before {
   transform: none;
 }
 
-/* Command Palette Preview Overlay */
 .pal {
   position: absolute;
   inset: 0;
-  z-index: 25 !important;
+  z-index: 5 !important;
   background: rgba(5, 6, 14, 0.55);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -918,7 +950,7 @@ pre.code-pre .ln::before {
   padding-top: 80px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  transition: 0.25s ease;
 }
 
 .pal.show {
@@ -931,7 +963,7 @@ pre.code-pre .ln::before {
   max-width: 90%;
   border-radius: 18px;
   overflow: hidden;
-  background: rgba(22, 22, 44, 0.85);
+  background: rgba(22, 22, 44, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
@@ -957,7 +989,7 @@ pre.code-pre .ln::before {
 .pit:hover, .pit.on {
   color: #fff;
   font-weight: 700;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--a, #8B5CF6) 55%, transparent), color-mix(in srgb, var(--a2, #38BDF8) 25%, transparent));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--a) 55%, transparent), color-mix(in srgb, var(--a2) 25%, transparent));
 }
 
 .pit small {
@@ -965,16 +997,15 @@ pre.code-pre .ln::before {
   font-family: "Fira Code", monospace;
 }
 
-/* Bangers XP Pop */
 .pop, .pop-bangers {
   position: absolute;
   right: 310px;
   top: 160px;
-  z-index: 20 !important;
+  z-index: 4 !important;
   font: 400 52px "Bangers", Impact, sans-serif;
   letter-spacing: 2px;
   color: #fff;
-  text-shadow: 0 0 24px var(--a2, #38BDF8), 0 4px 0 var(--a, #8B5CF6);
+  text-shadow: 0 0 24px var(--a2), 0 4px 0 var(--a);
   transform: rotate(-6deg) scale(0);
   transition: 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
   pointer-events: none;
@@ -987,14 +1018,12 @@ pre.code-pre .ln::before {
 .cap {
   margin-top: 12px;
   font-size: 13px;
-  color: var(--muted, #8a90a6);
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cur, .bot, .orb, .xp b::after, .xp-fill::after {
+  .cur, .bot, .orb, .xp b::after {
     animation: none;
   }
 }
-
-
 
