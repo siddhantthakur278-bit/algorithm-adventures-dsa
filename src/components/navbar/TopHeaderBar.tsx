@@ -113,7 +113,7 @@ export const TopHeaderBar: React.FC = () => {
             onClick={() => setActiveTab('lecture-studio')}
             className={activeTab === 'lecture-studio' ? 'on' : ''}
           >
-            Research Lab
+            Lecture Studio
           </button>
           <button
             onClick={() => setActiveTab('duel')}

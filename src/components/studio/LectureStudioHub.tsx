@@ -27,7 +27,7 @@ import {
   Swords,
   Award,
 } from 'lucide-react';
-import { SupportedLanguage } from '../../utils/languageTemplates';
+import { SupportedLanguage, generateStarterCode } from '../../utils/languageTemplates';
 import {
   CODER_ARMY_MODULES,
   CODER_ARMY_LECTURES,
@@ -162,7 +162,7 @@ export const LectureStudioHub: React.FC = () => {
   // Studio Layout Modes
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
   const [splitRatio, setSplitRatio] = useState<'balanced' | 'video-large' | 'code-large'>('balanced');
-  const [isSyllabusDrawerOpen, setIsSyllabusDrawerOpen] = useState<boolean>(true);
+  const [isSyllabusDrawerOpen, setIsSyllabusDrawerOpen] = useState<boolean>(false);
 
   // Editor / Interpreter / Debugger State
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('cpp');
@@ -198,8 +198,12 @@ export const LectureStudioHub: React.FC = () => {
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     sound.playPop();
     setCurrentLanguage(newLang);
-    if (selectedTrack === 'coder-army' && activeLecture.starterCodes[newLang]) {
-      setCode(activeLecture.starterCodes[newLang]!);
+    if (selectedTrack === 'coder-army') {
+      if (activeLecture.starterCodes[newLang]) {
+        setCode(activeLecture.starterCodes[newLang]!);
+      } else {
+        setCode(generateStarterCode(newLang, activeLecture.title, activeLecture.starterCodes.python || ''));
+      }
     }
   };
 
@@ -288,7 +292,7 @@ export const LectureStudioHub: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1780px] mx-auto px-2 sm:px-4 py-4 space-y-4 font-sans select-none">
+    <div className="max-w-[1780px] mx-auto px-2 sm:px-4 pt-3 pb-6 space-y-4 font-sans select-none scroll-mt-20">
       {/* Studio Top Control Deck */}
       <div className="bg-[#0a0d18] border border-white/10 rounded-3xl p-3 sm:p-4 shadow-2xl flex flex-wrap items-center justify-between gap-3">
         {/* Left: Branding & Track Selector */}
@@ -422,12 +426,13 @@ export const LectureStudioHub: React.FC = () => {
               onClick={() => setIsSyllabusDrawerOpen((prev) => !prev)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
                 isSyllabusDrawerOpen
-                  ? 'bg-amber-400/15 text-amber-300 border-amber-400/40'
-                  : 'bg-white/[0.04] text-slate-300 border-white/10 hover:text-white'
+                  ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 shadow-sm'
+                  : 'bg-white/[0.06] text-slate-200 border-white/15 hover:text-white hover:bg-white/[0.10]'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Syllabus Drawer</span>
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              <span>Syllabus Browser ({CODER_ARMY_LECTURES.length})</span>
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isSyllabusDrawerOpen ? 'rotate-180' : ''}`} />
             </button>
           )}
         </div>
@@ -579,14 +584,102 @@ export const LectureStudioHub: React.FC = () => {
             )}
 
             {/* Responsive 16:9 Aspect Ratio Video Frame */}
+            {/* Player Header Ribbon with Live Indicator & Quick Selector */}
+            <div className="px-4 py-2.5 bg-white/[0.04] border-b border-white/10 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                <span className="font-bold text-white text-xs truncate">
+                  {selectedTrack === 'coder-army' ? 'Coder Army Masterclass' : selectedTrack === 'curated' ? activeCurated.instructor : 'Custom Stream'}
+                </span>
+
+                {selectedTrack === 'coder-army' && (
+                  <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-white/10">
+                    <span className="text-[10px] font-mono text-slate-400">Jump:</span>
+                    <select
+                      value={activeLectureId}
+                      onChange={(e) => {
+                        const target = CODER_ARMY_LECTURES.find((l) => l.id === e.target.value);
+                        if (target) handleSelectCoderArmyLecture(target);
+                      }}
+                      className="bg-[#0b0e1b] text-slate-200 border border-white/15 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-400 font-mono cursor-pointer"
+                    >
+                      {CODER_ARMY_LECTURES.map((lec) => (
+                        <option key={lec.id} value={lec.id}>
+                          L{lec.lectureNumber}: {lec.title.split(':')[1]?.trim() || lec.title} ({lec.duration})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={
+                    selectedTrack === 'coder-army'
+                      ? `https://www.youtube.com/watch?v=${activeVideoId}&list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01`
+                      : `https://www.youtube.com/watch?v=${activeVideoId}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[11px] transition cursor-pointer shadow-sm"
+                  title="Watch on official YouTube channel (opens in new tab)"
+                >
+                  <Play className="w-3 h-3 fill-white" />
+                  <span>Watch on YouTube</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+
+                {selectedTrack === 'coder-army' && (
+                  <a
+                    href="https://www.youtube.com/playlist?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 hover:text-white border border-white/10 text-[11px] font-semibold transition cursor-pointer"
+                    title="Open full Coder Army 100+ playlist on YouTube"
+                  >
+                    <span>Full Playlist</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Video Frame */}
             <div className="relative w-full aspect-video bg-black overflow-hidden">
               <iframe
+                key={activeVideoId}
                 title="lecture-video-player"
-                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1`}
+                src={`https://www.youtube-nocookie.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`}
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
+            </div>
+
+            {/* Direct Playback Fallback Ribbon */}
+            <div className="px-3.5 py-1.5 bg-white/[0.02] border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-slate-300">
+                  {selectedTrack === 'coder-army'
+                    ? `Rohit Negi · L${activeLecture.lectureNumber}: ${activeLecture.title.split(':')[1]?.trim() || activeLecture.title}`
+                    : 'Curated Master Stream'}
+                </span>
+              </div>
+              <a
+                href={
+                  selectedTrack === 'coder-army'
+                    ? `https://www.youtube.com/watch?v=${activeVideoId}&list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01`
+                    : `https://www.youtube.com/watch?v=${activeVideoId}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 cursor-pointer"
+              >
+                <span>If video is restricted in your browser, open on YouTube ↗</span>
+              </a>
             </div>
 
             {/* Video Footer Metadata & Navigation */}
