@@ -160,23 +160,23 @@ export const VerticalSidebar: React.FC = () => {
         <div className="h-16 px-3.5 border-b border-slate-800/80 flex items-center justify-between gap-2 bg-[#090d16]">
           <div
             className="flex items-center gap-2.5 overflow-hidden cursor-pointer"
-            onClick={() => setActiveTab('quest')}
+            onClick={() => setActiveTab('problems')}
             title="Algorithm Adventures Home"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-base shadow-sm border border-amber-300 shrink-0">
+            <b className="logo-badge shrink-0">
               ⚡
-            </div>
+            </b>
             {!isSidebarCollapsed && (
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="font-extrabold text-xs sm:text-sm text-white tracking-tight truncate uppercase">
+                  <h1 className="font-extrabold text-xs sm:text-sm tracking-tight truncate uppercase bg-gradient-to-r from-white to-[var(--a2,#38BDF8)] bg-clip-text text-transparent">
                     Algorithm Adventures
                   </h1>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-[10px] font-mono text-slate-400 tracking-wider">
-                    v2.5 Vertical Hub
+                    v2.5 Glossy Hub
                   </span>
                 </div>
               </div>

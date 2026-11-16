@@ -433,16 +433,16 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center pt-16 sm:pt-24 p-4 animate-fadeIn"
+      className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md flex items-start justify-center pt-16 sm:pt-24 p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-[#090d18] border-3 border-black rounded-3xl shadow-comic-lg overflow-hidden flex flex-col font-sans"
+        className="w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col font-sans bg-[#14152b]/95 border border-white/20 shadow-[0_30px_70px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.4)] backdrop-blur-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b-2 border-[#1c243c] bg-[#0c1222]">
-          <Search className="w-5 h-5 text-amber-400 shrink-0" />
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/10 bg-[#0d0e1f]/70 font-mono">
+          <span className="text-sm font-bold text-[var(--a2,#38BDF8)]">&gt;</span>
           <input
             ref={inputRef}
             type="text"
@@ -451,24 +451,24 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Type a command, tab, or high-tech module... (e.g. 'Raft', 'POTD', 'Theme')"
-            className="flex-1 bg-transparent text-white font-medium text-sm sm:text-base outline-none placeholder:text-slate-500 font-sans"
+            placeholder="Type a command, problem, or theme... (e.g. 'Binary Search', 'Theme', 'Raft')"
+            className="flex-1 bg-transparent text-white font-medium text-sm sm:text-base outline-none placeholder:text-slate-400 font-sans"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-[#172038] text-slate-400 px-2 py-1 rounded border border-[#233158]">
-            ESC to close
+          <kbd className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-white/[0.08] text-slate-300 px-2 py-1 rounded border border-white/10">
+            ESC
           </kbd>
         </div>
 
         {/* Results List */}
         <div
           ref={listRef}
-          className="max-h-[55vh] overflow-y-auto p-2.5 space-y-1 divide-y divide-slate-900/40"
+          className="max-h-[55vh] overflow-y-auto p-2 space-y-1 divide-y divide-white/[0.04]"
         >
           {filtered.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 space-y-2">
-              <Command className="w-8 h-8 mx-auto text-slate-600" />
+            <div className="py-12 text-center text-slate-400 space-y-2">
+              <Command className="w-8 h-8 mx-auto text-slate-500" />
               <p className="text-sm font-bold">No results found for "{query}"</p>
-              <p className="text-xs">Try searching for 'visualizer', 'syllabus', or 'theme'.</p>
+              <p className="text-xs">Try searching for 'binary search', 'interview', or 'theme'.</p>
             </div>
           ) : (
             filtered.map((item, idx) => {
@@ -483,18 +483,18 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
                     onClose();
                   }}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer transition ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer transition ${
                     isSelected
-                      ? 'bg-[#1b2646] text-white shadow-comic-sm border border-cyan-400/40 -translate-y-0.5'
-                      : 'text-slate-300 hover:bg-[#11172a] hover:text-white'
+                      ? 'bg-gradient-to-r from-[var(--a,#8B5CF6)]/50 to-[var(--a2,#38BDF8)]/25 text-white border border-white/20 shadow-md'
+                      : 'text-slate-300 hover:bg-white/[0.05] hover:text-white border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
                         isSelected
-                          ? 'bg-amber-400 text-slate-950 border-black font-bold shadow-comic-sm'
-                          : 'bg-[#151c31] text-slate-400 border-[#222e50]'
+                          ? 'bg-gradient-to-br from-[var(--a2,#38BDF8)] to-[var(--a,#8B5CF6)] text-white border-white/40 shadow-sm font-bold'
+                          : 'bg-white/[0.05] text-slate-400 border-white/10'
                       }`}
                     >
                       {typeof Icon === 'string' ? (
@@ -509,17 +509,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
                         <span className="text-xs font-bold truncate">{item.title}</span>
                         {item.badge && (
                           <span
-                            className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-extrabold ${
+                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${
                               isSelected
-                                ? 'bg-cyan-400 text-slate-950'
-                                : 'bg-slate-800 text-slate-400'
+                                ? 'bg-white/20 text-white border border-white/20'
+                                : 'bg-white/[0.08] text-slate-300'
                             }`}
                           >
                             {item.badge}
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-500 font-mono">
+                      <span className="text-[10px] text-slate-400 font-mono">
                         {item.category}
                       </span>
                     </div>
@@ -527,7 +527,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
 
                   <div className="flex items-center gap-2">
                     {isSelected && (
-                      <span className="text-xs text-cyan-400 font-bold flex items-center gap-1 font-mono">
+                      <span className="text-xs text-[var(--a2,#38BDF8)] font-bold flex items-center gap-1 font-mono">
                         Jump <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     )}
@@ -539,13 +539,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
         </div>
 
         {/* Footer Shortcut Bar */}
-        <div className="px-5 py-3 border-t-2 border-[#1c243c] bg-[#0c1222] flex items-center justify-between text-xs text-slate-400 font-mono">
+        <div className="px-5 py-2.5 border-t border-white/10 bg-black/40 flex items-center justify-between text-xs text-slate-400 font-mono">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#172038] text-[10px] text-slate-300">↑↓</kbd> Navigate
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-[10px] text-slate-300">↑↓</kbd> Navigate
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#172038] text-[10px] text-slate-300">↵</kbd> Select
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-[10px] text-slate-300">↵</kbd> Select
             </span>
           </div>
 

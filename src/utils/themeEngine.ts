@@ -108,6 +108,14 @@ export function getStoredTheme(): ThemePresetId {
   return 'classic-gold'; // Default classic imperial obsidian & amber gold
 }
 
+export const QUICK_THEME_DOTS: { id: ThemePresetId; color: string; label: string }[] = [
+  { id: 'cyber-cyan', color: '#06B6D4', label: 'Precision Cyan' },
+  { id: 'classic-gold', color: '#FFDE59', label: 'Imperial Gold' },
+  { id: 'matrix-emerald', color: '#10B981', label: 'Matrix Emerald' },
+  { id: 'tokyo-violet', color: '#8B5CF6', label: 'Tokyo Violet' },
+  { id: 'crimson-neon', color: '#F43F5E', label: 'Crimson Rose' },
+];
+
 export function applyTheme(id: ThemePresetId): void {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, id);
@@ -115,12 +123,15 @@ export function applyTheme(id: ThemePresetId): void {
     if (!preset || typeof document === 'undefined') return;
 
     const root = document.documentElement;
+    root.style.setProperty('--a', preset.accent);
+    root.style.setProperty('--a2', preset.accentSecondary);
     root.style.setProperty('--user-accent', preset.accent);
     root.style.setProperty('--user-accent-secondary', preset.accentSecondary);
     root.style.setProperty('--user-accent-bg', preset.accentBg);
     root.style.setProperty('--user-accent-border', preset.accentBorder);
     root.style.setProperty('--user-accent-glow', preset.accentGlow);
     root.setAttribute('data-theme', id);
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { id, preset } }));
   } catch (err) {
     console.error('Failed to apply theme', err);
   }
