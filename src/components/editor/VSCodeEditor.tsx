@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCourse } from '../../context/CourseContext';
 import { runPythonTests, RunResult } from '../../utils/pythonRunner';
+import { SupportedLanguage, executeUniversalCode } from '../../utils/universalCodeRunner';
+import { LanguageSelectorDropdown } from '../common/LanguageSelectorDropdown';
+import { generateStarterCode, LANGUAGE_REGISTRY } from '../../utils/languageTemplates';
 import { CommitResult } from '../../utils/githubService';
 import { queryProfessorAI } from '../../utils/aiService';
 import { ByteAvatar, ProfessorAvatar, BugsyAvatar, ComicBubble } from '../characters/Characters';
@@ -59,6 +62,8 @@ import { sound } from '../../utils/soundEffects';
 export const VSCodeEditor: React.FC = () => {
   const { selectedProblem, markProblemSolved, stats } = useCourse();
 
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('python');
+  const [codeByLang, setCodeByLang] = useState<Record<string, string>>({});
   const [code, setCode] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'problem' | 'hints' | 'aiProfessor' | 'snippets' | 'extensions' | 'gitLog' | 'pairCockpit'
@@ -114,7 +119,9 @@ export const VSCodeEditor: React.FC = () => {
   // Sync starter code when problem changes
   useEffect(() => {
     if (selectedProblem) {
+      setSelectedLanguage('python');
       setCode(selectedProblem.starterCode);
+      setCodeByLang({ python: selectedProblem.starterCode });
       setRunResult(null);
       setLatestCommit(null);
       setOpenHintLevel(0);
@@ -124,6 +131,23 @@ export const VSCodeEditor: React.FC = () => {
       setShowIntelliSense(false);
     }
   }, [selectedProblem]);
+
+  const handleLanguageChange = (newLang: SupportedLanguage) => {
+    if (!selectedProblem) return;
+    setCodeByLang((prev) => ({ ...prev, [selectedLanguage]: code }));
+    setSelectedLanguage(newLang);
+    if (codeByLang[newLang]) {
+      setCode(codeByLang[newLang]);
+    } else {
+      const generated = generateStarterCode(
+        newLang,
+        selectedProblem.title,
+        selectedProblem.starterCode
+      );
+      setCode(generated);
+      setCodeByLang((prev) => ({ ...prev, [newLang]: generated }));
+    }
+  };
 
   if (!selectedProblem) {
     return (
@@ -468,18 +492,59 @@ export const VSCodeEditor: React.FC = () => {
   const lineCount = codeLines.length;
   const isSolved = stats.solvedProblemIds.includes(selectedProblem.id);
 
-  // Standard Test Cases Execution
+  // Standard Test Cases Execution across selected compiler
   const handleRun = async () => {
     setIsRunning(true);
     setRunResult(null);
     setActiveConsoleTab('cases');
     try {
-      const res = await runPythonTests(code, selectedProblem.testCases);
-      setRunResult(res);
-      if (res.allPassed) {
-        sound.playSuccess();
+      if (selectedLanguage === 'python') {
+        const res = await runPythonTests(code, selectedProblem.testCases);
+        setRunResult(res);
+        if (res.allPassed) {
+          sound.playSuccess();
+        } else {
+          sound.playError();
+        }
       } else {
-        sound.playError();
+        const mappedCases = selectedProblem.testCases.map((tc) => ({
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+        }));
+        const outcome = await executeUniversalCode(selectedLanguage, code, {
+          testCases: mappedCases,
+        });
+        const res: RunResult = {
+          success: outcome.success,
+          allPassed: outcome.testPassed ?? outcome.success,
+          totalTimeMs: outcome.executionTimeMs,
+          globalStdout: outcome.output || '',
+          syntaxError: outcome.error,
+          results: outcome.testResults
+            ? outcome.testResults.map((tr) => ({
+                testId: tr.id,
+                passed: tr.passed,
+                executionTimeMs: Math.round(outcome.executionTimeMs / (outcome.testResults?.length || 1)),
+                expectedOutput: tr.expected,
+                actualOutput: tr.actual,
+                stdout: tr.actual,
+                error: tr.error,
+              }))
+            : selectedProblem.testCases.map((tc) => ({
+                testId: tc.id,
+                passed: outcome.success && !outcome.error,
+                executionTimeMs: outcome.executionTimeMs,
+                expectedOutput: tc.expectedOutput,
+                actualOutput: outcome.output,
+                stdout: outcome.output,
+              })),
+        };
+        setRunResult(res);
+        if (res.allPassed) {
+          sound.playSuccess();
+        } else {
+          sound.playError();
+        }
       }
     } finally {
       setIsRunning(false);
@@ -491,7 +556,43 @@ export const VSCodeEditor: React.FC = () => {
     setIsSubmitting(true);
     setActiveConsoleTab('cases');
     try {
-      const res = await runPythonTests(code, selectedProblem.testCases);
+      let res: RunResult;
+      if (selectedLanguage === 'python') {
+        res = await runPythonTests(code, selectedProblem.testCases);
+      } else {
+        const mappedCases = selectedProblem.testCases.map((tc) => ({
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+        }));
+        const outcome = await executeUniversalCode(selectedLanguage, code, {
+          testCases: mappedCases,
+        });
+        res = {
+          success: outcome.success,
+          allPassed: outcome.testPassed ?? outcome.success,
+          totalTimeMs: outcome.executionTimeMs,
+          globalStdout: outcome.output || '',
+          syntaxError: outcome.error,
+          results: outcome.testResults
+            ? outcome.testResults.map((tr) => ({
+                testId: tr.id,
+                passed: tr.passed,
+                executionTimeMs: Math.round(outcome.executionTimeMs / (outcome.testResults?.length || 1)),
+                expectedOutput: tr.expected,
+                actualOutput: tr.actual,
+                stdout: tr.actual,
+                error: tr.error,
+              }))
+            : selectedProblem.testCases.map((tc) => ({
+                testId: tc.id,
+                passed: outcome.success && !outcome.error,
+                executionTimeMs: outcome.executionTimeMs,
+                expectedOutput: tc.expectedOutput,
+                actualOutput: outcome.output,
+                stdout: outcome.output,
+              })),
+        };
+      }
       setRunResult(res);
 
       if (res.allPassed) {
@@ -1136,13 +1237,22 @@ export const VSCodeEditor: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col bg-[#0a0d17] rounded-2xl border-2 border-[#1c243a] shadow-comic-lg overflow-hidden">
           {/* VS Code Window Header & Tab Toolbar */}
           <div className="bg-[#131728] px-4 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#1b233a] select-none">
-            {/* Window Traffic Lights & Tab File */}
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#f43f5e]" />
-              <span className="w-3 h-3 rounded-full bg-[#fbbf24]" />
-              <span className="w-3 h-3 rounded-full bg-[#10b981]" />
-              <span className="text-xs text-slate-200 font-mono ml-2 font-semibold">
-                solution_{selectedProblem.slug}.py
+            {/* Window Traffic Lights & Compiler Selector */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#f43f5e]" />
+                <span className="w-3 h-3 rounded-full bg-[#fbbf24]" />
+                <span className="w-3 h-3 rounded-full bg-[#10b981]" />
+              </div>
+
+              <LanguageSelectorDropdown
+                currentLanguage={selectedLanguage}
+                onSelectLanguage={handleLanguageChange}
+                size="sm"
+              />
+
+              <span className="text-xs text-slate-300 font-mono font-semibold hidden sm:inline">
+                solution_{selectedProblem.slug}.{LANGUAGE_REGISTRY[selectedLanguage]?.defaultFile.split('.').pop()}
               </span>
             </div>
 

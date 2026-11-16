@@ -12,6 +12,9 @@ import {
 import { ProblemMarkdownViewer } from './ProblemMarkdownViewer';
 import { UniversalVSCodeEditor } from '../common/UniversalVSCodeEditor';
 import { runPythonTests, RunResult } from '../../utils/pythonRunner';
+import { SupportedLanguage, executeUniversalCode } from '../../utils/universalCodeRunner';
+import { LanguageSelectorDropdown } from '../common/LanguageSelectorDropdown';
+import { generateStarterCode, LANGUAGE_REGISTRY } from '../../utils/languageTemplates';
 import { sound } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
 import {
@@ -79,6 +82,8 @@ export const ProblemLibraryHub: React.FC = () => {
   // Active Problem Solver Studio Modal / Split View
   const [activeProblem, setActiveProblem] = useState<DSAProblemDetail | null>(null);
   const [loadingProblemDetail, setLoadingProblemDetail] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('python');
+  const [codeByLang, setCodeByLang] = useState<Record<string, string>>({});
   const [code, setCode] = useState<string>('');
   const [isRunningTests, setIsRunningTests] = useState<boolean>(false);
   const [testRunResult, setTestRunResult] = useState<RunResult | null>(null);
@@ -214,12 +219,32 @@ export const ProblemLibraryHub: React.FC = () => {
     const detail = await getDSAProblemDetail(id);
     if (detail) {
       setActiveProblem(detail);
+      setSelectedLanguage('python');
       setCode(detail.starter_code_python);
+      setCodeByLang({ python: detail.starter_code_python });
       setTestRunResult(null);
       setIsSolvingSuccess(false);
       setShowHint(false);
     }
     setLoadingProblemDetail(false);
+  };
+
+  // Language switch handler across 9 compilers
+  const handleLanguageChange = (newLang: SupportedLanguage) => {
+    if (!activeProblem) return;
+    setCodeByLang((prev) => ({ ...prev, [selectedLanguage]: code }));
+    setSelectedLanguage(newLang);
+    if (codeByLang[newLang]) {
+      setCode(codeByLang[newLang]);
+    } else {
+      const generated = generateStarterCode(
+        newLang,
+        activeProblem.title,
+        activeProblem.starter_code_python
+      );
+      setCode(generated);
+      setCodeByLang((prev) => ({ ...prev, [newLang]: generated }));
+    }
   };
 
   // Close Problem Solver Studio
@@ -241,7 +266,7 @@ export const ProblemLibraryHub: React.FC = () => {
     await handleOpenSolver(chosen.id);
   };
 
-  // Run Tests (Example or All)
+  // Run Tests (Example or All) across any selected compiler
   const handleRunTests = async (mode: 'example' | 'all') => {
     if (!activeProblem) return;
 
@@ -261,7 +286,42 @@ export const ProblemLibraryHub: React.FC = () => {
         expectedOutput: tc.expected_stdout,
       }));
 
-      const res = await runPythonTests(code, mappedCases);
+      let res: RunResult;
+
+      if (selectedLanguage === 'python') {
+        res = await runPythonTests(code, mappedCases);
+      } else {
+        const outcome = await executeUniversalCode(selectedLanguage, code, {
+          testCases: mappedCases,
+        });
+
+        res = {
+          success: outcome.success,
+          allPassed: outcome.testPassed ?? outcome.success,
+          totalTimeMs: outcome.executionTimeMs,
+          globalStdout: outcome.output || '',
+          syntaxError: outcome.error,
+          results: outcome.testResults
+            ? outcome.testResults.map((tr) => ({
+                testId: tr.id,
+                passed: tr.passed,
+                executionTimeMs: Math.round(outcome.executionTimeMs / (outcome.testResults?.length || 1)),
+                expectedOutput: tr.expected,
+                actualOutput: tr.actual,
+                stdout: tr.actual,
+                error: tr.error,
+              }))
+            : mappedCases.map((tc) => ({
+                testId: tc.id,
+                passed: outcome.success && !outcome.error,
+                executionTimeMs: outcome.executionTimeMs,
+                expectedOutput: tc.expectedOutput,
+                actualOutput: outcome.output,
+                stdout: outcome.output,
+              })),
+        };
+      }
+
       setTestRunResult(res);
 
       if (res.allPassed) {
@@ -813,13 +873,28 @@ export const ProblemLibraryHub: React.FC = () => {
                 {/* Editor Container */}
                 <div className="flex-1 flex flex-col overflow-hidden border-b border-slate-800/80">
                   <div className="bg-[#0b1020] px-4 py-2 border-b border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Code2 className="w-4 h-4 text-emerald-400" />
-                      <span className="text-xs font-mono text-slate-300 font-semibold">solution.py (Python 3.11)</span>
+                    <div className="flex items-center gap-3">
+                      <LanguageSelectorDropdown
+                        currentLanguage={selectedLanguage}
+                        onSelectLanguage={handleLanguageChange}
+                        size="sm"
+                      />
+                      <span className="hidden sm:inline text-xs font-mono text-slate-400">
+                        {LANGUAGE_REGISTRY[selectedLanguage]?.defaultFile}
+                      </span>
                     </div>
                     <button
-                      onClick={() => setCode(activeProblem.starter_code_python)}
-                      className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 font-mono"
+                      onClick={() => {
+                        sound.playPop();
+                        const freshCode = generateStarterCode(
+                          selectedLanguage,
+                          activeProblem.title,
+                          activeProblem.starter_code_python
+                        );
+                        setCode(freshCode);
+                        setCodeByLang((prev) => ({ ...prev, [selectedLanguage]: freshCode }));
+                      }}
+                      className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 font-mono cursor-pointer"
                     >
                       <RefreshCw className="w-3 h-3" /> Reset
                     </button>
@@ -880,7 +955,10 @@ export const ProblemLibraryHub: React.FC = () => {
                     {isRunningTests ? (
                       <div className="flex items-center justify-center h-full text-slate-400 gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-amber-400" />
-                        <span>Running tests against Python 3 Wasm Sandbox...</span>
+                        <span>
+                          Running tests against {LANGUAGE_REGISTRY[selectedLanguage]?.name}{' '}
+                          {LANGUAGE_REGISTRY[selectedLanguage]?.version}...
+                        </span>
                       </div>
                     ) : testRunResult ? (
                       <div className="space-y-3">

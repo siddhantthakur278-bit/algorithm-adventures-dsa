@@ -564,6 +564,8 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tabs span, .tabs button, .tabs-capsule span, .tabs-capsule button {
@@ -575,6 +577,7 @@
   border: none;
   outline: none;
   font-family: inherit;
+  flex-shrink: 0;
 }
 
 .tabs .on, .tabs span.on, .tabs button.on, .tabs-capsule .on, .tabs-capsule button.on {
@@ -585,7 +588,8 @@
 }
 
 .sp {
-  flex: 1;
+  flex: 1 1 16px;
+  min-width: 16px;
 }
 
 .k, .glossy-k {
@@ -602,6 +606,7 @@
   align-items: center;
   gap: 7px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .k:hover, .glossy-k:hover {
@@ -615,6 +620,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .dots i, .dots button {

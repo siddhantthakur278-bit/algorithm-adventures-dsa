@@ -5,6 +5,11 @@ import {
   CodeExecutionOutcome,
 } from '../../utils/universalCodeRunner';
 import {
+  LANGUAGE_REGISTRY,
+  generateStarterCode,
+} from '../../utils/languageTemplates';
+import { LanguageSelectorDropdown } from './LanguageSelectorDropdown';
+import {
   Play,
   RotateCcw,
   Check,
@@ -59,6 +64,10 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   onGoNext,
 }) => {
   const { addXP, triggerBurst, stats, unlockBadge } = useCourse();
+  const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language);
+  const [codeByLang, setCodeByLang] = useState<Record<string, string>>({
+    [language]: starterCode,
+  });
   const [code, setCode] = useState<string>(starterCode);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [executionResult, setExecutionResult] = useState<CodeExecutionOutcome | null>(null);
@@ -71,20 +80,28 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Default file names based on language
-  const defaultFileName =
-    fileName ||
-    (language === 'python'
-      ? 'solution.py'
-      : language === 'sql'
-      ? 'query.sql'
-      : language === 'html'
-      ? 'index.html'
-      : language === 'css'
-      ? 'styles.css'
-      : language === 'react'
-      ? 'App.tsx'
-      : 'solution.ts');
+  // Sync when starterCode or language prop changes
+  useEffect(() => {
+    setSelectedLang(language);
+    setCode(starterCode);
+    setCodeByLang((prev) => ({ ...prev, [language]: starterCode }));
+  }, [language, starterCode]);
+
+  const handleLanguageChange = (newLang: SupportedLanguage) => {
+    setCodeByLang((prev) => ({ ...prev, [selectedLang]: code }));
+    setSelectedLang(newLang);
+    if (codeByLang[newLang]) {
+      setCode(codeByLang[newLang]);
+    } else {
+      const generated = generateStarterCode(newLang, problemTitle, starterCode);
+      setCode(generated);
+      setCodeByLang((prev) => ({ ...prev, [newLang]: generated }));
+    }
+  };
+
+  // Dynamic file name based on current selected compiler
+  const activeLangConfig = LANGUAGE_REGISTRY[selectedLang] || LANGUAGE_REGISTRY.python;
+  const defaultFileName = fileName || activeLangConfig.defaultFile;
 
   // Handle Tab key and Auto-Indentation after colon or curly braces
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -139,7 +156,7 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
     sound.playPop();
 
     try {
-      const outcome = await executeUniversalCode(language, code, {
+      const outcome = await executeUniversalCode(selectedLang, code, {
         expectedKeywords,
         expectedOutputSubstring,
         testCases,
@@ -318,12 +335,15 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
             <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block border border-[#1aab29]" />
           </div>
 
-          <div className="flex items-center gap-2 bg-[#0d1117] px-3 py-1 rounded-md border border-[#30363d] text-xs font-mono text-slate-200">
+          <LanguageSelectorDropdown
+            currentLanguage={selectedLang}
+            onSelectLanguage={handleLanguageChange}
+            size="sm"
+          />
+
+          <div className="hidden sm:flex items-center gap-2 bg-[#0d1117] px-3 py-1 rounded-md border border-[#30363d] text-xs font-mono text-slate-200">
             <Code2 className="w-3.5 h-3.5 text-cyan-400" />
             <span>{defaultFileName}</span>
-            <span className="px-1.5 py-0.2 bg-cyan-950 text-cyan-300 font-extrabold text-[9px] rounded uppercase">
-              {language}
-            </span>
           </div>
         </div>
 

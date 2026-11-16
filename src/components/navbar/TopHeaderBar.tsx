@@ -58,7 +58,7 @@ export const TopHeaderBar: React.FC = () => {
   const progressPercent = Math.max(15, Math.min(100, Math.round(((stats.xp % 300) / 300) * 100)));
 
   return (
-    <header className="sticky top-0 z-30 h-14 bg-[#0a0b18]/85 backdrop-blur-xl border-b border-white/12 px-3 sm:px-5 flex items-center gap-2.5 sm:gap-3.5 select-none transition-colors shadow-lg">
+    <header className="sticky top-0 z-30 h-14 bg-[#0a0b18]/85 backdrop-blur-xl border-b border-white/12 px-3 sm:px-5 flex items-center gap-2.5 sm:gap-3.5 select-none transition-colors shadow-lg overflow-x-clip min-w-0">
       {/* 1. Mobile Menu Trigger */}
       <button
         onClick={() => setIsMobileSidebarOpen(true)}
@@ -92,7 +92,7 @@ export const TopHeaderBar: React.FC = () => {
       </div>
 
       {/* 4. Glossy Quick Tabs Bar (Problems, Quests, Studio, Duel Arena, Interview) */}
-      <div className="hidden xl:flex items-center shrink-0">
+      <div className="hidden 2xl:flex items-center shrink-0">
         <div className="tabs">
           <button
             onClick={() => setActiveTab('problems')}
@@ -142,7 +142,7 @@ export const TopHeaderBar: React.FC = () => {
       </button>
 
       {/* 7. Interactive 5-Dot Theme Palette Switcher */}
-      <div className="dots hidden sm:flex shrink-0" title="Click dot to switch glossy theme accent">
+      <div className="dots hidden lg:flex shrink-0" title="Click dot to switch glossy theme accent">
         {QUICK_THEME_DOTS.map((dot) => (
           <button
             key={dot.id}
@@ -194,7 +194,7 @@ export const TopHeaderBar: React.FC = () => {
       </button>
 
       {/* 12. LoFi Radio Widget Dropdown Pill */}
-      <div className="hidden sm:block shrink-0">
+      <div className="hidden xl:block shrink-0">
         <LoFiRadioWidget />
       </div>
 
