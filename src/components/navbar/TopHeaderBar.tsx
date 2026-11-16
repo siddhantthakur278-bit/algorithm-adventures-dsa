@@ -94,14 +94,20 @@ export const TopHeaderBar: React.FC = () => {
         <span className="hidden sm:inline">Algorithm Adventures</span>
       </div>
 
-      {/* 4. Glossy Quick Tabs Bar (Problems, Quests, Studio, Duel Arena, Interview) */}
-      <div className="hidden 2xl:flex items-center shrink-0">
+      {/* 4. Glossy Quick Tabs Bar (Only on ultra-wide viewports to guarantee zero collision) */}
+      <div className="hidden min-[1720px]:flex items-center shrink-0">
         <div className="tabs">
           <button
             onClick={() => setActiveTab('problems')}
             className={activeTab === 'problems' ? 'on' : ''}
           >
             Problems
+          </button>
+          <button
+            onClick={() => setActiveTab('strivers-sheet')}
+            className={activeTab === 'strivers-sheet' ? 'on' : ''}
+          >
+            A2Z Sheet
           </button>
           <button
             onClick={() => setActiveTab('quest')}
@@ -113,25 +119,19 @@ export const TopHeaderBar: React.FC = () => {
             onClick={() => setActiveTab('lecture-studio')}
             className={activeTab === 'lecture-studio' ? 'on' : ''}
           >
-            Lecture Studio
+            Studio
           </button>
           <button
             onClick={() => setActiveTab('duel')}
             className={activeTab === 'duel' ? 'on' : ''}
           >
-            Duel Arena
-          </button>
-          <button
-            onClick={() => setActiveTab('interview')}
-            className={activeTab === 'interview' ? 'on' : ''}
-          >
-            Mock Interview
+            Duel
           </button>
         </div>
       </div>
 
       {/* 5. Fluid Flexible Spacer - Guarantees Left and Right NEVER touch or collide */}
-      <div className="sp" />
+      <div className="sp flex-1 min-w-[12px]" />
 
       {/* 6. Universal Command Palette Trigger (⌘K Search) */}
       <button

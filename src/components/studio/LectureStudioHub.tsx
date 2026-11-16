@@ -442,19 +442,18 @@ export const LectureStudioHub: React.FC = () => {
       {selectedTrack === 'coder-army' && isSyllabusDrawerOpen && (
         <div className="bg-[#0b0e1a] border border-white/10 rounded-3xl p-4 shadow-xl space-y-3.5 animate-in fade-in duration-150">
           {/* Syllabus Header: Search & Progress Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30 text-[11px] font-mono font-bold uppercase tracking-wider">
                 Full 16-Module Curriculum
               </span>
               <span className="text-xs font-mono text-slate-400">
-                Completed {completedLectures.size} / {CODER_ARMY_LECTURES.length} (
-                {Math.round((completedLectures.size / CODER_ARMY_LECTURES.length) * 100)}%)
+                Completed <strong className="text-white">{completedLectures.size}</strong> / {CODER_ARMY_LECTURES.length} ({Math.round((completedLectures.size / Math.max(1, CODER_ARMY_LECTURES.length)) * 100)}%)
               </span>
             </div>
 
             {/* Lecture Search Input */}
-            <div className="relative flex-1 max-w-sm">
+            <div className="relative w-full md:w-80 shrink-0">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
@@ -650,19 +649,18 @@ export const LectureStudioHub: React.FC = () => {
               <iframe
                 key={activeVideoId}
                 title="lecture-video-player"
-                src={`https://www.youtube-nocookie.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`}
+                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1`}
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
             </div>
 
             {/* Direct Playback Fallback Ribbon */}
-            <div className="px-3.5 py-1.5 bg-white/[0.02] border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+            <div className="px-3.5 py-2 bg-slate-900/90 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-slate-300 font-medium">
                   {selectedTrack === 'coder-army'
                     ? `Rohit Negi · L${activeLecture.lectureNumber}: ${activeLecture.title.split(':')[1]?.trim() || activeLecture.title}`
                     : 'Curated Master Stream'}
@@ -676,9 +674,10 @@ export const LectureStudioHub: React.FC = () => {
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 hover:text-white border border-amber-400/30 font-semibold transition cursor-pointer"
               >
-                <span>If video is restricted in your browser, open on YouTube ↗</span>
+                <span>Watch directly on YouTube ↗</span>
+                <ExternalLink className="w-3 h-3" />
               </a>
             </div>
 

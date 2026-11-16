@@ -435,14 +435,28 @@ export const ProblemLibraryHub: React.FC = () => {
               </div>
             </div>
 
-            {/* Random Pick Button */}
-            <button
-              onClick={handleFeelingLucky}
-              className="flex items-center justify-center gap-2.5 px-5 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
-            >
-              <Zap className="w-4 h-4 fill-slate-950" />
-              <span>Pick Random Problem</span>
-            </button>
+            {/* Random Pick Button & Striver's A2Z Sheet Shortcut */}
+            <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  setActiveTab('strivers-sheet');
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-red-600/30 to-purple-600/30 hover:from-red-600/40 hover:to-purple-600/40 border border-red-500/40 text-red-200 hover:text-white font-bold text-xs shadow-md transition cursor-pointer"
+                title="Open Striver's Take U Forward A2Z Sheet (346 Problems across 18 Steps)"
+              >
+                <BookOpen className="w-4 h-4 text-red-400" />
+                <span>Striver's A2Z Sheet (346 Qs) ↗</span>
+              </button>
+
+              <button
+                onClick={handleFeelingLucky}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs shadow-lg shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+              >
+                <Zap className="w-4 h-4 fill-slate-950" />
+                <span>Pick Random</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

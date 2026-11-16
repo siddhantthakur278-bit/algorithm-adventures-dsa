@@ -40,6 +40,7 @@ const CodeforcesHub = React.lazy(() => import('./components/codeforces/Codeforce
 const BossBattleModal = React.lazy(() => import('./components/boss/BossBattleModal').then((m) => ({ default: m.BossBattleModal })));
 const MegaCheatSheets = React.lazy(() => import('./components/cheatsheet/MegaCheatSheets').then((m) => ({ default: m.MegaCheatSheets })));
 const ProblemLibraryHub = React.lazy(() => import('./components/problems/ProblemLibraryHub').then((m) => ({ default: m.ProblemLibraryHub })));
+const StriversA2ZSheetHub = React.lazy(() => import('./components/strivers/StriversA2ZSheetHub').then((m) => ({ default: m.StriversA2ZSheetHub })));
 const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/GlobalLeaderboardHub').then((m) => ({ default: m.GlobalLeaderboardHub })));
 const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityChatHub').then((m) => ({ default: m.CommunityChatHub })));
 import { isProfileSetupComplete } from './utils/universalLeaderboardService';
@@ -143,6 +144,7 @@ const MainContent: React.FC = () => {
           {activeTab === 'boss' && <BossBattleModal />}
           {activeTab === 'cheatsheet' && <MegaCheatSheets />}
           {activeTab === 'problems' && <ProblemLibraryHub />}
+          {activeTab === 'strivers-sheet' && <StriversA2ZSheetHub />}
         </main>
       )}
     </Suspense>

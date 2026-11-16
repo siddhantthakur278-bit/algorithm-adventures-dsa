@@ -26,6 +26,7 @@ import {
   Compass,
   Database,
   Calculator,
+  Target,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -67,6 +68,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
 
   const items: PaletteItem[] = [
     // --- Navigation Tabs ---
+    {
+      id: 'tab-strivers-sheet',
+      title: "Striver's A2Z DSA Sheet (346+ Questions, 18 Steps)",
+      category: 'Navigation',
+      icon: Target,
+      badge: 'Take U Forward',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('strivers-sheet');
+      },
+    },
     {
       id: 'tab-quest',
       title: 'Quests & Daily 5 AM POTD',

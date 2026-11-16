@@ -33,6 +33,7 @@ import {
   Video,
   Columns2,
   MessagesSquare,
+  Target,
 } from 'lucide-react';
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
@@ -104,6 +105,7 @@ export const Navbar: React.FC = () => {
 
   const tabs = [
     { id: 'quest', label: 'Quests', icon: Sparkles, badge: '5 AM POTD' },
+    { id: 'strivers-sheet', label: "Striver's A2Z Sheet", icon: Target, badge: 'A2Z 346 Qs' },
     { id: 'leaderboard', label: 'World Leaderboard', icon: Trophy, badge: 'Live Global' },
     { id: 'chat', label: 'Community & Voice Chat', icon: MessagesSquare, badge: 'Voice Live' },
     { id: 'syllabus', label: 'CS 201 Syllabus', icon: GraduationCap, badge: 'Standard 10-Mod' },
