@@ -110,22 +110,22 @@ export const LoFiRadioWidget: React.FC = () => {
   };
 
   return (
-    <div className="relative font-comic">
+    <div className="relative">
       {/* Navbar Launcher Button */}
       <button
         onClick={() => {
           sound.playPop();
           setIsOpen(!isOpen);
         }}
-        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition shadow-comic-sm cursor-pointer ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-xs font-medium transition cursor-pointer backdrop-blur-md ${
           isPlaying
-            ? 'bg-purple-900/80 text-purple-200 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] animate-pulse'
-            : 'bg-[#151929] text-slate-300 border-[#232a42] hover:border-slate-400 hover:text-white'
+            ? 'bg-purple-500/20 text-purple-200 border-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.35)] animate-pulse'
+            : 'bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 border-white/15 hover:text-white'
         }`}
         title="Coding Radio (Generative Lo-Fi & Synthwave Web Audio)"
       >
         <Radio className={`w-3.5 h-3.5 ${isPlaying ? 'text-purple-300 animate-spin' : 'text-slate-400'}`} />
-        <span className="hidden xl:inline">Radio</span>
+        <span className="hidden 2xl:inline text-[11px] font-mono">Radio</span>
 
         {/* Animated Equalizer Waves when active */}
         {isPlaying ? (
@@ -135,19 +135,19 @@ export const LoFiRadioWidget: React.FC = () => {
             <span className="w-0.5 bg-cyan-400 animate-bounce" style={{ height: '75%', animationDelay: '300ms' }} />
           </div>
         ) : (
-          <span className="text-[10px] text-slate-500 font-mono">OFF</span>
+          <span className="text-[10px] text-slate-400 font-mono">OFF</span>
         )}
       </button>
 
       {/* Floating Cassette Mini-Player Modal */}
       {isOpen && (
-        <div className="absolute right-0 top-12 z-50 w-80 sm:w-88 bg-[#0c101d] border-3 border-black rounded-2xl p-4 shadow-comic-lg animate-fadeIn text-slate-200">
+        <div className="absolute right-0 top-11 z-50 w-80 sm:w-88 bg-[#0c101d]/95 border border-white/15 rounded-2xl p-4 shadow-2xl backdrop-blur-xl animate-fadeIn text-slate-200">
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#1c243d]">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <span className="text-xl">📻</span>
               <div>
-                <h4 className="font-bangers text-base text-white tracking-wide flex items-center gap-1.5">
+                <h4 className="font-bold text-sm text-white tracking-wide flex items-center gap-1.5">
                   LO-FI CODING RADIO
                   <span className="text-[9px] font-mono px-1.5 py-0.2 bg-purple-500/20 text-purple-300 rounded border border-purple-500/40">
                     Wasm Synth

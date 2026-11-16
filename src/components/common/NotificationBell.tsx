@@ -36,12 +36,12 @@ export const NotificationBell: React.FC = () => {
       {/* Bell Button */}
       <button
         onClick={handleToggle}
-        className="relative p-2 rounded-xl bg-[#1b1f33] hover:bg-[#252b47] border-2 border-black shadow-comic-sm text-gray-300 hover:text-white transition"
+        className="relative p-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-slate-300 hover:text-white transition shadow-sm cursor-pointer backdrop-blur-md flex items-center justify-center"
         title="Broadcast Notification Center"
       >
-        <Bell className="w-4 h-4 text-[#FFDE59]" />
+        <Bell className="w-4 h-4 text-amber-400" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-[#FF5757] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-black animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white/20 animate-pulse shadow-sm">
             {unreadCount}
           </span>
         )}
@@ -51,12 +51,12 @@ export const NotificationBell: React.FC = () => {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#121626] border-3 border-black rounded-2xl shadow-comic-lg z-50 overflow-hidden text-gray-200">
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0c101d]/95 border border-white/15 rounded-2xl shadow-2xl backdrop-blur-xl z-50 overflow-hidden text-slate-200">
             {/* Header */}
-            <div className="bg-[#181c2e] px-4 py-3 border-b-2 border-black flex items-center justify-between">
+            <div className="bg-white/[0.04] px-4 py-3 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-[#FF5757] animate-pulse" />
-                <h4 className="font-bangers text-base text-white tracking-wide">
+                <Radio className="w-4 h-4 text-red-400 animate-pulse" />
+                <h4 className="font-bold text-sm text-white tracking-wide">
                   APP BROADCAST STATION
                 </h4>
               </div>
@@ -65,7 +65,7 @@ export const NotificationBell: React.FC = () => {
                 {notifications.length > 0 && (
                   <button
                     onClick={clearAllNotifications}
-                    className="text-gray-400 hover:text-red-400 text-xs font-mono flex items-center gap-1"
+                    className="text-slate-400 hover:text-red-400 text-xs font-mono flex items-center gap-1 cursor-pointer transition"
                     title="Clear All Notifications"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -74,7 +74,7 @@ export const NotificationBell: React.FC = () => {
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-400 hover:text-white text-xs font-bold"
+                  className="text-slate-400 hover:text-white text-xs font-bold cursor-pointer transition"
                 >
                   ✕
                 </button>

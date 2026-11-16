@@ -117,9 +117,42 @@ export const GlossyStudioHero: React.FC = () => {
   const pinRef = useRef<HTMLDivElement>(null);
   const xpRef = useRef<HTMLElement>(null);
   const xpnRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const heatRef = useRef<HTMLDivElement>(null);
 
   const runIdRef = useRef<number>(0);
   const currentProb = PROBLEMS[activeProblemId] || PROBLEMS['bin-search'];
+
+  const burst = () => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    const appEl = appRef.current;
+    if (!appEl) return;
+    const cols = ['#fff', THEMES[1][0], THEMES[1][1], '#FFDE59', '#F43F5E'];
+    for (let i = 0; i < 34; i++) {
+      const p = document.createElement('i');
+      p.className = 'cf';
+      p.style.left = '62%';
+      p.style.top = '36%';
+      p.style.background = cols[i % cols.length];
+      appEl.appendChild(p);
+      const a = Math.random() * Math.PI * 2;
+      const d = 90 + Math.random() * 190;
+      p.animate(
+        [
+          { transform: 'translate(0,0) rotate(0)', opacity: 1 },
+          {
+            transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 120}px) rotate(${Math.random() * 720}deg)`,
+            opacity: 0,
+          },
+        ],
+        {
+          duration: 1400 + Math.random() * 700,
+          easing: 'cubic-bezier(.2,.7,.3,1)',
+        }
+      ).onfinish = () => p.remove();
+    }
+  };
 
   const setTheme = (i: number) => {
     const pair = THEMES[i];
@@ -167,6 +200,7 @@ export const GlossyStudioHero: React.FC = () => {
       Array.from(termChildren).forEach((t) => t.classList.remove('show'));
     }
     bubRef.current?.classList.remove('show');
+    chartRef.current?.classList.remove('go');
     popRef.current?.classList.remove('show');
     palRef.current?.classList.remove('show');
     render(prob.code, 0, '');
@@ -201,7 +235,10 @@ export const GlossyStudioHero: React.FC = () => {
       if (!isLive()) return;
       render(prob.code, i + 1);
       await wait(90);
-      if (i === 3) bubRef.current?.classList.add('show');
+      if (i === 3) {
+        bubRef.current?.classList.add('show');
+        chartRef.current?.classList.add('go');
+      }
     }
 
     if (!isLive()) return;
@@ -219,6 +256,7 @@ export const GlossyStudioHero: React.FC = () => {
     if (xpRef.current) xpRef.current.style.width = '100%';
     if (xpnRef.current) xpnRef.current.textContent = '1,290 XP';
     popRef.current?.classList.add('show');
+    burst();
 
     await wait(1800);
     if (!isLive()) return;
@@ -244,6 +282,43 @@ export const GlossyStudioHero: React.FC = () => {
     await wait(2800);
     if (isLive()) play(prob);
   };
+
+  useEffect(() => {
+    // Populate activity heatmap with 70 cells
+    const heatEl = heatRef.current;
+    if (heatEl && heatEl.children.length === 0) {
+      for (let i = 0; i < 70; i++) {
+        const e = document.createElement('i');
+        const r = (i * 37 + 11) % 10;
+        e.className = r > 7 ? 'l3' : r > 5 ? 'l2' : r > 3 ? 'l1' : '';
+        heatEl.appendChild(e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // 3D perspective mouse tilt
+    const stageEl = stageRef.current;
+    const appEl = appRef.current;
+    if (!stageEl || !appEl) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(hover:hover)').matches) {
+      const handleMouseMove = (e: MouseEvent) => {
+        const r = stageEl.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        appEl.style.transform = `rotateY(${x * 4}deg) rotateX(${-y * 3}deg)`;
+      };
+      const handleMouseLeave = () => {
+        appEl.style.transform = '';
+      };
+      stageEl.addEventListener('mousemove', handleMouseMove);
+      stageEl.addEventListener('mouseleave', handleMouseLeave);
+      return () => {
+        stageEl.removeEventListener('mousemove', handleMouseMove);
+        stageEl.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     play(currentProb);
@@ -448,6 +523,19 @@ export const GlossyStudioHero: React.FC = () => {
                 <p style={{ marginTop: '10px' }}>
                   Constraints: {currentProb.constraints}
                 </p>
+                <div className="sub">Steps for n = 10,000</div>
+                <div id="chart" ref={chartRef}>
+                  <div className="bar">
+                    <span>Linear scan</span>
+                    <i />
+                  </div>
+                  <div className="bar lg">
+                    <span>Binary search</span>
+                    <i />
+                  </div>
+                </div>
+                <div className="sub">Your solving streak</div>
+                <div className="heat" id="heat" ref={heatRef} aria-hidden="true" />
                 <div className="byte">
                   <div className="bot">🤖</div>
                   <div className="bub" id="bub" ref={bubRef}>
