@@ -5,23 +5,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Search,
-  Command,
-  Radio,
-  SlidersHorizontal,
-  Flame,
-  Shield,
-  Columns2,
-  ChevronRight,
-  Sparkles,
-  Trophy,
   MessagesSquare,
-  Zap,
-  BookOpen,
-  Swords,
-  Briefcase,
-  Video,
 } from 'lucide-react';
-import { FlameIcon } from '../common/Icons';
 import { NotificationBell } from '../common/NotificationBell';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { HumanAvatar } from '../common/HumanAvatar';
@@ -44,10 +29,7 @@ export const TopHeaderBar: React.FC = () => {
     setIsSidebarCollapsed,
     setIsMobileSidebarOpen,
     realStreak,
-    dailyTargetStatus,
     stats,
-    layoutMode,
-    setLayoutMode,
   } = useCourse();
 
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
@@ -126,9 +108,9 @@ export const TopHeaderBar: React.FC = () => {
   const progressPercent = Math.max(15, Math.min(100, Math.round(((stats.xp % 300) / 300) * 100)));
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-[#090b16]/90 backdrop-blur-xl border-b border-white/10 px-3 sm:px-5 flex items-center justify-between gap-3 select-none transition-colors shadow-lg">
-      {/* Left: Mobile Menu + Desktop Sidebar Toggle + 3D Logo / Breadcrumbs */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+    <header className="sticky top-0 z-30 h-16 bg-[#090b16]/90 backdrop-blur-xl border-b border-white/10 px-3 sm:px-5 flex items-center justify-between gap-2 sm:gap-4 select-none transition-colors shadow-lg">
+      {/* Left: Mobile Menu + Desktop Sidebar Toggle + 3D Logo / Active Breadcrumbs */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Mobile Hamburger Drawer Trigger */}
         <button
           onClick={() => setIsMobileSidebarOpen(true)}
@@ -154,7 +136,8 @@ export const TopHeaderBar: React.FC = () => {
         {/* Glossy Brand Badge */}
         <div
           onClick={() => setActiveTab('problems')}
-          className="flex items-center gap-2 cursor-pointer group"
+          className="flex items-center gap-2 cursor-pointer group shrink-0"
+          title="Algorithm Adventures - Click to go to Problem Library"
         >
           <b className="logo-badge">⚡</b>
           <span className="font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-white via-slate-100 to-[var(--a2,#38BDF8)] bg-clip-text text-transparent hidden sm:inline">
@@ -162,56 +145,45 @@ export const TopHeaderBar: React.FC = () => {
           </span>
         </div>
 
-        {/* Glossy Quick Tabs Bar (Problems, Quests, Studio, Duel, Interview) */}
-        <div className="hidden xl:flex items-center ml-2">
-          <div className="tabs-capsule">
-            <button
-              onClick={() => setActiveTab('problems')}
-              className={activeTab === 'problems' ? 'on' : ''}
-            >
-              Problems
-            </button>
-            <button
-              onClick={() => setActiveTab('quest')}
-              className={activeTab === 'quest' ? 'on' : ''}
-            >
-              Quests
-            </button>
-            <button
-              onClick={() => setActiveTab('lecture-studio')}
-              className={activeTab === 'lecture-studio' ? 'on' : ''}
-            >
-              Studio
-            </button>
-            <button
-              onClick={() => setActiveTab('duel')}
-              className={activeTab === 'duel' ? 'on' : ''}
-            >
-              Duel Arena
-            </button>
-            <button
-              onClick={() => setActiveTab('interview')}
-              className={activeTab === 'interview' ? 'on' : ''}
-            >
-              Interview
-            </button>
-          </div>
+        {/* Active Tab Sub-label */}
+        <div className="hidden xl:flex items-center gap-1.5 pl-2 border-l border-white/10 text-xs text-slate-400 shrink-0">
+          <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">
+            {getSagaTitle(activeSaga).split(' ')[0]}
+          </span>
+          <span className="text-slate-600">/</span>
+          <span className="font-semibold text-slate-200 truncate max-w-[140px]">
+            {getTabTitle(activeTab)}
+          </span>
         </div>
       </div>
 
-      {/* Center / Right: ⌘K Search + Theme Dots + Streak + XP Bar + Profile */}
-      <div className="flex items-center gap-2.5 sm:gap-3.5">
-        {/* Universal Command Palette Trigger Button (⌘K) */}
+      {/* Center: Modern Glossy Developer Search Bar */}
+      <div className="flex-1 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg min-w-0 mx-2 sm:mx-4 flex items-center justify-center">
         <button
+          type="button"
           onClick={triggerCommandPalette}
-          className="glossy-k hidden md:inline-flex"
-          title="Search Topics, Quests, Files & Commands (⌘K)"
+          className="w-full flex items-center justify-between gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800/90 text-slate-400 hover:text-white border border-white/10 hover:border-amber-400/35 transition-all shadow-inner group cursor-pointer text-xs backdrop-blur-md"
+          title="Search problems, quests, sagas & commands (⌘K or Ctrl+K)"
         >
-          <span>⌘K Search</span>
+          <div className="flex items-center gap-2 min-w-0 truncate">
+            <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-400 transition-colors shrink-0" />
+            <span className="truncate text-slate-400 group-hover:text-slate-200 text-xs hidden sm:inline">
+              Search problems, sagas, algorithms...
+            </span>
+            <span className="truncate text-slate-400 group-hover:text-slate-200 text-xs sm:hidden inline">
+              Search...
+            </span>
+          </div>
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-300 bg-white/[0.08] group-hover:bg-amber-400/15 group-hover:text-amber-300 group-hover:border-amber-400/30 border border-white/15 rounded shadow-sm shrink-0 transition-colors">
+            <span className="text-[11px]">⌘</span>K
+          </kbd>
         </button>
+      </div>
 
+      {/* Right: Theme Dots + Streak + XP Bar + Community & Controls */}
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
         {/* Interactive 5-Dot Theme Palette Switcher */}
-        <div className="dots hidden sm:flex" title="Click dot to switch glossy theme accent">
+        <div className="dots hidden sm:flex shrink-0" title="Click dot to switch glossy theme accent">
           {QUICK_THEME_DOTS.map((dot) => (
             <button
               key={dot.id}
@@ -226,7 +198,7 @@ export const TopHeaderBar: React.FC = () => {
 
         {/* Streak Flame Badge */}
         <div
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold text-xs"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold text-xs shrink-0"
           title={`Active Streak: ${realStreak.currentStreak} consecutive days`}
         >
           <span>🔥</span>
@@ -234,7 +206,7 @@ export const TopHeaderBar: React.FC = () => {
         </div>
 
         {/* Shimmering XP Bar */}
-        <div className="hidden lg:flex items-center gap-2 text-xs font-bold font-mono">
+        <div className="hidden lg:flex items-center gap-2 text-xs font-bold font-mono shrink-0">
           <div className="xp-track" title={`Level ${stats.level} Progress: ${progressPercent}%`}>
             <div className="xp-fill" style={{ width: `${progressPercent}%` }} />
           </div>
@@ -249,7 +221,7 @@ export const TopHeaderBar: React.FC = () => {
         {/* Quick Community Chat Trigger */}
         <button
           onClick={() => setActiveTab('chat')}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition cursor-pointer text-xs font-semibold ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition cursor-pointer text-xs font-semibold shrink-0 ${
             activeTab === 'chat'
               ? 'bg-amber-400 text-slate-950 font-bold border-amber-300 shadow-sm'
               : 'bg-white/[0.05] hover:bg-white/10 text-slate-300 border-white/10'
@@ -261,14 +233,14 @@ export const TopHeaderBar: React.FC = () => {
         </button>
 
         {/* LoFi Radio Widget Dropdown Pill */}
-        <div className="hidden sm:block">
+        <div className="hidden sm:block shrink-0">
           <LoFiRadioWidget />
         </div>
 
         {/* User Human Avatar Button */}
         <button
           onClick={() => setShowOnboardingModal(true)}
-          className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs transition cursor-pointer shadow-sm group"
+          className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs transition cursor-pointer shadow-sm group shrink-0"
           title={`Logged in as ${myProfile.displayName} (@${myProfile.handle}) - Click to configure identity`}
         >
           <HumanAvatar
