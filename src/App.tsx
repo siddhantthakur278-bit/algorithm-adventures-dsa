@@ -381,14 +381,7 @@ export const AppContent: React.FC = () => {
   }, [setIsSidebarCollapsed]);
 
   return (
-    <div className="min-h-screen bg-[#060710] text-[#f8fafc] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black relative overflow-x-hidden">
-      {/* Ambient Drifting Glowing Orbs (Glossy Glass Stage) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-        <div className="orb o1" />
-        <div className="orb o2" />
-        <div className="orb o3" />
-      </div>
-
+    <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black relative">
       {/* Real-Time Live Telemetry Bar */}
       <RealTimeStatusBar />
 

@@ -1,42 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useCourse } from '../../context/CourseContext';
-import {
-  QUICK_THEME_DOTS,
-  applyTheme,
-  getStoredTheme,
-  ThemePresetId,
-} from '../../utils/themeEngine';
+import { RotateCcw } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
-import confetti from 'canvas-confetti';
-import {
-  Sparkles,
-  Play,
-  RotateCcw,
-  CheckCircle2,
-  Code2,
-  Terminal,
-  Cpu,
-  Zap,
-  ExternalLink,
-  Flame,
-} from 'lucide-react';
 
-interface HeroProblem {
+interface PreviewProblem {
   id: string;
   title: string;
   difficulty: 'Easy' | 'Med' | 'Hard';
   diffClass: 'E' | 'M' | 'H';
-  isDone: boolean;
+  isDone?: boolean;
   fileName: string;
-  code: string[];
+  codeHtml: string[];
   terminalLogs: string[];
-  description: string;
+  descHtml: string;
   chips: string[];
   constraints: string;
   byteTip: string;
 }
 
-const HERO_PROBLEMS: HeroProblem[] = [
+const PREVIEW_THEMES: [string, string][] = [
+  ['#06B6D4', '#38BDF8'], // 0: Teal
+  ['#8B5CF6', '#38BDF8'], // 1: Tokyo Midnight Purple
+  ['#10B981', '#34D399'], // 2: Emerald Green
+  ['#F43F5E', '#FB7185'], // 3: Crimson Rose
+  ['#FBBF24', '#FB923C'], // 4: Amber Gold
+];
+
+const PREVIEW_PROBLEMS: PreviewProblem[] = [
   {
     id: 'bin-search',
     title: 'Binary Search',
@@ -44,18 +33,18 @@ const HERO_PROBLEMS: HeroProblem[] = [
     diffClass: 'E',
     isDone: false,
     fileName: 'binary-search.py',
-    code: [
-      'def search(nums: list[int], target: int) -> int:',
-      '    l, r = 0, len(nums) - 1',
-      '    while l <= r:',
-      '        m = (l + r) // 2',
-      '        if nums[m] == target:',
-      '            return m',
-      '        elif nums[m] > target:',
-      '            r = m - 1',
-      '        else:',
-      '            l = m + 1',
-      '    return -1',
+    codeHtml: [
+      '<span class="kw">def</span> <span class="fn">search</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>], target: <span class="ty">int</span>) -&gt; <span class="ty">int</span>:',
+      '    l, r = <span class="nu">0</span>, <span class="fn">len</span>(nums) - <span class="nu">1</span>',
+      '    <span class="kw">while</span> l &lt;= r:',
+      '        m = (l + r) // <span class="nu">2</span>',
+      '        <span class="kw">if</span> nums[m] == target:',
+      '            <span class="kw">return</span> m',
+      '        <span class="kw">elif</span> nums[m] &gt; target:',
+      '            r = m - <span class="nu">1</span>',
+      '        <span class="kw">else</span>:',
+      '            l = m + <span class="nu">1</span>',
+      '    <span class="kw">return</span> -<span class="nu">1</span>',
     ],
     terminalLogs: [
       '$ run tests',
@@ -64,9 +53,9 @@ const HERO_PROBLEMS: HeroProblem[] = [
       '✓ hidden 28/28 passed · 0 ms · O(log n)',
       '⟶ committed to GitHub · a3f9c21',
     ],
-    description: 'Given a sorted array nums and a target, return its index or -1 if target is not found in nums.',
+    descHtml: 'Given a sorted array <code>nums</code> and a <code>target</code>, return its index or -1.',
     chips: ['arrays', 'Amazon', 'Google', 'acceptance 62%'],
-    constraints: '1 ≤ n ≤ 10⁴, values are unique, runtime must be O(log n).',
+    constraints: '1 ≤ n ≤ 10⁴, values are unique.',
     byteTip: 'Halve the range each step. That is why it runs in O(log n).',
   },
   {
@@ -76,15 +65,15 @@ const HERO_PROBLEMS: HeroProblem[] = [
     diffClass: 'E',
     isDone: true,
     fileName: 'contains-duplicate.py',
-    code: [
-      'class Solution:',
-      '    def containsDuplicate(self, nums: list[int]) -> bool:',
-      '        seen = set()',
-      '        for x in nums:',
-      '            if x in seen:',
-      '                return True',
-      '            seen.add(x)',
-      '        return False',
+    codeHtml: [
+      '<span class="kw">class</span> <span class="fn">Solution</span>:',
+      '    <span class="kw">def</span> <span class="fn">containsDuplicate</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>]) -&gt; <span class="ty">bool</span>:',
+      '        seen = <span class="ty">set</span>()',
+      '        <span class="kw">for</span> x <span class="kw">in</span> nums:',
+      '            <span class="kw">if</span> x <span class="kw">in</span> seen:',
+      '                <span class="kw">return</span> <span class="nu">True</span>',
+      '            seen.<span class="fn">add</span>(x)',
+      '        <span class="kw">return</span> <span class="nu">False</span>',
     ],
     terminalLogs: [
       '$ run tests',
@@ -93,7 +82,7 @@ const HERO_PROBLEMS: HeroProblem[] = [
       '✓ hidden 30/30 passed · 12 ms · O(n)',
       '⟶ committed to GitHub · 8b4e190',
     ],
-    description: 'Given an integer array nums, return true if any value appears at least twice in the array.',
+    descHtml: 'Given an integer array <code>nums</code>, return true if any value appears at least twice in the array.',
     chips: ['hash-table', 'Apple', 'Meta', 'acceptance 61%'],
     constraints: '1 ≤ nums.length ≤ 10⁵, -10⁹ ≤ nums[i] ≤ 10⁹.',
     byteTip: 'A hash set gives O(1) average lookup time for instant duplicate checking!',
@@ -105,16 +94,16 @@ const HERO_PROBLEMS: HeroProblem[] = [
     diffClass: 'E',
     isDone: false,
     fileName: 'two-sum.py',
-    code: [
-      'class Solution:',
-      '    def twoSum(self, nums: list[int], target: int) -> list[int]:',
+    codeHtml: [
+      '<span class="kw">class</span> <span class="fn">Solution</span>:',
+      '    <span class="kw">def</span> <span class="fn">twoSum</span>(nums: <span class="ty">list</span>[<span class="ty">int</span>], target: <span class="ty">int</span>) -&gt; <span class="ty">list</span>[<span class="ty">int</span>]:',
       '        seen = {}',
-      '        for i, n in enumerate(nums):',
+      '        <span class="kw">for</span> i, n <span class="kw">in</span> <span class="fn">enumerate</span>(nums):',
       '            diff = target - n',
-      '            if diff in seen:',
-      '                return [seen[diff], i]',
+      '            <span class="kw">if</span> diff <span class="kw">in</span> seen:',
+      '                <span class="kw">return</span> [seen[diff], i]',
       '            seen[n] = i',
-      '        return []',
+      '        <span class="kw">return</span> []',
     ],
     terminalLogs: [
       '$ run tests',
@@ -123,7 +112,7 @@ const HERO_PROBLEMS: HeroProblem[] = [
       '✓ hidden 25/25 passed · 1 ms · O(n)',
       '⟶ committed to GitHub · 9f2c8d4',
     ],
-    description: 'Return indices of the two numbers such that they add up to target. Each input has exactly one solution.',
+    descHtml: 'Return indices of the two numbers such that they add up to target. Each input has exactly one solution.',
     chips: ['two-pointers', 'Microsoft', 'Bloomberg', 'acceptance 54%'],
     constraints: '2 ≤ nums.length ≤ 10⁴, exactly one valid answer exists.',
     byteTip: 'Store complement values (target - n) in a dictionary for a single O(n) pass!',
@@ -135,25 +124,25 @@ const HERO_PROBLEMS: HeroProblem[] = [
     diffClass: 'M',
     isDone: false,
     fileName: 'course-schedule.py',
-    code: [
-      'class Solution:',
-      '    def canFinish(self, numCourses: int, prerequisites: list) -> bool:',
-      '        from collections import defaultdict, deque',
-      '        adj = defaultdict(list)',
-      '        in_degree = [0] * numCourses',
-      '        for crs, pre in prerequisites:',
+    codeHtml: [
+      '<span class="kw">class</span> <span class="fn">Solution</span>:',
+      '    <span class="kw">def</span> <span class="fn">canFinish</span>(numCourses: <span class="ty">int</span>, prerequisites: <span class="ty">list</span>) -&gt; <span class="ty">bool</span>:',
+      '        <span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque',
+      '        adj = defaultdict(<span class="ty">list</span>)',
+      '        in_degree = [<span class="nu">0</span>] * numCourses',
+      '        <span class="kw">for</span> crs, pre <span class="kw">in</span> prerequisites:',
       '            adj[pre].append(crs)',
-      '            in_degree[crs] += 1',
-      '        q = deque([i for i in range(numCourses) if in_degree[i] == 0])',
-      '        count = 0',
-      '        while q:',
+      '            in_degree[crs] += <span class="nu">1</span>',
+      '        q = deque([i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(numCourses) <span class="kw">if</span> in_degree[i] == <span class="nu">0</span>])',
+      '        count = <span class="nu">0</span>',
+      '        <span class="kw">while</span> q:',
       '            node = q.popleft()',
-      '            count += 1',
-      '            for neighbor in adj[node]:',
-      '                in_degree[neighbor] -= 1',
-      '                if in_degree[neighbor] == 0:',
+      '            count += <span class="nu">1</span>',
+      '            <span class="kw">for</span> neighbor <span class="kw">in</span> adj[node]:',
+      '                in_degree[neighbor] -= <span class="nu">1</span>',
+      '                <span class="kw">if</span> in_degree[neighbor] == <span class="nu">0</span>:',
       '                    q.append(neighbor)',
-      '        return count == numCourses',
+      '        <span class="kw">return</span> count == numCourses',
     ],
     terminalLogs: [
       '$ run tests',
@@ -162,7 +151,7 @@ const HERO_PROBLEMS: HeroProblem[] = [
       '✓ hidden 42/42 passed · 8 ms · O(V+E)',
       '⟶ committed to GitHub · 5a81e33',
     ],
-    description: 'Determine if you can finish all courses given prerequisite dependencies (Kahn Topological Sort).',
+    descHtml: 'Determine if you can finish all courses given prerequisite dependencies (Kahn Topological Sort).',
     chips: ['graphs', 'Google', 'Meta', 'Uber', 'acceptance 46%'],
     constraints: '1 ≤ numCourses ≤ 2000, 0 ≤ prerequisites.length ≤ 5000.',
     byteTip: 'Use in-degree array for Kahn algorithm: any cycle will leave in-degree > 0!',
@@ -174,20 +163,20 @@ const HERO_PROBLEMS: HeroProblem[] = [
     diffClass: 'M',
     isDone: false,
     fileName: 'kth-largest.py',
-    code: [
-      'import heapq',
-      'class KthLargest:',
-      '    def __init__(self, k: int, nums: list[int]):',
+    codeHtml: [
+      '<span class="kw">import</span> heapq',
+      '<span class="kw">class</span> <span class="fn">KthLargest</span>:',
+      '    <span class="kw">def</span> <span class="fn">__init__</span>(self, k: <span class="ty">int</span>, nums: <span class="ty">list</span>[<span class="ty">int</span>]):',
       '        self.k = k',
       '        self.min_heap = nums',
       '        heapq.heapify(self.min_heap)',
-      '        while len(self.min_heap) > k:',
+      '        <span class="kw">while</span> <span class="fn">len</span>(self.min_heap) &gt; k:',
       '            heapq.heappop(self.min_heap)',
-      '    def add(self, val: int) -> int:',
+      '    <span class="kw">def</span> <span class="fn">add</span>(self, val: <span class="ty">int</span>) -&gt; <span class="ty">int</span>:',
       '        heapq.heappush(self.min_heap, val)',
-      '        if len(self.min_heap) > self.k:',
+      '        <span class="kw">if</span> <span class="fn">len</span>(self.min_heap) &gt; self.k:',
       '            heapq.heappop(self.min_heap)',
-      '        return self.min_heap[0]',
+      '        <span class="kw">return</span> self.min_heap[<span class="nu">0</span>]',
     ],
     terminalLogs: [
       '$ run tests',
@@ -196,7 +185,7 @@ const HERO_PROBLEMS: HeroProblem[] = [
       '✓ hidden 20/20 passed · 4 ms · O(log k)',
       '⟶ committed to GitHub · 3d7c41a',
     ],
-    description: 'Design a class to find the kth largest element in a stream of integers using a Min Heap of size k.',
+    descHtml: 'Design a class to find the kth largest element in a stream of integers using a Min Heap of size k.',
     chips: ['heap', 'Amazon', 'Adobe', 'acceptance 56%'],
     constraints: '1 ≤ k ≤ 10⁴, 0 ≤ nums.length ≤ 10⁴.',
     byteTip: 'A min-heap of size k ensures the root element is always the kth largest!',
@@ -208,22 +197,22 @@ const HERO_PROBLEMS: HeroProblem[] = [
     diffClass: 'H',
     isDone: false,
     fileName: 'word-ladder.py',
-    code: [
-      'from collections import deque',
-      'def ladderLength(beginWord: str, endWord: str, wordList: list[str]) -> int:',
-      '    words = set(wordList)',
-      '    if endWord not in words: return 0',
-      '    q = deque([(beginWord, 1)])',
-      '    while q:',
+    codeHtml: [
+      '<span class="kw">from</span> collections <span class="kw">import</span> deque',
+      '<span class="kw">def</span> <span class="fn">ladderLength</span>(beginWord: <span class="ty">str</span>, endWord: <span class="ty">str</span>, wordList: <span class="ty">list</span>[<span class="ty">str</span>]) -&gt; <span class="ty">int</span>:',
+      '    words = <span class="ty">set</span>(wordList)',
+      '    <span class="kw">if</span> endWord <span class="kw">not</span> <span class="kw">in</span> words: <span class="kw">return</span> <span class="nu">0</span>',
+      '    q = deque([(beginWord, <span class="nu">1</span>)])',
+      '    <span class="kw">while</span> q:',
       '        word, dist = q.popleft()',
-      '        if word == endWord: return dist',
-      '        for i in range(len(word)):',
-      '            for c in "abcdefghijklmnopqrstuvwxyz":',
-      '                next_w = word[:i] + c + word[i+1:]',
-      '                if next_w in words:',
+      '        <span class="kw">if</span> word == endWord: <span class="kw">return</span> dist',
+      '        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(word)):',
+      '            <span class="kw">for</span> c <span class="kw">in</span> <span class="nu">"abcdefghijklmnopqrstuvwxyz"</span>:',
+      '                next_w = word[:i] + c + word[i+<span class="nu">1</span>:]',
+      '                <span class="kw">if</span> next_w <span class="kw">in</span> words:',
       '                    words.remove(next_w)',
-      '                    q.append((next_w, dist + 1))',
-      '    return 0',
+      '                    q.append((next_w, dist + <span class="nu">1</span>))',
+      '    <span class="kw">return</span> <span class="nu">0</span>',
     ],
     terminalLogs: [
       '$ run tests',
@@ -232,423 +221,534 @@ const HERO_PROBLEMS: HeroProblem[] = [
       '✓ hidden 35/35 passed · 48 ms · O(M²×N)',
       '⟶ committed to GitHub · 7e11f09',
     ],
-    description: 'Given two words and a dictionary, find the length of shortest transformation sequence from begin to end.',
+    descHtml: 'Given two words and a dictionary, find the length of shortest transformation sequence from begin to end.',
     chips: ['bfs', 'Amazon', 'Google', 'Meta', 'acceptance 38%'],
     constraints: '1 ≤ beginWord.length ≤ 10, all words have identical length.',
     byteTip: 'Queue shortest path level by level. Removing visited words prevents infinite cycles!',
   },
 ];
 
-export const GlossyStudioHero: React.FC = () => {
-  const { stats, addXP, triggerBurst } = useCourse();
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
 
-  // State
-  const [selectedIdx, setSelectedIdx] = useState<number>(0);
-  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
-  const [partialLine, setPartialLine] = useState<string | null>(null);
+function renderCode(codeLines: string[], n: number, partial: string | null): string {
+  const completed = codeLines.slice(0, n).map((l) => `<span class="ln">${l}</span>`).join('');
+  if (partial !== null) {
+    return completed + `<span class="ln">${partial}<i class="cur"></i></span>`;
+  }
+  return completed;
+}
+
+export const GlossyStudioHero: React.FC = () => {
+  const [selectedProbId, setSelectedProbId] = useState<string>('bin-search');
+  const [themeIdx, setThemeIdx] = useState<number>(1); // 1 = #8B5CF6 / #38BDF8
+  const [activeNavTab, setActiveNavTab] = useState<string>('Problems');
+  const [activeFileTab, setActiveFileTab] = useState<string>('binary-search.py');
+
+  // Animation states
+  const [codeHtml, setCodeHtml] = useState<string>('');
   const [visibleLogsCount, setVisibleLogsCount] = useState<number>(0);
+  const [xpWidth, setXpWidth] = useState<number>(62);
+  const [xpText, setXpText] = useState<string>('1,240 XP');
   const [showByteBubble, setShowByteBubble] = useState<boolean>(false);
   const [showPop, setShowPop] = useState<boolean>(false);
-  const [isInteractiveMode, setIsInteractiveMode] = useState<boolean>(false);
-  const [userCode, setUserCode] = useState<string>('');
-  const [activeTheme, setActiveTheme] = useState<ThemePresetId>(() => getStoredTheme());
-  const [currentXpDisplay, setCurrentXpDisplay] = useState<number>(stats.xp);
-  const [xpFillPercent, setXpFillPercent] = useState<number>(62);
+  const [showPalette, setShowPalette] = useState<boolean>(false);
+  const [paletteTyped, setPaletteTyped] = useState<string>('> ');
 
-  const activeProblem = HERO_PROBLEMS[selectedIdx];
-  const runIdRef = useRef<number>(0);
+  const runRef = useRef<number>(0);
+  const activeProblem =
+    PREVIEW_PROBLEMS.find((p) => p.id === selectedProbId) || PREVIEW_PROBLEMS[0];
 
-  // Sync with active theme
-  useEffect(() => {
-    const handleThemeChange = (e: any) => {
-      if (e?.detail?.id) setActiveTheme(e.detail.id);
-    };
-    window.addEventListener('theme-changed', handleThemeChange);
-    return () => window.removeEventListener('theme-changed', handleThemeChange);
-  }, []);
+  const currentTheme = PREVIEW_THEMES[themeIdx];
 
-  const handleSelectTheme = (id: ThemePresetId) => {
-    sound.playPop();
-    applyTheme(id);
-    setActiveTheme(id);
-  };
+  // Helper wait function
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Run the typing & execution animation sequence
-  const playAnimation = async (prob: HeroProblem) => {
-    const currentRun = ++runIdRef.current;
-    const isLive = () => currentRun === runIdRef.current;
+  // The Exact Choreographed Animation Sequence from the User's HTML Preview
+  const play = async (prob: PreviewProblem) => {
+    const myRun = ++runRef.current;
+    const isLive = () => myRun === runRef.current;
 
-    // Reset UI states
-    setDisplayedLines([]);
-    setPartialLine('');
+    // 1. Reset state
+    setThemeIdx(1);
+    setXpWidth(62);
+    setXpText('1,240 XP');
     setVisibleLogsCount(0);
     setShowByteBubble(false);
     setShowPop(false);
-    setXpFillPercent(62);
-    setCurrentXpDisplay(stats.xp);
+    setShowPalette(false);
+    setPaletteTyped('> ');
+    setCodeHtml(renderCode(prob.codeHtml, 0, ''));
 
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    await sleep(400);
+    await wait(500);
 
-    // Type lines progressively
-    for (let i = 0; i < prob.code.length && isLive(); i++) {
-      const fullText = prob.code[i];
-      const chunk = Math.max(3, Math.ceil(fullText.length / 8));
+    // 2. Type code line by line (45ms per step, 90ms per line)
+    for (let i = 0; i < prob.codeHtml.length && isLive(); i++) {
+      const fullText = stripHtml(prob.codeHtml[i]);
+      const step = Math.max(1, Math.ceil(fullText.length / 9));
 
-      for (let c = chunk; c < fullText.length && isLive(); c += chunk) {
-        setPartialLine(fullText.slice(0, c));
-        await sleep(35);
+      for (let c = step; c < fullText.length && isLive(); c += step) {
+        setCodeHtml(renderCode(prob.codeHtml, i, fullText.slice(0, c)));
+        await wait(45);
       }
 
       if (!isLive()) return;
-      setDisplayedLines(prob.code.slice(0, i + 1));
-      setPartialLine(null);
-      await sleep(70);
+      setCodeHtml(renderCode(prob.codeHtml, i + 1, null));
+      await wait(90);
 
-      // Trigger Byte speech bubble halfway through typing
+      // Byte bubble appears on line 3
       if (i === 3) {
         setShowByteBubble(true);
       }
     }
 
     if (!isLive()) return;
-    await sleep(400);
+    await wait(500);
 
-    // Stream terminal logs
-    for (let j = 0; j < prob.terminalLogs.length && isLive(); j++) {
-      setVisibleLogsCount(j + 1);
-      sound.playHit();
-      await sleep(550);
+    // 3. Sequential terminal logs (650ms delay each)
+    for (let i = 0; i < prob.terminalLogs.length && isLive(); i++) {
+      setVisibleLogsCount(i + 1);
+      await wait(650);
     }
 
     if (!isLive()) return;
 
-    // Trigger celebration & XP pop
-    sound.playSuccess();
-    setXpFillPercent(100);
-    setCurrentXpDisplay((prev) => prev + 50);
+    // 4. XP bar to 100% and +50 XP! Pop banner
+    setXpWidth(100);
+    setXpText('1,290 XP');
     setShowPop(true);
 
-    confetti({
-      particleCount: 60,
-      spread: 50,
-      origin: { y: 0.5 },
-      colors: ['#38BDF8', '#8B5CF6', '#10B981'],
-    });
-
-    await sleep(2500);
+    await wait(1800);
     if (!isLive()) return;
+
+    // 5. Hide pop, show Command Palette simulation
     setShowPop(false);
-  };
+    setShowPalette(true);
 
-  // Initial mount or problem switch animation
-  useEffect(() => {
-    if (!isInteractiveMode) {
-      playAnimation(activeProblem);
-    } else {
-      setUserCode(activeProblem.code.join('\n'));
-      setVisibleLogsCount(activeProblem.terminalLogs.length);
-      setShowByteBubble(true);
+    const command = '> theme midnight';
+    setPaletteTyped('> ');
+    for (const ch of command.slice(2)) {
+      if (!isLive()) return;
+      setPaletteTyped((prev) => prev + ch);
+      await wait(70);
     }
-  }, [selectedIdx, isInteractiveMode]);
 
-  // Handle problem selection from left list
-  const handleSelectProblem = (idx: number) => {
-    sound.playPop();
-    setSelectedIdx(idx);
+    await wait(600);
+    if (!isLive()) return;
+
+    // 6. Theme switches to Tokyo Midnight / Rose Theme
+    setThemeIdx(3);
+
+    await wait(500);
+    setShowPalette(false);
+
+    // 7. Pause and auto loop
+    await wait(2800);
+    if (isLive()) {
+      play(prob);
+    }
   };
 
-  // Replay handler
+  // Start on mount or when problem changes
+  useEffect(() => {
+    play(activeProblem);
+    return () => {
+      runRef.current++;
+    };
+  }, [selectedProbId]);
+
+  // Manual replay button
   const handleReplay = () => {
     sound.playPop();
-    setIsInteractiveMode(false);
-    playAnimation(activeProblem);
+    play(activeProblem);
+  };
+
+  // Theme dot click
+  const handleThemeClick = (idx: number) => {
+    sound.playPop();
+    setThemeIdx(idx);
+  };
+
+  // Problem click from left list
+  const handleSelectProblem = (id: string, fileName: string) => {
+    sound.playPop();
+    setSelectedProbId(id);
+    setActiveFileTab(fileName);
+  };
+
+  // Tab switch
+  const handleTabClick = (tabName: string) => {
+    sound.playPop();
+    setActiveNavTab(tabName);
+  };
+
+  // Toggle Command Palette
+  const handleTogglePalette = () => {
+    sound.playPop();
+    setShowPalette((prev) => !prev);
   };
 
   return (
-    <div className="ambient-stage rounded-3xl p-4 sm:p-6 shadow-2xl relative select-none">
-      {/* 3 Floating Drifting Ambient Orbs */}
-      <div className="orb o1" />
-      <div className="orb o2" />
-      <div className="orb o3" />
+    <div className="w-full max-w-[1120px] mx-auto my-2 select-none">
+      {/* Top Header bar with exact title and Replay button */}
+      <div className="flex justify-between items-center mb-3 gap-2 flex-wrap">
+        <h1 className="font-bold text-xl tracking-tight text-white m-0">
+          ADA Hub: interface preview
+        </h1>
+        <button
+          onClick={handleReplay}
+          type="button"
+          className="flex items-center gap-1.5 font-bold text-xs text-white border border-white/35 py-2 px-4 rounded-full cursor-pointer bg-gradient-to-b from-[#8f6bff] to-[#5b34e0] shadow-[0_6px_18px_rgba(110,70,255,0.45),inset_0_1px_0_rgba(255,255,255,0.55)] hover:brightness-110 active:scale-95 transition-all outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#38B6FF]"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Replay</span>
+        </button>
+      </div>
 
-      {/* Top Controls Bar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="font-extrabold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
-            <span className="text-[var(--a2,#38BDF8)]">⚡</span>
-            <span>ADA Hub: glossy interface preview</span>
-          </span>
-          <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/[0.08] text-slate-300 border border-white/10 hidden sm:inline">
-            Interactive Live Sandbox
-          </span>
-        </div>
+      {/* Responsive Horizontal Scroll Container */}
+      <div className="overflow-x-auto p-1">
+        <div
+          className="stage"
+          id="stage"
+          style={
+            {
+              '--a': currentTheme[0],
+              '--a2': currentTheme[1],
+              minWidth: '900px',
+            } as React.CSSProperties
+          }
+        >
+          {/* 3 Contained Floating Orbs */}
+          <div className="orb o1" />
+          <div className="orb o2" />
+          <div className="orb o3" />
 
-        <div className="flex items-center gap-2.5">
-          {/* Toggle Interactive Code Edit Mode */}
-          <button
-            onClick={() => {
-              sound.playPop();
-              setIsInteractiveMode(!isInteractiveMode);
-            }}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-              isInteractiveMode
-                ? 'bg-gradient-to-r from-[var(--a,#8B5CF6)] to-[var(--a2,#38BDF8)] text-white border-white/40 shadow-md'
-                : 'bg-white/[0.08] text-slate-300 hover:text-white border-white/15'
-            }`}
+          {/* App Card Container with Specular Top Sheen */}
+          <div
+            className="app"
+            id="app"
+            style={
+              {
+                '--a': currentTheme[0],
+                '--a2': currentTheme[1],
+              } as React.CSSProperties
+            }
           >
-            {isInteractiveMode ? 'Interactive Editing ON' : 'Edit Code Directly'}
-          </button>
+            {/* Nav Header */}
+            <div className="nav">
+              <div className="logo cursor-pointer">
+                <b>⚡</b>
+                <span>Algorithm Adventures</span>
+              </div>
 
-          {/* Replay Animation Button */}
-          <button
-            onClick={handleReplay}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white cursor-pointer bg-gradient-to-b from-[#8f6bff] to-[#5b34e0] border border-white/30 shadow-[0_6px_18px_rgba(110,70,255,0.45),inset_0_1px_0_rgba(255,255,255,0.55)] hover:brightness-110 active:scale-95 transition-all"
-            title="Replay code typing & test execution sequence"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Replay</span>
-          </button>
+              {/* Pill Tabs */}
+              <div className="tabs">
+                {['Problems', 'Sagas', 'Research Lab', 'Duel Arena', 'Mock Interview'].map(
+                  (tab) => (
+                    <span
+                      key={tab}
+                      className={activeNavTab === tab ? 'on' : ''}
+                      onClick={() => handleTabClick(tab)}
+                    >
+                      {tab}
+                    </span>
+                  )
+                )}
+              </div>
+
+              <div className="sp" />
+
+              {/* ⌘K Search Trigger */}
+              <div className="k" onClick={handleTogglePalette}>
+                ⌘K Search
+              </div>
+
+              {/* 5 Theme Dots */}
+              <div className="dots" aria-label="Themes">
+                <i
+                  style={{ background: '#06B6D4', color: '#06B6D4' }}
+                  onClick={() => handleThemeClick(0)}
+                  title="Cyber Teal"
+                />
+                <i
+                  style={{ background: '#FFDE59', color: '#FFDE59' }}
+                  onClick={() => handleThemeClick(4)}
+                  title="Imperial Amber"
+                />
+                <i
+                  style={{ background: '#10B981', color: '#10B981' }}
+                  onClick={() => handleThemeClick(2)}
+                  title="Emerald Matrix"
+                />
+                <i
+                  style={{ background: '#8B5CF6', color: '#8B5CF6' }}
+                  onClick={() => handleThemeClick(1)}
+                  title="Tokyo Midnight"
+                />
+                <i
+                  style={{ background: '#F43F5E', color: '#F43F5E' }}
+                  onClick={() => handleThemeClick(3)}
+                  title="Crimson Rose"
+                />
+              </div>
+
+              {/* Streak */}
+              <div className="stat">🔥 12 days</div>
+
+              {/* XP Track with Shimmer Sweep */}
+              <div className="xp">
+                <b id="xp" style={{ width: `${xpWidth}%` }} />
+              </div>
+
+              {/* XP Number */}
+              <div className="stat" id="xpn">
+                {xpText}
+              </div>
+            </div>
+
+            {/* Main 3-Column Studio Grid */}
+            <div className="main-preview-grid">
+              {/* Left Column: Chapter 1 Problems */}
+              <div className="side glass">
+                <h3>Ch 1: Searching</h3>
+                <div
+                  className={`pr ${PREVIEW_PROBLEMS[1].isDone ? 'done' : ''} ${
+                    selectedProbId === 'contains-dup' ? 'on' : ''
+                  }`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[1].id,
+                      PREVIEW_PROBLEMS[1].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Array Contains Duplicate</span>
+                  <em className="E">Easy</em>
+                </div>
+
+                <div
+                  className={`pr ${selectedProbId === 'bin-search' ? 'on' : ''}`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[0].id,
+                      PREVIEW_PROBLEMS[0].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Binary Search</span>
+                  <em className="E">Easy</em>
+                </div>
+
+                <div
+                  className={`pr ${selectedProbId === 'two-sum' ? 'on' : ''}`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[2].id,
+                      PREVIEW_PROBLEMS[2].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Two Sum</span>
+                  <em className="E">Easy</em>
+                </div>
+
+                <div
+                  className={`pr ${selectedProbId === 'course-sched' ? 'on' : ''}`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[3].id,
+                      PREVIEW_PROBLEMS[3].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Course Schedule</span>
+                  <em className="M">Med</em>
+                </div>
+
+                <div
+                  className={`pr ${selectedProbId === 'array-div' ? 'on' : ''}`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[0].id,
+                      PREVIEW_PROBLEMS[0].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Array Pair Sum Divisibility</span>
+                  <em className="M">Med</em>
+                </div>
+
+                <div
+                  className={`pr ${selectedProbId === 'kth-largest' ? 'on' : ''}`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[4].id,
+                      PREVIEW_PROBLEMS[4].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Kth Largest in Stream</span>
+                  <em className="M">Med</em>
+                </div>
+
+                <div
+                  className={`pr ${selectedProbId === 'word-ladder' ? 'on' : ''}`}
+                  onClick={() =>
+                    handleSelectProblem(
+                      PREVIEW_PROBLEMS[5].id,
+                      PREVIEW_PROBLEMS[5].fileName
+                    )
+                  }
+                >
+                  <span className="truncate pr-1">Word Ladder</span>
+                  <em className="H">Hard</em>
+                </div>
+              </div>
+
+              {/* Center Column: IDE & Live Terminal */}
+              <div className="ide glass">
+                <div className="etabs">
+                  <span
+                    className={activeFileTab === 'binary-search.py' ? 'on' : ''}
+                    onClick={() =>
+                      handleSelectProblem(
+                        PREVIEW_PROBLEMS[0].id,
+                        'binary-search.py'
+                      )
+                    }
+                  >
+                    binary-search.py
+                  </span>
+                  <span
+                    className={activeFileTab === 'two-sum.py' ? 'on' : ''}
+                    onClick={() =>
+                      handleSelectProblem(
+                        PREVIEW_PROBLEMS[2].id,
+                        'two-sum.py'
+                      )
+                    }
+                  >
+                    two-sum.py
+                  </span>
+                </div>
+
+                {/* Preformatted Line-Numbered Code Block */}
+                <pre
+                  className="code-pre"
+                  id="code"
+                  aria-label="Python editor"
+                  dangerouslySetInnerHTML={{ __html: codeHtml }}
+                />
+
+                {/* Terminal Window with Sequential Passes */}
+                <div className="term" id="term">
+                  {activeProblem.terminalLogs.map((log, lIdx) => (
+                    <div
+                      key={lIdx}
+                      className={`${lIdx < visibleLogsCount ? 'show' : ''} ${
+                        log.startsWith('$') ? 'pend' : 'ok'
+                      }`}
+                    >
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column: Problem Specs & Byte Companion */}
+              <div className="right glass">
+                <h3>{activeProblem.title}</h3>
+                <p
+                  dangerouslySetInnerHTML={{
+                    __html: activeProblem.descHtml,
+                  }}
+                />
+
+                <div>
+                  {activeProblem.chips.map((chip, cIdx) => (
+                    <span key={cIdx} className="chip">
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+
+                <p style={{ marginTop: '10px' }}>
+                  Constraints: {activeProblem.constraints}
+                </p>
+
+                {/* Byte AI Mentor & Hop Animation */}
+                <div className="byte">
+                  <div className="bot">🤖</div>
+                  <div className={`bub ${showByteBubble ? 'show' : ''}`} id="bub">
+                    {activeProblem.byteTip}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bangers +50 XP! Pop Overlay */}
+            <div className={`pop ${showPop ? 'show' : ''}`} id="pop">
+              +50 XP!
+            </div>
+
+            {/* In-Preview Command Palette Overlay */}
+            <div
+              className={`pal ${showPalette ? 'show' : ''}`}
+              id="pal"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowPalette(false);
+              }}
+            >
+              <div className="pbox">
+                <div className="pin" id="pin">
+                  {paletteTyped}
+                </div>
+                <div
+                  className="pit on"
+                  onClick={() => {
+                    handleThemeClick(1);
+                    setShowPalette(false);
+                  }}
+                >
+                  <span>Theme: Tokyo Midnight</span>
+                  <small>theme</small>
+                </div>
+                <div
+                  className="pit"
+                  onClick={() => {
+                    setActiveNavTab('Research Lab');
+                    setShowPalette(false);
+                  }}
+                >
+                  <span>Open Raft Consensus Lab</span>
+                  <small>lab</small>
+                </div>
+                <div
+                  className="pit"
+                  onClick={() => {
+                    setActiveNavTab('Duel Arena');
+                    setShowPalette(false);
+                  }}
+                >
+                  <span>Start 1v1 Duel vs Bugsy</span>
+                  <small>arena</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Glossy App Container */}
-      <div className="glossy-app">
-        {/* Navigation Header inside App */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-white/10 bg-[#0a0b18]/40 text-xs">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <b className="logo-badge">⚡</b>
-            <span className="font-extrabold text-sm tracking-tight bg-gradient-to-r from-white to-[var(--a2,#38BDF8)] bg-clip-text text-transparent">
-              Algorithm Adventures
-            </span>
-          </div>
-
-          {/* Pill Tabs */}
-          <div className="hidden lg:flex items-center tabs-capsule">
-            <span className="on">Problems</span>
-            <span>Sagas</span>
-            <span>Research Lab</span>
-            <span>Duel Arena</span>
-            <span>Mock Interview</span>
-          </div>
-
-          {/* Right Tools: ⌘K, Dots, Streak, XP */}
-          <div className="flex items-center gap-3">
-            <div className="glossy-k hidden sm:inline-flex">⌘K Search</div>
-
-            {/* 5 Theme Dots */}
-            <div className="dots" title="Switch Theme Accent">
-              {QUICK_THEME_DOTS.map((dot) => (
-                <button
-                  key={dot.id}
-                  onClick={() => handleSelectTheme(dot.id)}
-                  style={{ background: dot.color, color: dot.color }}
-                  className={`theme-dot ${activeTheme === dot.id ? 'active-dot' : ''}`}
-                  title={dot.label}
-                  aria-label={dot.label}
-                />
-              ))}
-            </div>
-
-            {/* Streak */}
-            <div className="font-bold text-white whitespace-nowrap">🔥 12 days</div>
-
-            {/* Shimmer XP */}
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="xp-track">
-                <div className="xp-fill" style={{ width: `${xpFillPercent}%` }} />
-              </div>
-              <span className="font-bold font-mono text-white whitespace-nowrap">
-                {currentXpDisplay.toLocaleString()} XP
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 3-Column Studio Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 p-3.5 min-h-[460px]">
-          {/* Column 1: Chapter Problem List (3 cols on md, 2.5 on lg) */}
-          <div className="md:col-span-4 lg:col-span-3 glass p-3 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xs font-bold text-white/90 uppercase tracking-wider mb-2.5 flex items-center justify-between">
-                <span>Ch 1: Searching &amp; Arrays</span>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  {HERO_PROBLEMS.filter((p) => p.isDone).length}/{HERO_PROBLEMS.length}
-                </span>
-              </h3>
-
-              <div className="space-y-1">
-                {HERO_PROBLEMS.map((prob, idx) => {
-                  const isSelected = idx === selectedIdx;
-                  return (
-                    <div
-                      key={prob.id}
-                      onClick={() => handleSelectProblem(idx)}
-                      className={`pr ${isSelected ? 'on' : ''} ${prob.isDone ? 'done' : ''}`}
-                    >
-                      <span className="truncate pr-1">{prob.title}</span>
-                      <em className={prob.diffClass}>{prob.difficulty}</em>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Chapter Progress Footer */}
-            <div className="pt-3 border-t border-white/10 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-              <span>Chapter 1 Mastery</span>
-              <span className="text-emerald-400 font-bold">85%</span>
-            </div>
-          </div>
-
-          {/* Column 2: IDE & Live Terminal (5 cols on md, 6 on lg) */}
-          <div className="md:col-span-8 lg:col-span-6 glass flex flex-col min-w-0 bg-[#080914]/70">
-            {/* File Tabs */}
-            <div className="etabs">
-              <span className="on">{activeProblem.fileName}</span>
-              <span
-                onClick={() => handleSelectProblem((selectedIdx + 1) % HERO_PROBLEMS.length)}
-                className="opacity-70 hover:opacity-100"
-              >
-                {HERO_PROBLEMS[(selectedIdx + 1) % HERO_PROBLEMS.length].fileName}
-              </span>
-            </div>
-
-            {/* Python Code Display */}
-            <div className="flex-1 p-3.5 font-mono text-xs overflow-x-auto bg-white/[0.02] flex flex-col justify-start">
-              {isInteractiveMode ? (
-                <textarea
-                  value={userCode}
-                  onChange={(e) => setUserCode(e.target.value)}
-                  spellCheck={false}
-                  className="w-full flex-1 bg-transparent text-emerald-300 font-mono text-xs focus:outline-none resize-none leading-relaxed selection:bg-amber-400/30"
-                  style={{ tabSize: 4, minHeight: '220px' }}
-                />
-              ) : (
-                <pre className="m-0 leading-relaxed text-[#d6dbee] select-text">
-                  {displayedLines.map((line, lIdx) => (
-                    <div key={lIdx} className="flex">
-                      <span className="w-8 text-right pr-3 select-none text-[#59607a] text-[11px]">
-                        {lIdx + 1}
-                      </span>
-                      <span className="flex-1 whitespace-pre">{formatSyntaxCode(line)}</span>
-                    </div>
-                  ))}
-                  {partialLine !== null && (
-                    <div className="flex">
-                      <span className="w-8 text-right pr-3 select-none text-[#59607a] text-[11px]">
-                        {displayedLines.length + 1}
-                      </span>
-                      <span className="flex-1 whitespace-pre">
-                        {formatSyntaxCode(partialLine)}
-                        <span className="blinking-cursor" />
-                      </span>
-                    </div>
-                  )}
-                </pre>
-              )}
-            </div>
-
-            {/* Interactive Terminal */}
-            <div className="term">
-              {activeProblem.terminalLogs.slice(0, visibleLogsCount).map((log, logIdx) => {
-                const isCmd = log.startsWith('$');
-                const isCommit = log.startsWith('⟶');
-                return (
-                  <div
-                    key={logIdx}
-                    className={`text-[11px] font-mono leading-relaxed transition-all ${
-                      isCmd
-                        ? 'text-slate-400'
-                        : isCommit
-                        ? 'text-sky-300 font-bold'
-                        : 'text-emerald-400 font-semibold'
-                    }`}
-                  >
-                    {log}
-                  </div>
-                );
-              })}
-              {visibleLogsCount === 0 && (
-                <div className="text-slate-500 text-xs italic flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>Waiting for execution run...</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Column 3: Problem Specs & Byte Mascot (3 cols) */}
-          <div className="md:col-span-12 lg:col-span-3 glass p-4 flex flex-col justify-between relative min-h-[300px]">
-            <div>
-              <h3 className="text-sm font-bold text-white mb-2">{activeProblem.title}</h3>
-              <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                {activeProblem.description}
-              </p>
-
-              {/* Tag Chips */}
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {activeProblem.chips.map((chip, cIdx) => (
-                  <span
-                    key={cIdx}
-                    className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/[0.08] text-slate-200 border border-white/15"
-                  >
-                    {chip}
-                  </span>
-                ))}
-              </div>
-
-              {/* Constraints */}
-              <div className="p-2.5 rounded-xl bg-black/30 border border-white/10 text-[11px] text-slate-400">
-                <span className="font-semibold text-slate-300">Constraints:</span>{' '}
-                {activeProblem.constraints}
-              </div>
-            </div>
-
-            {/* Byte Companion Mascot & Speech Bubble */}
-            <div className="pt-4 flex items-end gap-2.5">
-              <div className="byte-hop text-3xl shrink-0" title="Byte AI Mentor">
-                🤖
-              </div>
-              {showByteBubble && (
-                <div className="bub flex-1 text-xs">
-                  {activeProblem.byteTip}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Comic Pop Bangers Celebration (+50 XP!) */}
-        {showPop && (
-          <div className="absolute right-12 top-20 z-20 pop-bangers pointer-events-none">
-            +50 XP!
-          </div>
-        )}
+      {/* Exact Caption */}
+      <div className="cap">
+        Animated mock-up: write a solution, run the tests, earn XP, then switch
+        themes with the command palette.
       </div>
     </div>
   );
 };
-
-// Syntax highlighter helper
-function formatSyntaxCode(raw: string): React.ReactNode {
-  // Simple token matching
-  const parts = raw.split(/(\b(?:def|class|while|if|elif|else|return|for|in|import|from)\b|\b\d+\b|"[^"]*"|'[^']*'|->|list|int|str|bool|set|dict)/g);
-
-  return parts.map((part, i) => {
-    if (['def', 'class', 'while', 'if', 'elif', 'else', 'return', 'for', 'in', 'import', 'from'].includes(part)) {
-      return <span key={i} className="text-[#d19bff] font-bold">{part}</span>;
-    }
-    if (['list', 'int', 'str', 'bool', 'set', 'dict'].includes(part)) {
-      return <span key={i} className="text-[#7fe3ff] font-semibold">{part}</span>;
-    }
-    if (/^\d+$/.test(part)) {
-      return <span key={i} className="text-[#9ef0c0]">{part}</span>;
-    }
-    if (part.startsWith('"') || part.startsWith("'")) {
-      return <span key={i} className="text-[#ffe9a6]">{part}</span>;
-    }
-    return part;
-  });
-}
