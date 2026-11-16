@@ -37,6 +37,7 @@ import { sound } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
 import { UniversalVSCodeEditor } from '../common/UniversalVSCodeEditor';
 import { SupportedLanguage } from '../../utils/languageTemplates';
+import { StriversTheoryViewer } from './StriversTheoryViewer';
 
 const STORAGE_KEY_SOLVED = 'ada_strivers_a2z_solved';
 const STORAGE_KEY_STARRED = 'ada_strivers_a2z_starred';
@@ -62,6 +63,9 @@ export const StriversA2ZSheetHub: React.FC = () => {
       return new Set();
     }
   });
+
+  // View Mode: 'sheet' (Problems) vs 'theory' (Concept Masterclasses)
+  const [viewMode, setViewMode] = useState<'sheet' | 'theory'>('sheet');
 
   // Filter & Search State
   const [selectedStepId, setSelectedStepId] = useState<string>('all');
@@ -323,8 +327,70 @@ export const StriversA2ZSheetHub: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Step Selector Horizontal Carousel */}
-      <div className="space-y-2">
+      {/* 2. Navigation Switcher: Problems Sheet vs Theory Masterclass */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+        <div className="flex items-center p-1 bg-[#05070e] rounded-2xl border border-white/15 shadow-inner">
+          <button
+            onClick={() => {
+              sound.playPop();
+              setViewMode('sheet');
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              viewMode === 'sheet'
+                ? 'bg-amber-400 text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Target className="w-3.5 h-3.5" />
+            <span>Problems Sheet ({STRIVERS_A2Z_QUESTIONS.length})</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sound.playPop();
+              setViewMode('theory');
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              viewMode === 'theory'
+                ? 'bg-purple-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+            <span>A2Z Theory Masterclass (18 Steps)</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[10px] font-mono border border-purple-400/40">
+              NEW
+            </span>
+          </button>
+        </div>
+
+        {viewMode === 'sheet' && selectedStepId !== 'all' && (
+          <button
+            onClick={() => {
+              sound.playPop();
+              setViewMode('theory');
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 hover:text-white border border-purple-500/40 text-xs font-semibold transition cursor-pointer"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+            <span>Read Step {selectedStepObj?.stepNumber} Theory Masterclass ↗</span>
+          </button>
+        )}
+      </div>
+
+      {viewMode === 'theory' ? (
+        <StriversTheoryViewer
+          initialStepId={selectedStepId === 'all' ? 'step-1' : selectedStepId}
+          onGoToProblems={(stepId) => {
+            setSelectedStepId(stepId);
+            setSelectedSubStepId('all');
+            setViewMode('sheet');
+          }}
+        />
+      ) : (
+        <>
+          {/* 3. Step Selector Horizontal Carousel */}
+          <div className="space-y-2">
         <div className="flex items-center justify-between text-xs px-1">
           <span className="font-mono text-slate-400 uppercase font-semibold flex items-center gap-1.5">
             <Layers className="w-3.5 h-3.5 text-amber-400" />
@@ -666,6 +732,8 @@ export const StriversA2ZSheetHub: React.FC = () => {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* 6. Embedded Video Tutorial Modal */}
       {activeVideoQuestion && (

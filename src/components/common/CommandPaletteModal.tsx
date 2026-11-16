@@ -27,6 +27,7 @@ import {
   Database,
   Calculator,
   Target,
+  BookOpen,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -74,6 +75,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       category: 'Navigation',
       icon: Target,
       badge: 'Take U Forward',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('strivers-sheet');
+      },
+    },
+    {
+      id: 'tab-strivers-theory',
+      title: "Striver's A2Z DSA Theory Masterclass (All 18 Steps & Mathematical Invariants)",
+      category: 'Navigation',
+      icon: BookOpen,
+      badge: 'Theory & Proofs',
       onSelect: () => {
         setActiveSaga('dsa');
         setActiveTab('strivers-sheet');

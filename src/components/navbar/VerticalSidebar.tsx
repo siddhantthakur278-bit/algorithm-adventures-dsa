@@ -104,7 +104,7 @@ export const VerticalSidebar: React.FC = () => {
       label: 'Curriculum & Live Track',
       items: [
         { id: 'problems', label: '1,000+ Problem Library', icon: BookOpen, badge: '1,010 FAANG', highlight: true },
-        { id: 'strivers-sheet', label: "Striver's A2Z Sheet", icon: Target, badge: 'A2Z 346 Qs', highlight: true },
+        { id: 'strivers-sheet', label: "Striver's A2Z Sheet & Theory", icon: Target, badge: '346 Qs • 18 Steps', highlight: true },
         { id: 'quest', label: 'Daily POTD Quests', icon: Sparkles, badge: '5 AM' },
         { id: 'leaderboard', label: 'World Leaderboard', icon: Trophy, badge: 'Live' },
         { id: 'chat', label: 'Community & Voice Chat', icon: MessagesSquare, badge: 'Voice • Live', highlight: true },

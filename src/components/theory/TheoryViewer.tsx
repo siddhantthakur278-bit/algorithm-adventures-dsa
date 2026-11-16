@@ -19,7 +19,7 @@ import { sound } from '../../utils/soundEffects';
 import { UniversalVSCodeEditor } from '../common/UniversalVSCodeEditor';
 
 export const TheoryViewer: React.FC = () => {
-  const { stats, toggleSubtopicComplete, recordQuizScore, collectPowerCard } = useCourse();
+  const { stats, toggleSubtopicComplete, recordQuizScore, collectPowerCard, setActiveTab } = useCourse();
   const [selectedChapterId, setSelectedChapterId] = useState<number>(1);
   const [flippedMythIds, setFlippedMythIds] = useState<Record<string, boolean>>({});
   const [selectedQuizAnswers, setSelectedQuizAnswers] = useState<Record<string, number>>({});
@@ -67,6 +67,33 @@ export const TheoryViewer: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+      {/* Striver's A2Z Theory Spotlight Banner */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-950/60 via-slate-900 to-indigo-950/60 border border-purple-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-mono font-bold uppercase">
+              Official Take U Forward
+            </span>
+            <span className="text-xs font-mono text-emerald-400 font-bold">18 Steps Complete</span>
+          </div>
+          <h3 className="text-sm sm:text-base font-bold text-white">
+            Striver's A2Z DSA Theory Masterclasses &amp; Mathematical Invariants
+          </h3>
+          <p className="text-xs text-slate-300">
+            Deep dive into Kadane's proof, Floyd's Cycle math, Monotonic Stacks, Dijkstra, DSU, and KMP.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            sound.playPop();
+            setActiveTab('strivers-sheet');
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/25 transition cursor-pointer shrink-0"
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Open Striver's Theory ↗</span>
+        </button>
+      </div>
       {/* Chapter Lock Warning Alert */}
       {chapterLockWarning && (
         <div className="bg-rose-950/80 border-2 border-rose-500 p-4 rounded-2xl flex items-center justify-between gap-4 animate-shake">
