@@ -29,6 +29,11 @@ import {
 } from 'lucide-react';
 import { SupportedLanguage, generateStarterCode } from '../../utils/languageTemplates';
 import {
+  convertCppToPython,
+  convertPythonToCpp,
+  detectCodeLanguage,
+} from '../../utils/codeConverter';
+import {
   CODER_ARMY_MODULES,
   CODER_ARMY_LECTURES,
   CoderArmyLecture,
@@ -158,6 +163,7 @@ export const LectureStudioHub: React.FC = () => {
   // Custom Video URL
   const [customVideoUrl, setCustomVideoUrl] = useState<string>('');
   const [loadedCustomId, setLoadedCustomId] = useState<string>('KLlXCFG5TnA');
+  const [embedMode, setEmbedMode] = useState<'single' | 'playlist'>('single');
 
   // Studio Layout Modes
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
@@ -197,12 +203,21 @@ export const LectureStudioHub: React.FC = () => {
 
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     sound.playPop();
+    const prevLang = currentLanguage;
     setCurrentLanguage(newLang);
     if (selectedTrack === 'coder-army') {
       if (activeLecture.starterCodes[newLang]) {
         setCode(activeLecture.starterCodes[newLang]!);
       } else {
-        setCode(generateStarterCode(newLang, activeLecture.title, activeLecture.starterCodes.python || ''));
+        const isCpp = prevLang === 'cpp' || detectCodeLanguage(code) === 'cpp';
+        const isPython = prevLang === 'python' || detectCodeLanguage(code) === 'python';
+        if (newLang === 'python' && isCpp) {
+          setCode(convertCppToPython(code, activeLecture.title));
+        } else if (newLang === 'cpp' && isPython) {
+          setCode(convertPythonToCpp(code, activeLecture.title));
+        } else {
+          setCode(generateStarterCode(newLang, activeLecture.title, ''));
+        }
       }
     }
   };
@@ -647,11 +662,16 @@ export const LectureStudioHub: React.FC = () => {
             {/* Video Frame */}
             <div className="relative w-full aspect-video bg-black overflow-hidden">
               <iframe
-                key={activeVideoId}
+                key={`${embedMode}-${activeVideoId}`}
                 title="lecture-video-player"
-                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1`}
+                src={
+                  embedMode === 'playlist'
+                    ? `https://www.youtube-nocookie.com/embed/videoseries?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01&enablejsapi=1`
+                    : `https://www.youtube-nocookie.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`
+                }
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
             </div>
@@ -665,6 +685,18 @@ export const LectureStudioHub: React.FC = () => {
                     ? `Rohit Negi · L${activeLecture.lectureNumber}: ${activeLecture.title.split(':')[1]?.trim() || activeLecture.title}`
                     : 'Curated Master Stream'}
                 </span>
+                {selectedTrack === 'coder-army' && (
+                  <button
+                    onClick={() => {
+                      sound.playPop();
+                      setEmbedMode((prev) => (prev === 'single' ? 'playlist' : 'single'));
+                    }}
+                    className="ml-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-amber-300 border border-white/10 transition cursor-pointer"
+                    title="Switch between single lecture video and full playlist embed"
+                  >
+                    {embedMode === 'single' ? 'Switch to Playlist Player' : 'Switch to Single Video'}
+                  </button>
+                )}
               </div>
               <a
                 href={

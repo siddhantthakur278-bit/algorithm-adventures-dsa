@@ -32,12 +32,20 @@ import {
   Shuffle,
   Eye,
   EyeOff,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
 import { UniversalVSCodeEditor } from '../common/UniversalVSCodeEditor';
 import { SupportedLanguage } from '../../utils/languageTemplates';
 import { StriversTheoryViewer } from './StriversTheoryViewer';
+import { generateQuestionStarterCode } from '../../utils/codeConverter';
+import {
+  STRIVERS_SUBSTEP_THEORIES,
+  getSubStepTheory,
+  StriverSubStepTheory,
+} from '../../data/striversSubStepTheories';
 
 const STORAGE_KEY_SOLVED = 'ada_strivers_a2z_solved';
 const STORAGE_KEY_STARRED = 'ada_strivers_a2z_starred';
@@ -80,7 +88,12 @@ export const StriversA2ZSheetHub: React.FC = () => {
 
   // Coding Sandbox Modal State
   const [activeCodeQuestion, setActiveCodeQuestion] = useState<StriverQuestion | null>(null);
-  const [codeLanguage, setCodeLanguage] = useState<SupportedLanguage>('cpp');
+  const [codeLanguage, setCodeLanguage] = useState<SupportedLanguage>('python');
+
+  // Sub-Topic Exact Theory Masterclass Modal State
+  const [activeSubStepTheory, setActiveSubStepTheory] = useState<StriverSubStepTheory | null>(null);
+  const [theoryCodeLang, setTheoryCodeLang] = useState<'cpp' | 'python'>('python');
+  const [copiedTheoryCode, setCopiedTheoryCode] = useState<boolean>(false);
 
   const statsMeta = useMemo(() => getA2ZDifficultyStats(), []);
 
@@ -381,6 +394,7 @@ export const StriversA2ZSheetHub: React.FC = () => {
       {viewMode === 'theory' ? (
         <StriversTheoryViewer
           initialStepId={selectedStepId === 'all' ? 'step-1' : selectedStepId}
+          initialSubStepId={selectedSubStepId}
           onGoToProblems={(stepId) => {
             setSelectedStepId(stepId);
             setSelectedSubStepId('all');
@@ -674,6 +688,25 @@ export const StriversA2ZSheetHub: React.FC = () => {
                       <span>{isHintOpen ? 'Hide Hint' : 'Hint'}</span>
                     </button>
 
+                    {/* Topic Theory Quick Masterclass Trigger */}
+                    <button
+                      onClick={() => {
+                        sound.playPop();
+                        const sub = getSubStepTheory(q.subStepId);
+                        if (sub) {
+                          setActiveSubStepTheory(sub);
+                        } else {
+                          setSelectedStepId(q.stepId);
+                          setViewMode('theory');
+                        }
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 hover:text-white border border-purple-500/40 text-xs font-semibold transition cursor-pointer shadow-sm"
+                      title={`Read ${q.subStepTitle} Topic Theory Masterclass`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Theory</span>
+                    </button>
+
                     {/* Video Tutorial or Editorial Button */}
                     {q.youtubeId ? (
                       <button
@@ -769,9 +802,10 @@ export const StriversA2ZSheetHub: React.FC = () => {
             <div className="relative w-full aspect-video bg-black overflow-hidden">
               <iframe
                 title="striver-video-tutorial"
-                src={`https://www.youtube.com/embed/${activeVideoQuestion.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                src={`https://www.youtube-nocookie.com/embed/${activeVideoQuestion.youtubeId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
             </div>
@@ -878,6 +912,26 @@ export const StriversA2ZSheetHub: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                {/* View Exact Topic Theory Button */}
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    const subTheory = getSubStepTheory(activeCodeQuestion.subStepId);
+                    if (subTheory) {
+                      setActiveSubStepTheory(subTheory);
+                    } else {
+                      setSelectedStepId(activeCodeQuestion.stepId);
+                      setActiveCodeQuestion(null);
+                      setViewMode('theory');
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-950/70 hover:bg-purple-900/90 text-purple-200 border border-purple-500/40 text-xs font-bold transition cursor-pointer shadow-sm"
+                  title="View Exact Sub-Topic Theory & Recurrences"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="hidden sm:inline">Topic Theory</span>
+                </button>
+
                 <button
                   onClick={() => toggleSolved(activeCodeQuestion.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
@@ -907,33 +961,220 @@ export const StriversA2ZSheetHub: React.FC = () => {
                 language={codeLanguage}
                 problemTitle={activeCodeQuestion.title}
                 problemId={activeCodeQuestion.id}
-                starterCode={`// Striver's A2Z DSA Sheet: ${activeCodeQuestion.title}
-// Difficulty: ${activeCodeQuestion.difficulty} | ${activeCodeQuestion.subStepTitle}
-// Time Complexity: ${activeCodeQuestion.timeComplexity} | Space Complexity: ${activeCodeQuestion.spaceComplexity}
-// Key Intuition: ${activeCodeQuestion.hint}
-
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <unordered_map>
-using namespace std;
-
-class Solution {
-public:
-    // Implement your optimal solution below:
-    void solve() {
-        cout << "Testing solution for ${activeCodeQuestion.title}..." << endl;
-    }
-};
-
-int main() {
-    Solution s;
-    s.solve();
-    return 0;
-}
-`}
+                starterCode={generateQuestionStarterCode(codeLanguage, {
+                  title: activeCodeQuestion.title,
+                  difficulty: activeCodeQuestion.difficulty,
+                  subStep: activeCodeQuestion.subStepTitle,
+                  hint: activeCodeQuestion.hint,
+                  timeComplexity: activeCodeQuestion.timeComplexity,
+                  spaceComplexity: activeCodeQuestion.spaceComplexity,
+                })}
+                onOpenTopicTheory={() => {
+                  const subTheory = getSubStepTheory(activeCodeQuestion.subStepId);
+                  if (subTheory) setActiveSubStepTheory(subTheory);
+                }}
+                topicSubStep={activeCodeQuestion.subStepTitle}
                 onSolve={() => toggleSolved(activeCodeQuestion.id)}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Sub-Topic Exact Theory Masterclass Modal */}
+      {activeSubStepTheory && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
+          <div className="bg-[#0b0e1b] border border-white/15 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-5 py-4 bg-[#111627] border-b border-white/10 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400">
+                  <BookOpen className="w-4 h-4" />
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 font-bold border border-amber-400/30">
+                      Step {activeSubStepTheory.stepNumber} Sub-Topic
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      Take U Forward Official Curriculum
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-white">
+                    {activeSubStepTheory.title}
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveSubStepTheory(null)}
+                className="p-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-400 hover:text-white border border-white/10 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Content Body */}
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar text-xs sm:text-sm">
+              {/* Concept Overview */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <h4 className="font-bold text-amber-400 text-xs font-mono uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Concept Overview &amp; Mental Model</span>
+                </h4>
+                <p className="text-slate-300 leading-relaxed">{activeSubStepTheory.overview}</p>
+                <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-200 text-xs mt-2">
+                  <span className="font-bold text-purple-300 font-mono">💡 Core Intuition: </span>
+                  {activeSubStepTheory.coreIntuition}
+                </div>
+              </div>
+
+              {/* Recurrence Relation / Mathematical Formulations */}
+              {activeSubStepTheory.recurrenceOrFormula && (
+                <div className="p-4 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-2">
+                  <h4 className="font-bold text-amber-300 text-xs font-mono uppercase tracking-wider flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5" />
+                    <span>Exact Recurrence Relations &amp; Invariants</span>
+                  </h4>
+                  <pre className="p-3.5 rounded-xl bg-black/60 border border-white/10 font-mono text-xs sm:text-sm text-amber-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                    {activeSubStepTheory.recurrenceOrFormula}
+                  </pre>
+                  <p className="text-[11px] font-mono text-slate-400">
+                    Key Technique: <span className="text-white font-semibold">{activeSubStepTheory.keyTechnique}</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Algorithmic Blueprint Steps */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+                <h4 className="font-bold text-cyan-400 text-xs font-mono uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Master Step-by-Step Blueprint</span>
+                </h4>
+                <div className="space-y-1.5">
+                  {activeSubStepTheory.stepsToSolve.map((step, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300">
+                      <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold flex items-center justify-center shrink-0 text-[10px]">
+                        {idx + 1}
+                      </span>
+                      <span className="leading-5">{step}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-mono">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                    ⏱️ Time: {activeSubStepTheory.timeComplexity}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
+                    💾 Space: {activeSubStepTheory.spaceComplexity}
+                  </span>
+                </div>
+              </div>
+
+              {/* Verified Code Implementations (C++20 & Python 3.12) */}
+              <div className="rounded-2xl bg-[#090c17] border border-white/10 overflow-hidden">
+                <div className="px-4 py-2.5 bg-white/[0.04] border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-black/40 border border-white/10 text-xs">
+                    <button
+                      onClick={() => setTheoryCodeLang('python')}
+                      className={`px-3 py-1 rounded-md transition cursor-pointer font-mono font-semibold ${
+                        theoryCodeLang === 'python'
+                          ? 'bg-amber-400 text-slate-950 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Python 3.12
+                    </button>
+                    <button
+                      onClick={() => setTheoryCodeLang('cpp')}
+                      className={`px-3 py-1 rounded-md transition cursor-pointer font-mono font-semibold ${
+                        theoryCodeLang === 'cpp'
+                          ? 'bg-amber-400 text-slate-950 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      C++20
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const codeToCopy =
+                        theoryCodeLang === 'python'
+                          ? activeSubStepTheory.pythonSnippet
+                          : activeSubStepTheory.cppSnippet;
+                      navigator.clipboard.writeText(codeToCopy);
+                      sound.playPop();
+                      setCopiedTheoryCode(true);
+                      setTimeout(() => setCopiedTheoryCode(false), 2000);
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-slate-300 hover:text-white bg-white/[0.06] rounded border border-white/10 transition cursor-pointer"
+                  >
+                    {copiedTheoryCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedTheoryCode ? 'Copied' : 'Copy Code'}</span>
+                  </button>
+                </div>
+
+                <pre className="p-4 font-mono text-xs text-slate-200 overflow-x-auto whitespace-pre leading-relaxed custom-scrollbar max-h-64">
+                  {theoryCodeLang === 'python'
+                    ? activeSubStepTheory.pythonSnippet
+                    : activeSubStepTheory.cppSnippet}
+                </pre>
+              </div>
+
+              {/* Pitfalls & Edge Cases */}
+              <div className="p-4 rounded-2xl bg-red-500/[0.06] border border-red-500/25 space-y-2">
+                <h4 className="font-bold text-red-400 text-xs font-mono uppercase tracking-wider flex items-center gap-1.5">
+                  <span>⚠️ Common Interview Pitfalls &amp; Traps</span>
+                </h4>
+                <ul className="space-y-1.5 list-disc list-inside text-xs text-slate-300 leading-relaxed">
+                  {activeSubStepTheory.pitfalls.map((pit, idx) => (
+                    <li key={idx}>{pit}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Key Problems */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <h4 className="font-bold text-slate-300 text-xs font-mono uppercase tracking-wider">
+                  Top Take U Forward Problems Covering This Sub-Topic:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {activeSubStepTheory.topProblems.map((prob, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/10 text-xs text-slate-300 font-medium"
+                    >
+                      {prob}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3.5 bg-[#111627] border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  const targetStepId = activeSubStepTheory.stepId;
+                  setActiveSubStepTheory(null);
+                  setActiveCodeQuestion(null);
+                  setSelectedStepId(targetStepId);
+                  setViewMode('theory');
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 hover:text-white border border-purple-500/30 text-xs font-bold transition cursor-pointer"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                <span>Open Full Step {activeSubStepTheory.stepNumber} Masterclass ↗</span>
+              </button>
+
+              <button
+                onClick={() => setActiveSubStepTheory(null)}
+                className="px-4 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white text-xs font-bold border border-white/15 transition cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

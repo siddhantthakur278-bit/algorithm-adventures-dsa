@@ -241,10 +241,14 @@ export function generateStarterCode(
   const { methodName, params, returnType } = parsePythonSignature(pythonStarter);
   const paramNames = params.map((p) => p.name).join(', ');
 
+  // Sanitize pythonStarter: If it looks like C++ (#include, using namespace, cout, etc.), do not echo as Python
+  const isActuallyCpp = /#include|using\s+namespace|std::|cout\s*<<|int\s+main/.test(pythonStarter);
+  const cleanPythonStarter = isActuallyCpp ? '' : pythonStarter.trim();
+
   switch (lang) {
     case 'python':
       return (
-        pythonStarter.trim() ||
+        cleanPythonStarter ||
         `class Solution:\n    def ${methodName}(self, ${paramNames}):\n        # Write your Python 3 solution here\n        pass\n`
       );
 

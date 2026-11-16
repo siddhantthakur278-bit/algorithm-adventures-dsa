@@ -26,7 +26,15 @@ import {
   Code2,
   ArrowRight,
   GitCommit as GitCommitIcon,
+  Zap,
+  BookOpen,
 } from 'lucide-react';
+import {
+  convertCppToPython,
+  convertPythonToCpp,
+  detectCodeLanguage,
+  generateQuestionStarterCode,
+} from '../../utils/codeConverter';
 import { GithubIcon } from './Icons';
 import { sound } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
@@ -47,6 +55,8 @@ interface UniversalVSCodeEditorProps {
   onSolve?: () => void;
   nextProblemTitle?: string;
   onGoNext?: () => void;
+  onOpenTopicTheory?: () => void;
+  topicSubStep?: string;
 }
 
 export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
@@ -62,6 +72,8 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   onSolve,
   nextProblemTitle,
   onGoNext,
+  onOpenTopicTheory,
+  topicSubStep,
 }) => {
   const { addXP, triggerBurst, stats, unlockBadge } = useCourse();
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language);
@@ -83,19 +95,66 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   // Sync when starterCode or language prop changes
   useEffect(() => {
     setSelectedLang(language);
-    setCode(starterCode);
-    setCodeByLang((prev) => ({ ...prev, [language]: starterCode }));
-  }, [language, starterCode]);
+    let initialCode = starterCode;
+
+    // Guard against mismatch: C++ starter code passed while language is set to Python
+    if (language === 'python' && detectCodeLanguage(starterCode) === 'cpp') {
+      initialCode = convertCppToPython(starterCode, problemTitle);
+    } else if (language === 'cpp' && detectCodeLanguage(starterCode) === 'python') {
+      initialCode = convertPythonToCpp(starterCode, problemTitle);
+    }
+
+    setCode(initialCode);
+    setCodeByLang((prev) => ({ ...prev, [language]: initialCode }));
+  }, [language, starterCode, problemTitle]);
 
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     setCodeByLang((prev) => ({ ...prev, [selectedLang]: code }));
+
+    const currentIsCpp = detectCodeLanguage(code) === 'cpp' || selectedLang === 'cpp';
+    const currentIsPython = detectCodeLanguage(code) === 'python' || selectedLang === 'python';
+
     setSelectedLang(newLang);
-    if (codeByLang[newLang]) {
-      setCode(codeByLang[newLang]);
+
+    const cached = codeByLang[newLang];
+    const cachedIsInvalid =
+      (newLang === 'python' && cached && detectCodeLanguage(cached) === 'cpp') ||
+      (newLang === 'cpp' && cached && detectCodeLanguage(cached) === 'python');
+
+    if (cached && !cachedIsInvalid) {
+      setCode(cached);
     } else {
-      const generated = generateStarterCode(newLang, problemTitle, starterCode);
-      setCode(generated);
-      setCodeByLang((prev) => ({ ...prev, [newLang]: generated }));
+      let converted = '';
+      if (newLang === 'python' && currentIsCpp) {
+        converted = convertCppToPython(code, problemTitle);
+      } else if (newLang === 'cpp' && currentIsPython) {
+        converted = convertPythonToCpp(code, problemTitle);
+      } else {
+        converted = generateQuestionStarterCode(newLang, { title: problemTitle });
+      }
+      setCode(converted);
+      setCodeByLang((prev) => ({ ...prev, [newLang]: converted }));
+    }
+  };
+
+  // Dedicated 1-Click C++ <-> Python Syntax Translator
+  const handleConvertCppPython = () => {
+    sound.playPop();
+    const currentDetected = detectCodeLanguage(code);
+    const shouldConvertToPython = selectedLang === 'cpp' || currentDetected === 'cpp';
+
+    if (shouldConvertToPython) {
+      const converted = convertCppToPython(code, problemTitle);
+      setSelectedLang('python');
+      setCode(converted);
+      setCodeByLang((prev) => ({ ...prev, cpp: code, python: converted }));
+      triggerBurst('⚡ Syntax Converted!', 'Translated C++ ➔ Python 3.12 syntax!', 'star');
+    } else {
+      const converted = convertPythonToCpp(code, problemTitle);
+      setSelectedLang('cpp');
+      setCode(converted);
+      setCodeByLang((prev) => ({ ...prev, python: code, cpp: converted }));
+      triggerBurst('⚡ Syntax Converted!', 'Translated Python ➔ C++20 syntax!', 'star');
     }
   };
 
@@ -369,6 +428,35 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
             <RotateCcw className="w-3 h-3" />
             <span>{solutionCode ? 'Solution' : 'Reset'}</span>
           </button>
+
+          {/* 1-Click C++ <-> Python Converter */}
+          <button
+            onClick={handleConvertCppPython}
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-semibold text-purple-300 hover:text-white bg-purple-950/70 hover:bg-purple-900/90 rounded border border-purple-500/40 transition cursor-pointer shadow-sm"
+            title={
+              selectedLang === 'python'
+                ? 'Convert current Python code to C++20 syntax'
+                : 'Convert current C++ code to Python 3.12 syntax'
+            }
+          >
+            <Zap className="w-3 h-3 text-purple-400" />
+            <span>{selectedLang === 'python' ? '⚡ Py ➔ C++' : '⚡ C++ ➔ Py'}</span>
+          </button>
+
+          {/* Optional Topic Theory Button */}
+          {onOpenTopicTheory && (
+            <button
+              onClick={() => {
+                sound.playPop();
+                onOpenTopicTheory();
+              }}
+              className="hidden md:flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-semibold text-cyan-300 hover:text-white bg-cyan-950/70 hover:bg-cyan-900/90 rounded border border-cyan-500/40 transition cursor-pointer shadow-sm"
+              title="Open full topic theory masterclass"
+            >
+              <BookOpen className="w-3 h-3 text-cyan-400" />
+              <span>Theory</span>
+            </button>
+          )}
 
           <button
             onClick={handleAskAI}
