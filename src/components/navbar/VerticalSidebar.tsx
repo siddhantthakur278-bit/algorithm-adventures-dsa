@@ -38,11 +38,13 @@ import {
   LayoutGrid,
   Columns2,
   MessagesSquare,
+  Palette,
 } from 'lucide-react';
 import { FlameIcon } from '../common/Icons';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
 import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
 
@@ -79,6 +81,7 @@ export const VerticalSidebar: React.FC = () => {
 
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [showSagaDropdown, setShowSagaDropdown] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const myProfile = getStoredUserProfile();
@@ -478,6 +481,15 @@ export const VerticalSidebar: React.FC = () => {
               )}
             </button>
 
+            {/* Theme Selector Modal Trigger */}
+            <button
+              onClick={() => setShowThemeModal(true)}
+              className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white border border-slate-800 transition cursor-pointer"
+              title="Change Theme & Color Palette"
+            >
+              <Palette className="w-3.5 h-3.5 text-amber-400" />
+            </button>
+
             {/* Sound Toggle */}
             <button
               onClick={toggleSound}
@@ -531,6 +543,12 @@ export const VerticalSidebar: React.FC = () => {
       <GlobalOnboardingModal
         isOpen={showOnboardingModal}
         onClose={() => setShowOnboardingModal(false)}
+      />
+
+      {/* Theme & Palette Modal */}
+      <ThemeSelectorModal
+        isOpen={showThemeModal}
+        onClose={() => setShowThemeModal(false)}
       />
     </>
   );

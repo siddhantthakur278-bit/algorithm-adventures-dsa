@@ -6,12 +6,14 @@ import {
   PanelLeftOpen,
   Search,
   MessagesSquare,
+  Palette,
 } from 'lucide-react';
 import { NotificationBell } from '../common/NotificationBell';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
 import {
   QUICK_THEME_DOTS,
   applyTheme,
@@ -32,6 +34,7 @@ export const TopHeaderBar: React.FC = () => {
   } = useCourse();
 
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
+  const [showThemeModal, setShowThemeModal] = useState<boolean>(false);
   const [currentTheme, setCurrentTheme] = useState<ThemePresetId>(() => getStoredTheme());
   const myProfile = getStoredUserProfile();
 
@@ -141,18 +144,33 @@ export const TopHeaderBar: React.FC = () => {
         <span>⌘K Search</span>
       </button>
 
-      {/* 7. Interactive 5-Dot Theme Palette Switcher */}
-      <div className="dots hidden lg:flex shrink-0" title="Click dot to switch glossy theme accent">
-        {QUICK_THEME_DOTS.map((dot) => (
-          <button
-            key={dot.id}
-            onClick={() => handleSelectTheme(dot.id)}
-            style={{ background: dot.color, color: dot.color }}
-            className={`theme-dot ${currentTheme === dot.id ? 'active-dot' : ''}`}
-            title={dot.label}
-            aria-label={dot.label}
-          />
-        ))}
+      {/* 7. Theme Palette Switcher & Modal Trigger */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          onClick={() => {
+            sound.playPop();
+            setShowThemeModal(true);
+          }}
+          className="p-1.5 sm:px-2 sm:py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0"
+          title="Open Theme & Palette Selector"
+        >
+          <Palette className="w-3.5 h-3.5 text-amber-400" />
+          <span className="hidden xl:inline text-[11px] font-mono">Theme</span>
+        </button>
+
+        <div className="dots hidden lg:flex shrink-0" title="Click dot to switch glossy theme accent">
+          {QUICK_THEME_DOTS.map((dot) => (
+            <button
+              key={dot.id}
+              onClick={() => handleSelectTheme(dot.id)}
+              style={{ background: dot.color, color: dot.color }}
+              className={`theme-dot ${currentTheme === dot.id ? 'active-dot' : ''}`}
+              title={dot.label}
+              aria-label={dot.label}
+            />
+          ))}
+        </div>
       </div>
 
       {/* 8. Streak Flame Badge */}
@@ -217,6 +235,12 @@ export const TopHeaderBar: React.FC = () => {
       <GlobalOnboardingModal
         isOpen={showOnboardingModal}
         onClose={() => setShowOnboardingModal(false)}
+      />
+
+      {/* Theme & Palette Modal */}
+      <ThemeSelectorModal
+        isOpen={showThemeModal}
+        onClose={() => setShowThemeModal(false)}
       />
     </header>
   );
