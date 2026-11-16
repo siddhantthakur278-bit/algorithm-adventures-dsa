@@ -28,6 +28,8 @@ import {
   Calculator,
   Target,
   BookOpen,
+  Video,
+  Globe,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -37,7 +39,7 @@ import { ambientRadio } from '../../utils/ambientMusicEngine';
 interface PaletteItem {
   id: string;
   title: string;
-  category: 'Navigation' | 'High-Tech Lab' | 'Saga' | 'Theme Accent' | 'Action';
+  category: 'Navigation' | 'High-Tech Lab' | 'Saga' | 'Theme Accent' | 'Action' | 'Core CS Subjects';
   icon: React.ElementType | string;
   badge?: string;
   shortcut?: string;
@@ -100,6 +102,94 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       onSelect: () => {
         setActiveSaga('dsa');
         setActiveTab('quest');
+      },
+    },
+    {
+      id: 'tab-studio',
+      title: 'Coder Army DSA Masterclass & Multi-Compiler Studio',
+      category: 'Navigation',
+      icon: Video,
+      badge: '16 Modules • Debugger',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-strivers',
+      title: "Striver's A2Z DSA Sheet & Sub-Step Theories",
+      category: 'Navigation',
+      icon: Target,
+      badge: '346 Qs • Take U Forward',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('strivers-sheet');
+      },
+    },
+    {
+      id: 'tab-os',
+      title: 'Operating Systems (OS) Masterclass — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Cpu,
+      badge: 'CS 301 • 90+ Lectures',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-dbms',
+      title: 'Database Management Systems (DBMS) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Database,
+      badge: 'CS 302 • 80+ Lectures',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-cn',
+      title: 'Computer Networks (CN) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Globe,
+      badge: 'CS 303 • 90+ Lectures',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-system-design',
+      title: 'System Design (HLD) Masterclass — Gaurav Sen',
+      category: 'Core CS Subjects',
+      icon: Layers,
+      badge: 'HLD • Distributed Systems',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-lld',
+      title: 'Low-Level Design (LLD) & OOPs — Concept && Coding',
+      category: 'Core CS Subjects',
+      icon: GitBranch,
+      badge: 'LLD • SOLID • Design Patterns',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-coa',
+      title: 'Computer Organization & Architecture (COA) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Sparkles,
+      badge: 'COA • Cache • Pipelines',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
       },
     },
     {

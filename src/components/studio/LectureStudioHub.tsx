@@ -39,6 +39,12 @@ import {
   CoderArmyLecture,
   CoderArmyModule,
 } from '../../data/coderArmyData';
+import {
+  OTHER_ACADEMIC_SUBJECTS,
+  AcademicSubject,
+  SubjectLecture,
+  getSubjectById,
+} from '../../data/otherSubjectsData';
 import { DebuggerSidePanel } from './DebuggerSidePanel';
 import { sound } from '../../utils/soundEffects';
 
@@ -148,9 +154,30 @@ int main() {
 
 const STORAGE_KEY_COMPLETED = 'ada_coder_army_completed_lectures';
 
+export type StudioTrack =
+  | 'coder-army'
+  | 'os'
+  | 'dbms'
+  | 'cn'
+  | 'system-design'
+  | 'lld'
+  | 'coa'
+  | 'curated'
+  | 'custom';
+
 export const LectureStudioHub: React.FC = () => {
-  // Track Selection: 'coder-army' | 'curated' | 'custom'
-  const [selectedTrack, setSelectedTrack] = useState<'coder-army' | 'curated' | 'custom'>('coder-army');
+  // Track Selection: Core DSA, Academic Subjects, Curated, or Custom
+  const [selectedTrack, setSelectedTrack] = useState<StudioTrack>('coder-army');
+
+  // Active Lecture Tracking per Subject
+  const [activeSubjectLectureIds, setActiveSubjectLectureIds] = useState<Record<string, string>>({
+    os: 'os-1',
+    dbms: 'dbms-1',
+    cn: 'cn-1',
+    'system-design': 'sd-1',
+    lld: 'lld-1',
+    coa: 'coa-1',
+  });
 
   // Coder Army Active Lecture
   const [selectedModuleId, setSelectedModuleId] = useState<string>('all');
@@ -189,7 +216,18 @@ export const LectureStudioHub: React.FC = () => {
   const activeCurated: CuratedLecture =
     CURATED_CS_LECTURES.find((c) => c.id === activeCuratedId) || CURATED_CS_LECTURES[0];
 
-  // Sync starter code when active lecture or language changes
+  // Active Academic Subject (OS, DBMS, CN, System Design, LLD, COA)
+  const currentAcademicSubject: AcademicSubject | undefined = OTHER_ACADEMIC_SUBJECTS.find(
+    (s) => s.id === selectedTrack
+  );
+
+  const currentSubjectLecture: SubjectLecture | null = currentAcademicSubject
+    ? currentAcademicSubject.lectures.find(
+        (l) => l.id === (activeSubjectLectureIds[selectedTrack] || currentAcademicSubject.lectures[0].id)
+      ) || currentAcademicSubject.lectures[0]
+    : null;
+
+  // Sync starter code when active Coder Army lecture changes
   const handleSelectCoderArmyLecture = (lecture: CoderArmyLecture) => {
     sound.playPop();
     setActiveLectureId(lecture.id);
@@ -201,11 +239,66 @@ export const LectureStudioHub: React.FC = () => {
     setCode(newCode);
   };
 
+  // Sync starter code when active Academic Subject lecture changes
+  const handleSelectSubjectLecture = (lecture: SubjectLecture) => {
+    sound.playPop();
+    setActiveSubjectLectureIds((prev) => ({ ...prev, [lecture.subjectId]: lecture.id }));
+    const newCode =
+      lecture.starterCodes[currentLanguage] ||
+      lecture.starterCodes.python ||
+      lecture.starterCodes.cpp ||
+      lecture.starterCodes.sql ||
+      '';
+    setCode(newCode);
+  };
+
+  // Switch Track (Subject)
+  const handleSelectTrack = (track: StudioTrack) => {
+    sound.playPop();
+    setSelectedTrack(track);
+    const subj = OTHER_ACADEMIC_SUBJECTS.find((s) => s.id === track);
+    if (subj) {
+      const activeLec =
+        subj.lectures.find((l) => l.id === (activeSubjectLectureIds[track] || subj.lectures[0].id)) ||
+        subj.lectures[0];
+      const newCode =
+        activeLec.starterCodes[currentLanguage] ||
+        activeLec.starterCodes.python ||
+        activeLec.starterCodes.cpp ||
+        activeLec.starterCodes.sql ||
+        '';
+      setCode(newCode);
+    } else if (track === 'coder-army') {
+      const newCode =
+        activeLecture.starterCodes[currentLanguage] ||
+        activeLecture.starterCodes.cpp ||
+        activeLecture.starterCodes.python ||
+        '';
+      setCode(newCode);
+    } else if (track === 'curated') {
+      setCode(activeCurated.starterCode);
+    }
+  };
+
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     sound.playPop();
     const prevLang = currentLanguage;
     setCurrentLanguage(newLang);
-    if (selectedTrack === 'coder-army') {
+    if (currentAcademicSubject && currentSubjectLecture) {
+      if (currentSubjectLecture.starterCodes[newLang]) {
+        setCode(currentSubjectLecture.starterCodes[newLang]!);
+      } else {
+        const isCpp = prevLang === 'cpp' || detectCodeLanguage(code) === 'cpp';
+        const isPython = prevLang === 'python' || detectCodeLanguage(code) === 'python';
+        if (newLang === 'python' && isCpp) {
+          setCode(convertCppToPython(code, currentSubjectLecture.title));
+        } else if (newLang === 'cpp' && isPython) {
+          setCode(convertPythonToCpp(code, currentSubjectLecture.title));
+        } else {
+          setCode(generateStarterCode(newLang, currentSubjectLecture.title, ''));
+        }
+      }
+    } else if (selectedTrack === 'coder-army') {
       if (activeLecture.starterCodes[newLang]) {
         setCode(activeLecture.starterCodes[newLang]!);
       } else {
@@ -238,13 +331,26 @@ export const LectureStudioHub: React.FC = () => {
 
   // Next / Previous Lecture Navigation
   const currentIndex = CODER_ARMY_LECTURES.findIndex((l) => l.id === activeLectureId);
+  const currentSubjIndex = currentAcademicSubject
+    ? currentAcademicSubject.lectures.findIndex((l) => l.id === currentSubjectLecture?.id)
+    : -1;
+
   const handleNextLecture = () => {
-    if (currentIndex < CODER_ARMY_LECTURES.length - 1) {
+    if (currentAcademicSubject) {
+      if (currentSubjIndex < currentAcademicSubject.lectures.length - 1) {
+        handleSelectSubjectLecture(currentAcademicSubject.lectures[currentSubjIndex + 1]);
+      }
+    } else if (currentIndex < CODER_ARMY_LECTURES.length - 1) {
       handleSelectCoderArmyLecture(CODER_ARMY_LECTURES[currentIndex + 1]);
     }
   };
+
   const handlePrevLecture = () => {
-    if (currentIndex > 0) {
+    if (currentAcademicSubject) {
+      if (currentSubjIndex > 0) {
+        handleSelectSubjectLecture(currentAcademicSubject.lectures[currentSubjIndex - 1]);
+      }
+    } else if (currentIndex > 0) {
       handleSelectCoderArmyLecture(CODER_ARMY_LECTURES[currentIndex - 1]);
     }
   };
@@ -271,13 +377,53 @@ export const LectureStudioHub: React.FC = () => {
     return matchesModule && matchesSearch;
   });
 
-  // Calculate Active Video ID
+  // Privacy embed host toggle to prevent any browser/adblock video failure
+  const [usePrivacyHost, setUsePrivacyHost] = useState<boolean>(true);
+
+  // Active Video ID, Title, Duration, Notes, Playlist URL, and Counts
   const activeVideoId =
-    selectedTrack === 'coder-army'
+    currentAcademicSubject && currentSubjectLecture
+      ? currentSubjectLecture.videoId
+      : selectedTrack === 'coder-army'
       ? activeLecture.videoId
       : selectedTrack === 'curated'
       ? activeCurated.videoId
       : loadedCustomId;
+
+  const activeTitle =
+    currentAcademicSubject && currentSubjectLecture
+      ? currentSubjectLecture.title
+      : selectedTrack === 'coder-army'
+      ? activeLecture.title
+      : selectedTrack === 'curated'
+      ? activeCurated.title
+      : 'Custom Stream';
+
+  const activeDuration =
+    currentAcademicSubject && currentSubjectLecture
+      ? currentSubjectLecture.duration
+      : selectedTrack === 'coder-army'
+      ? activeLecture.duration
+      : selectedTrack === 'curated'
+      ? activeCurated.duration
+      : 'Live';
+
+  const activeNotes =
+    currentAcademicSubject && currentSubjectLecture
+      ? currentSubjectLecture.detailedNotes
+      : activeLecture.notes;
+
+  const activePlaylistUrl =
+    currentAcademicSubject
+      ? currentAcademicSubject.playlistUrl
+      : 'https://www.youtube.com/playlist?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01';
+
+  const activePlaylistId =
+    currentAcademicSubject
+      ? currentAcademicSubject.playlistId
+      : 'PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01';
+
+  const embedHost = usePrivacyHost ? 'https://www.youtube-nocookie.com' : 'https://www.youtube.com';
 
   // Split width classes
   const getVideoWidthClass = () => {
@@ -306,76 +452,70 @@ export const LectureStudioHub: React.FC = () => {
     }
   };
 
+  const ALL_STUDIO_TRACKS: {
+    id: StudioTrack;
+    label: string;
+    icon: string;
+    badge: string;
+    desc: string;
+  }[] = [
+    { id: 'coder-army', label: 'Coder Army (DSA)', icon: '⚔️', badge: '100+ Qs', desc: 'Rohit Negi Complete DSA Curriculum' },
+    { id: 'os', label: 'Operating Systems', icon: '💻', badge: 'Gate Smashers', desc: 'Processes, Memory, Paging, Semaphores' },
+    { id: 'dbms', label: 'DBMS & SQL', icon: '🗄️', badge: 'Gate Smashers', desc: 'ER, Normalization, ACID, 2PL, B+ Trees' },
+    { id: 'cn', label: 'Computer Networks', icon: '🌐', badge: 'Gate Smashers', desc: 'OSI 7-Layer, Subnetting, TCP Handshake, ARQ' },
+    { id: 'system-design', label: 'System Design HLD', icon: '🏗️', badge: 'Gaurav Sen', desc: 'Consistent Hashing, Sharding, TinyURL, Caching' },
+    { id: 'lld', label: 'LLD & OOPs Design', icon: '🧩', badge: 'Concept && Coding', desc: 'SOLID Principles, Design Patterns, Machine Coding' },
+    { id: 'coa', label: 'Computer Architecture', icon: '⚡', badge: 'Gate Smashers', desc: 'Cache Mapping, Pipelining, Addressing Modes' },
+    { id: 'curated', label: 'Curated Masters', icon: '🎓', badge: 'MIT / Harvard', desc: 'Asymptotic Analysis, Peak Finding, Two Sum' },
+    { id: 'custom', label: 'Custom Video URL', icon: '🔗', badge: 'YouTube', desc: 'Embed any YouTube lecture or playlist' },
+  ];
+
+  // Filter subject lectures
+  const filteredSubjectLectures = (currentAcademicSubject?.lectures || []).filter((lec) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      lec.title.toLowerCase().includes(q) ||
+      lec.topics.some((t) => t.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="max-w-[1780px] mx-auto px-2 sm:px-4 pt-3 pb-6 space-y-4 font-sans select-none scroll-mt-20">
       {/* Studio Top Control Deck */}
       <div className="bg-[#0a0d18] border border-white/10 rounded-3xl p-3 sm:p-4 shadow-2xl flex flex-wrap items-center justify-between gap-3">
-        {/* Left: Branding & Track Selector */}
+        {/* Left: Branding & Dynamic Subject Info */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-lg shadow-md border border-amber-300">
-            ⚔️
+          <div className="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-lg shadow-md border border-amber-300 shrink-0">
+            {currentAcademicSubject ? currentAcademicSubject.icon : selectedTrack === 'curated' ? '🎓' : selectedTrack === 'custom' ? '🔗' : '⚔️'}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
-                <span>Coder Army DSA Masterclass Studio</span>
+                <span>
+                  {currentAcademicSubject
+                    ? `${currentAcademicSubject.title} Masterclass`
+                    : selectedTrack === 'curated'
+                    ? 'Curated Computer Science Masters'
+                    : selectedTrack === 'custom'
+                    ? 'Custom YouTube Studio Player'
+                    : 'Coder Army DSA Masterclass Studio'}
+                </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30">
-                  Full Syllabus
+                  {currentAcademicSubject ? currentAcademicSubject.code : selectedTrack === 'coder-army' ? 'Full Syllabus' : 'Active'}
                 </span>
               </h1>
             </div>
             <p className="text-xs text-slate-400">
-              Rohit Negi Complete DSA Curriculum with Integrated Interpreter, Debugger &amp; Terminal
+              {currentAcademicSubject
+                ? `${currentAcademicSubject.instructor} · Complete Topic Playlist & Detailed Academic Notes with Runnable Code`
+                : selectedTrack === 'curated'
+                ? 'Hand-picked university and industry lectures from MIT, Harvard, Abdul Bari & NeetCode'
+                : selectedTrack === 'custom'
+                ? 'Paste any YouTube URL or playlist ID to learn with side-by-side IDE, debugger and notes'
+                : 'Rohit Negi Complete DSA Curriculum with Integrated Interpreter, Debugger & Terminal'}
             </p>
           </div>
-        </div>
-
-        {/* Center: Track Switcher (Coder Army vs Curated vs Custom) */}
-        <div className="flex items-center gap-1 p-1 bg-white/[0.04] rounded-2xl border border-white/10 text-xs font-semibold">
-          <button
-            onClick={() => {
-              sound.playPop();
-              setSelectedTrack('coder-army');
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer ${
-              selectedTrack === 'coder-army'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Swords className="w-3.5 h-3.5" />
-            <span>Coder Army (Full Syllabus)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              sound.playPop();
-              setSelectedTrack('curated');
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer ${
-              selectedTrack === 'curated'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Award className="w-3.5 h-3.5" />
-            <span>Curated Masters</span>
-          </button>
-
-          <button
-            onClick={() => {
-              sound.playPop();
-              setSelectedTrack('custom');
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer ${
-              selectedTrack === 'custom'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Video className="w-3.5 h-3.5" />
-            <span>Custom URL</span>
-          </button>
         </div>
 
         {/* Right: Layout Switcher & Proportions */}
@@ -435,8 +575,8 @@ export const LectureStudioHub: React.FC = () => {
             </div>
           )}
 
-          {/* Toggle Syllabus Drawer Button */}
-          {selectedTrack === 'coder-army' && (
+          {/* Toggle Syllabus / Topic Drawer Button */}
+          {(selectedTrack === 'coder-army' || !!currentAcademicSubject) && (
             <button
               onClick={() => setIsSyllabusDrawerOpen((prev) => !prev)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
@@ -446,12 +586,131 @@ export const LectureStudioHub: React.FC = () => {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-              <span>Syllabus Browser ({CODER_ARMY_LECTURES.length})</span>
+              <span>
+                {currentAcademicSubject
+                  ? `Topic Lectures (${currentAcademicSubject.lectures.length})`
+                  : `Syllabus Browser (${CODER_ARMY_LECTURES.length})`}
+              </span>
               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isSyllabusDrawerOpen ? 'rotate-180' : ''}`} />
             </button>
           )}
         </div>
       </div>
+
+      {/* Universal Subject Carousel / Track Selector Bar */}
+      <div className="flex items-center gap-1.5 p-1.5 bg-[#0a0d18] rounded-2xl border border-white/10 overflow-x-auto custom-scrollbar">
+        {ALL_STUDIO_TRACKS.map((t) => {
+          const isSelected = selectedTrack === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => handleSelectTrack(t.id)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl whitespace-nowrap transition cursor-pointer text-xs font-semibold shrink-0 ${
+                isSelected
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-md'
+                  : 'text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10'
+              }`}
+              title={t.desc}
+            >
+              <span>{t.icon}</span>
+              <span>{t.label}</span>
+              <span
+                className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full border ${
+                  isSelected
+                    ? 'bg-slate-950/20 text-slate-950 border-slate-950/30'
+                    : 'bg-white/[0.06] text-amber-300 border-white/10'
+                }`}
+              >
+                {t.badge}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Subject-Specific Topic Lectures Drawer */}
+      {currentAcademicSubject && isSyllabusDrawerOpen && (
+        <div className="bg-[#0b0e1a] border border-white/10 rounded-3xl p-4 shadow-xl space-y-3.5 animate-in fade-in duration-150">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30 text-[11px] font-mono font-bold uppercase tracking-wider">
+                {currentAcademicSubject.code} · {currentAcademicSubject.title}
+              </span>
+              <span className="text-xs font-mono text-slate-400">
+                Instructor: <strong className="text-white">{currentAcademicSubject.instructor}</strong> · Total {currentAcademicSubject.lectures.length} Topic Lectures
+              </span>
+            </div>
+
+            <div className="relative w-full md:w-80 shrink-0">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${currentAcademicSubject.title} topics...`}
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+            {filteredSubjectLectures.map((lec) => {
+              const isCurrent = currentSubjectLecture?.id === lec.id;
+              const isCompleted = completedLectures.has(lec.id);
+
+              return (
+                <div
+                  key={lec.id}
+                  onClick={() => handleSelectSubjectLecture(lec)}
+                  className={`p-2.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-2 text-left ${
+                    isCurrent
+                      ? 'bg-amber-400/15 border-amber-400/50 shadow-md scale-[1.01]'
+                      : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/10'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-1.5">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-mono font-bold text-amber-300">
+                          Topic #{lec.lectureNumber}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          ⏱️ {lec.duration}
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-bold text-white truncate max-w-[200px]">
+                        {lec.title}
+                      </h4>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLectureCompleted(lec.id);
+                      }}
+                      className="p-1 text-slate-400 hover:text-emerald-400 transition"
+                      title={isCompleted ? 'Mark as Incomplete' : 'Mark as Completed'}
+                    >
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-slate-600" />
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[9px] font-mono text-slate-400">
+                    <span className="px-1.5 py-0.2 rounded bg-white/[0.06] border border-white/10">
+                      {lec.difficulty}
+                    </span>
+                    <span className="truncate">{lec.topics.slice(0, 2).join(' • ')}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Coder Army Syllabus Drawer / Browser (Expandable) */}
       {selectedTrack === 'coder-army' && isSyllabusDrawerOpen && (
@@ -603,9 +862,37 @@ export const LectureStudioHub: React.FC = () => {
               <div className="flex items-center gap-2.5 min-w-0">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
                 <span className="font-bold text-white text-xs truncate">
-                  {selectedTrack === 'coder-army' ? 'Coder Army Masterclass' : selectedTrack === 'curated' ? activeCurated.instructor : 'Custom Stream'}
+                  {currentAcademicSubject
+                    ? `${currentAcademicSubject.instructor} (${currentAcademicSubject.code})`
+                    : selectedTrack === 'coder-army'
+                    ? 'Coder Army Masterclass'
+                    : selectedTrack === 'curated'
+                    ? activeCurated.instructor
+                    : 'Custom Stream'}
                 </span>
 
+                {/* Jump Selector for Academic Subject */}
+                {currentAcademicSubject && (
+                  <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-white/10">
+                    <span className="text-[10px] font-mono text-slate-400">Topic:</span>
+                    <select
+                      value={currentSubjectLecture?.id}
+                      onChange={(e) => {
+                        const target = currentAcademicSubject.lectures.find((l) => l.id === e.target.value);
+                        if (target) handleSelectSubjectLecture(target);
+                      }}
+                      className="bg-[#0b0e1b] text-slate-200 border border-white/15 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-400 font-mono cursor-pointer max-w-[220px] truncate"
+                    >
+                      {currentAcademicSubject.lectures.map((lec) => (
+                        <option key={lec.id} value={lec.id}>
+                          #{lec.lectureNumber}: {lec.title} ({lec.duration})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Jump Selector for Coder Army */}
                 {selectedTrack === 'coder-army' && (
                   <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-white/10">
                     <span className="text-[10px] font-mono text-slate-400">Jump:</span>
@@ -615,7 +902,7 @@ export const LectureStudioHub: React.FC = () => {
                         const target = CODER_ARMY_LECTURES.find((l) => l.id === e.target.value);
                         if (target) handleSelectCoderArmyLecture(target);
                       }}
-                      className="bg-[#0b0e1b] text-slate-200 border border-white/15 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-400 font-mono cursor-pointer"
+                      className="bg-[#0b0e1b] text-slate-200 border border-white/15 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-400 font-mono cursor-pointer max-w-[220px] truncate"
                     >
                       {CODER_ARMY_LECTURES.map((lec) => (
                         <option key={lec.id} value={lec.id}>
@@ -628,12 +915,9 @@ export const LectureStudioHub: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                {/* Watch on YouTube button */}
                 <a
-                  href={
-                    selectedTrack === 'coder-army'
-                      ? `https://www.youtube.com/watch?v=${activeVideoId}&list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01`
-                      : `https://www.youtube.com/watch?v=${activeVideoId}`
-                  }
+                  href={`https://www.youtube.com/watch?v=${activeVideoId}&list=${activePlaylistId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[11px] transition cursor-pointer shadow-sm"
@@ -644,30 +928,29 @@ export const LectureStudioHub: React.FC = () => {
                   <ExternalLink className="w-2.5 h-2.5" />
                 </a>
 
-                {selectedTrack === 'coder-army' && (
-                  <a
-                    href="https://www.youtube.com/playlist?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 hover:text-white border border-white/10 text-[11px] font-semibold transition cursor-pointer"
-                    title="Open full Coder Army 100+ playlist on YouTube"
-                  >
-                    <span>Full Playlist</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
-                )}
+                {/* Full Playlist Link */}
+                <a
+                  href={activePlaylistUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 hover:text-white border border-white/10 text-[11px] font-semibold transition cursor-pointer"
+                  title="Open full course playlist on YouTube"
+                >
+                  <span>Full Playlist</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
               </div>
             </div>
 
-            {/* Video Frame */}
+            {/* Video Frame with Fail-Proof Fallback Domain */}
             <div className="relative w-full aspect-video bg-black overflow-hidden">
               <iframe
-                key={`${embedMode}-${activeVideoId}`}
+                key={`${embedHost}-${embedMode}-${activeVideoId}-${activePlaylistId}`}
                 title="lecture-video-player"
                 src={
                   embedMode === 'playlist'
-                    ? `https://www.youtube-nocookie.com/embed/videoseries?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01&enablejsapi=1`
-                    : `https://www.youtube-nocookie.com/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`
+                    ? `${embedHost}/embed/videoseries?list=${activePlaylistId}&enablejsapi=1`
+                    : `${embedHost}/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`
                 }
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -680,30 +963,41 @@ export const LectureStudioHub: React.FC = () => {
             <div className="px-3.5 py-2 bg-slate-900/90 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-slate-300 font-medium">
-                  {selectedTrack === 'coder-army'
+                <span className="text-slate-300 font-medium truncate max-w-sm">
+                  {currentAcademicSubject && currentSubjectLecture
+                    ? `${currentAcademicSubject.code} · ${currentSubjectLecture.title}`
+                    : selectedTrack === 'coder-army'
                     ? `Rohit Negi · L${activeLecture.lectureNumber}: ${activeLecture.title.split(':')[1]?.trim() || activeLecture.title}`
-                    : 'Curated Master Stream'}
+                    : activeTitle}
                 </span>
-                {selectedTrack === 'coder-army' && (
-                  <button
-                    onClick={() => {
-                      sound.playPop();
-                      setEmbedMode((prev) => (prev === 'single' ? 'playlist' : 'single'));
-                    }}
-                    className="ml-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-amber-300 border border-white/10 transition cursor-pointer"
-                    title="Switch between single lecture video and full playlist embed"
-                  >
-                    {embedMode === 'single' ? 'Switch to Playlist Player' : 'Switch to Single Video'}
-                  </button>
-                )}
+
+                {/* Playlist Player Mode Switcher */}
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    setEmbedMode((prev) => (prev === 'single' ? 'playlist' : 'single'));
+                  }}
+                  className="ml-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-amber-300 border border-white/10 transition cursor-pointer"
+                  title="Switch between single lecture video and full playlist embed"
+                >
+                  {embedMode === 'single' ? 'Switch to Playlist Player' : 'Switch to Single Video'}
+                </button>
+
+                {/* Toggle Domain (nocookie vs standard) in case of adblocker issues */}
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    setUsePrivacyHost((prev) => !prev);
+                  }}
+                  className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/10 transition cursor-pointer hidden xl:inline-block"
+                  title="Toggle between youtube-nocookie.com and youtube.com if your browser blocks embeds"
+                >
+                  {usePrivacyHost ? 'Privacy Mode' : 'Standard Embed'}
+                </button>
               </div>
+
               <a
-                href={
-                  selectedTrack === 'coder-army'
-                    ? `https://www.youtube.com/watch?v=${activeVideoId}&list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01`
-                    : `https://www.youtube.com/watch?v=${activeVideoId}`
-                }
+                href={`https://www.youtube.com/watch?v=${activeVideoId}&list=${activePlaylistId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 hover:text-white border border-amber-400/30 font-semibold transition cursor-pointer"
@@ -718,7 +1012,9 @@ export const LectureStudioHub: React.FC = () => {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-amber-300 font-bold">
-                    {selectedTrack === 'coder-army'
+                    {currentAcademicSubject && currentSubjectLecture
+                      ? `Topic #${currentSubjectLecture.lectureNumber}`
+                      : selectedTrack === 'coder-army'
                       ? `Lecture ${activeLecture.lectureNumber}`
                       : selectedTrack === 'curated'
                       ? activeCurated.instructor
@@ -726,24 +1022,20 @@ export const LectureStudioHub: React.FC = () => {
                   </span>
                   <span className="text-slate-500">•</span>
                   <span className="text-slate-400 font-mono">
-                    {selectedTrack === 'coder-army' ? activeLecture.duration : activeCurated.duration}
+                    ⏱️ {activeDuration}
                   </span>
                 </div>
                 <h3 className="text-sm font-bold text-white truncate max-w-md">
-                  {selectedTrack === 'coder-army'
-                    ? activeLecture.title
-                    : selectedTrack === 'curated'
-                    ? activeCurated.title
-                    : 'Custom YouTube Lecture'}
+                  {activeTitle}
                 </h3>
               </div>
 
               {/* Prev / Next / Complete Controls */}
-              {selectedTrack === 'coder-army' && (
+              {(selectedTrack === 'coder-army' || !!currentAcademicSubject) && (
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={handlePrevLecture}
-                    disabled={currentIndex === 0}
+                    disabled={currentAcademicSubject ? currentSubjIndex === 0 : currentIndex === 0}
                     className="p-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] disabled:opacity-30 text-white transition cursor-pointer"
                     title="Previous Lecture"
                   >
@@ -751,20 +1043,41 @@ export const LectureStudioHub: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => toggleLectureCompleted(activeLecture.id)}
+                    onClick={() => {
+                      const idToToggle = currentAcademicSubject && currentSubjectLecture
+                        ? currentSubjectLecture.id
+                        : activeLecture.id;
+                      toggleLectureCompleted(idToToggle);
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-xs transition cursor-pointer ${
-                      completedLectures.has(activeLecture.id)
+                      completedLectures.has(
+                        currentAcademicSubject && currentSubjectLecture
+                          ? currentSubjectLecture.id
+                          : activeLecture.id
+                      )
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                         : 'bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 border-white/10'
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>{completedLectures.has(activeLecture.id) ? 'Completed' : 'Mark Done'}</span>
+                    <span>
+                      {completedLectures.has(
+                        currentAcademicSubject && currentSubjectLecture
+                          ? currentSubjectLecture.id
+                          : activeLecture.id
+                      )
+                        ? 'Completed'
+                        : 'Mark Done'}
+                    </span>
                   </button>
 
                   <button
                     onClick={handleNextLecture}
-                    disabled={currentIndex === CODER_ARMY_LECTURES.length - 1}
+                    disabled={
+                      currentAcademicSubject
+                        ? currentSubjIndex === currentAcademicSubject.lectures.length - 1
+                        : currentIndex === CODER_ARMY_LECTURES.length - 1
+                    }
                     className="p-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] disabled:opacity-30 text-white transition cursor-pointer"
                     title="Next Lecture"
                   >
@@ -783,9 +1096,9 @@ export const LectureStudioHub: React.FC = () => {
             onLanguageChange={handleLanguageChange}
             code={code}
             onCodeChange={setCode}
-            debugSteps={activeLecture.debugSteps || []}
-            lectureTitle={activeLecture.title}
-            lectureNotes={activeLecture.notes}
+            debugSteps={currentAcademicSubject ? [] : activeLecture.debugSteps || []}
+            lectureTitle={activeTitle}
+            lectureNotes={activeNotes}
           />
         </div>
       </div>
