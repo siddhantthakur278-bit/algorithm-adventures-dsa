@@ -162,6 +162,12 @@ export type StudioTrack =
   | 'system-design'
   | 'lld'
   | 'coa'
+  | 'toc'
+  | 'compiler'
+  | 'discrete-math'
+  | 'software-eng'
+  | 'devops'
+  | 'ml-ai'
   | 'curated'
   | 'custom';
 
@@ -177,6 +183,12 @@ export const LectureStudioHub: React.FC = () => {
     'system-design': 'sd-1',
     lld: 'lld-1',
     coa: 'coa-1',
+    toc: 'toc-1',
+    compiler: 'cd-1',
+    'discrete-math': 'dm-1',
+    'software-eng': 'se-1',
+    devops: 'devops-1',
+    'ml-ai': 'ml-1',
   });
 
   // Coder Army Active Lecture
@@ -452,23 +464,41 @@ export const LectureStudioHub: React.FC = () => {
     }
   };
 
+  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<'all' | 'systems' | 'design' | 'theory' | 'modern'>('all');
+
   const ALL_STUDIO_TRACKS: {
     id: StudioTrack;
     label: string;
     icon: string;
     badge: string;
     desc: string;
+    category: 'dsa' | 'systems' | 'design' | 'theory' | 'modern' | 'misc';
   }[] = [
-    { id: 'coder-army', label: 'Coder Army (DSA)', icon: '⚔️', badge: '100+ Qs', desc: 'Rohit Negi Complete DSA Curriculum' },
-    { id: 'os', label: 'Operating Systems', icon: '💻', badge: 'Gate Smashers', desc: 'Processes, Memory, Paging, Semaphores' },
-    { id: 'dbms', label: 'DBMS & SQL', icon: '🗄️', badge: 'Gate Smashers', desc: 'ER, Normalization, ACID, 2PL, B+ Trees' },
-    { id: 'cn', label: 'Computer Networks', icon: '🌐', badge: 'Gate Smashers', desc: 'OSI 7-Layer, Subnetting, TCP Handshake, ARQ' },
-    { id: 'system-design', label: 'System Design HLD', icon: '🏗️', badge: 'Gaurav Sen', desc: 'Consistent Hashing, Sharding, TinyURL, Caching' },
-    { id: 'lld', label: 'LLD & OOPs Design', icon: '🧩', badge: 'Concept && Coding', desc: 'SOLID Principles, Design Patterns, Machine Coding' },
-    { id: 'coa', label: 'Computer Architecture', icon: '⚡', badge: 'Gate Smashers', desc: 'Cache Mapping, Pipelining, Addressing Modes' },
-    { id: 'curated', label: 'Curated Masters', icon: '🎓', badge: 'MIT / Harvard', desc: 'Asymptotic Analysis, Peak Finding, Two Sum' },
-    { id: 'custom', label: 'Custom Video URL', icon: '🔗', badge: 'YouTube', desc: 'Embed any YouTube lecture or playlist' },
+    { id: 'coder-army', label: 'Coder Army (DSA)', icon: '⚔️', badge: '100+ Qs', desc: 'Rohit Negi Complete DSA Curriculum', category: 'dsa' },
+    { id: 'os', label: 'Operating Systems', icon: '💻', badge: 'Gate Smashers', desc: 'Processes, Memory, Paging, Semaphores', category: 'systems' },
+    { id: 'dbms', label: 'DBMS & SQL', icon: '🗄️', badge: 'Gate Smashers', desc: 'ER, Normalization, ACID, 2PL, B+ Trees', category: 'systems' },
+    { id: 'cn', label: 'Computer Networks', icon: '🌐', badge: 'Gate Smashers', desc: 'OSI 7-Layer, Subnetting, TCP Handshake, ARQ', category: 'systems' },
+    { id: 'coa', label: 'Computer Architecture', icon: '⚡', badge: 'Gate Smashers', desc: 'Cache Mapping, Pipelining, Addressing Modes', category: 'systems' },
+    { id: 'system-design', label: 'System Design HLD', icon: '🏗️', badge: 'Gaurav Sen', desc: 'Consistent Hashing, Sharding, TinyURL, Caching', category: 'design' },
+    { id: 'lld', label: 'LLD & OOPs Design', icon: '🧩', badge: 'Concept && Coding', desc: 'SOLID Principles, Design Patterns, Machine Coding', category: 'design' },
+    { id: 'software-eng', label: 'Software Engineering', icon: '📋', badge: 'Gate Smashers', desc: 'SDLC, Agile Scrum, White & Black Box Testing', category: 'design' },
+    { id: 'toc', label: 'Theory of Computation', icon: '⚙️', badge: 'Gate Smashers', desc: 'DFA, NFA, CFG, PDA, Turing Machines', category: 'theory' },
+    { id: 'compiler', label: 'Compiler Design', icon: '📜', badge: 'Gate Smashers', desc: 'Lexical, LL(1), LR(0), 3-Address Code', category: 'theory' },
+    { id: 'discrete-math', label: 'Discrete Mathematics', icon: '🔢', badge: 'Gate Smashers', desc: 'Logic, Equivalence Relations, Graph Theory', category: 'theory' },
+    { id: 'devops', label: 'DevOps & Docker', icon: '🐳', badge: 'Kunal Kushwaha', desc: 'Containers, Dockerfile, Kubernetes Pods', category: 'modern' },
+    { id: 'ml-ai', label: 'Machine Learning & AI', icon: '🤖', badge: 'Krish Naik', desc: 'Regression, Decision Trees, Neural Networks', category: 'modern' },
+    { id: 'curated', label: 'Curated Masters', icon: '🎓', badge: 'MIT / Harvard', desc: 'Asymptotic Analysis, Peak Finding, Two Sum', category: 'misc' },
+    { id: 'custom', label: 'Custom Video URL', icon: '🔗', badge: 'YouTube', desc: 'Embed any YouTube lecture or playlist', category: 'misc' },
   ];
+
+  const visibleStudioTracks = ALL_STUDIO_TRACKS.filter((t) => {
+    if (subjectCategoryFilter === 'all') return true;
+    if (subjectCategoryFilter === 'systems') return t.category === 'systems' || t.category === 'dsa';
+    if (subjectCategoryFilter === 'design') return t.category === 'design';
+    if (subjectCategoryFilter === 'theory') return t.category === 'theory';
+    if (subjectCategoryFilter === 'modern') return t.category === 'modern';
+    return true;
+  });
 
   // Filter subject lectures
   const filteredSubjectLectures = (currentAcademicSubject?.lectures || []).filter((lec) => {
@@ -597,35 +627,67 @@ export const LectureStudioHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Universal Subject Carousel / Track Selector Bar */}
-      <div className="flex items-center gap-1.5 p-1.5 bg-[#0a0d18] rounded-2xl border border-white/10 overflow-x-auto custom-scrollbar">
-        {ALL_STUDIO_TRACKS.map((t) => {
-          const isSelected = selectedTrack === t.id;
-          return (
+      {/* Universal Subject Categories Filter & Carousel */}
+      <div className="bg-[#0a0d18] rounded-2xl border border-white/10 p-2 space-y-2">
+        {/* Category Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-xs">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold px-2 hidden sm:inline">
+            Tracks:
+          </span>
+          {[
+            { id: 'all', label: 'All Subjects (15)' },
+            { id: 'systems', label: '💻 Core Systems (OS, DBMS, CN, COA)' },
+            { id: 'design', label: '🏗️ System Design & LLD' },
+            { id: 'theory', label: '⚙️ Theory of Computation & Compiler' },
+            { id: 'modern', label: '🐳 DevOps & Machine Learning' },
+          ].map((cat) => (
             <button
-              key={t.id}
-              onClick={() => handleSelectTrack(t.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl whitespace-nowrap transition cursor-pointer text-xs font-semibold shrink-0 ${
-                isSelected
-                  ? 'bg-amber-400 text-slate-950 font-bold shadow-md'
-                  : 'text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10'
+              key={cat.id}
+              onClick={() => {
+                sound.playPop();
+                setSubjectCategoryFilter(cat.id as any);
+              }}
+              className={`px-3 py-1 rounded-xl whitespace-nowrap transition cursor-pointer text-xs font-semibold ${
+                subjectCategoryFilter === cat.id
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/10'
               }`}
-              title={t.desc}
             >
-              <span>{t.icon}</span>
-              <span>{t.label}</span>
-              <span
-                className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full border ${
-                  isSelected
-                    ? 'bg-slate-950/20 text-slate-950 border-slate-950/30'
-                    : 'bg-white/[0.06] text-amber-300 border-white/10'
-                }`}
-              >
-                {t.badge}
-              </span>
+              {cat.label}
             </button>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Horizontal Subject Carousel */}
+        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pt-0.5 pb-1">
+          {visibleStudioTracks.map((t) => {
+            const isSelected = selectedTrack === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => handleSelectTrack(t.id)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl whitespace-nowrap transition cursor-pointer text-xs font-semibold shrink-0 ${
+                  isSelected
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-md'
+                    : 'text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10'
+                }`}
+                title={t.desc}
+              >
+                <span>{t.icon}</span>
+                <span>{t.label}</span>
+                <span
+                  className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full border ${
+                    isSelected
+                      ? 'bg-slate-950/20 text-slate-950 border-slate-950/30'
+                      : 'bg-white/[0.06] text-amber-300 border-white/10'
+                  }`}
+                >
+                  {t.badge}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Subject-Specific Topic Lectures Drawer */}

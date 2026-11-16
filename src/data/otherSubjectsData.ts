@@ -1591,6 +1591,1095 @@ Cache bridges the speed gap between high-speed CPU registers and relatively slow
       },
     ],
   },
+
+  // =========================================================================
+  // 7. THEORY OF COMPUTATION (TOC / AUTOMATA)
+  // =========================================================================
+  {
+    id: 'toc',
+    title: 'Theory of Computation (TOC)',
+    code: 'CS 401',
+    category: 'Theoretical Computer Science',
+    instructor: 'Gate Smashers (Varun Singla)',
+    icon: '⚙️',
+    color: '#6366F1', // Indigo
+    playlistId: 'PLxCzCOWd7aiFM9Lj5G9G_76adtyb4ef7i',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiFM9Lj5G9G_76adtyb4ef7i',
+    description:
+      'Formal languages, automata theory, computability, and complexity: DFA, NFA, Regular Expressions, Pumping Lemma, Pushdown Automata, Context-Free Grammars, and Turing Machines.',
+    lecturesCount: 6,
+    totalDuration: '2 hrs 25 mins',
+    keyTopics: [
+      'Alphabet, String, Formal Language & Kleene Star',
+      'Deterministic Finite Automata (DFA) 5-Tuple Definition',
+      'Non-Deterministic Finite Automata (NFA) to DFA Subset Construction',
+      'Pumping Lemma for Proving Non-Regularity',
+      'Pushdown Automata (PDA) & Context-Free Grammars (CFG)',
+      'Turing Machines, Church-Turing Thesis & Halting Problem',
+    ],
+    lectures: [
+      {
+        id: 'toc-1',
+        lectureNumber: 1,
+        subjectId: 'toc',
+        subjectName: 'Theory of Computation',
+        title: 'L1: What is Automata, Alphabet, String & Formal Language',
+        duration: '14:20',
+        videoId: 'XslI8h7cGDs',
+        topics: ['Alphabet Sigma', 'Powers of Sigma', 'Kleene Star vs Positive Closure', 'Finite Automata Model'],
+        difficulty: 'Beginner',
+        starterCodes: {
+          python: `# DFA String Simulator in Python
+class SimpleDFA:
+    def __init__(self, states, alphabet, transition_func, start_state, accept_states):
+        self.states = states
+        self.alphabet = alphabet
+        self.delta = transition_func
+        self.start_state = start_state
+        self.accept_states = accept_states
+
+    def process(self, w: str) -> bool:
+        curr = self.start_state
+        for char in w:
+            if char not in self.alphabet:
+                return False
+            curr = self.delta.get((curr, char), None)
+            if curr is None:
+                return False
+        return curr in self.accept_states
+
+# Language: Strings over {0, 1} ending with '01'
+delta = {
+    ('q0', '0'): 'q1', ('q0', '1'): 'q0',
+    ('q1', '0'): 'q1', ('q1', '1'): 'q2',
+    ('q2', '0'): 'q1', ('q2', '1'): 'q0',
+}
+dfa = SimpleDFA({'q0', 'q1', 'q2'}, {'0', '1'}, delta, 'q0', {'q2'})
+
+test_strings = ["101", "1001", "110", "01", "111"]
+for s in test_strings:
+    print(f"String '{s}': Accepted = {dfa.process(s)}")
+`,
+          cpp: `#include <iostream>
+#include <string>
+#include <map>
+#include <set>
+using namespace std;
+
+// DFA accepting strings ending with '01'
+bool processDFA(const string& w) {
+    int state = 0; // 0=q0, 1=q1, 2=q2(accept)
+    for (char c : w) {
+        if (state == 0) state = (c == '0') ? 1 : 0;
+        else if (state == 1) state = (c == '0') ? 1 : 2;
+        else if (state == 2) state = (c == '0') ? 1 : 0;
+    }
+    return state == 2;
+}
+
+int main() {
+    string tests[] = {"101", "1001", "110", "01"};
+    for (const string& s : tests) {
+        cout << "String: " << s << " -> Accepted: " << (processDFA(s) ? "YES" : "NO") << endl;
+    }
+    return 0;
+}
+`,
+        },
+        detailedNotes: `### Lecture 1: Formal Languages & Automata Foundations
+
+#### 1. Core Mathematical Definitions:
+- **Alphabet (\\(\\Sigma\\)):** A finite, non-empty set of symbols. E.g., \\(\\Sigma = \\{0, 1\\}\\) or \\(\\Sigma = \\{a, b, c\\}\\).
+- **String / Word (\\(w\\)):** A finite sequence of symbols chosen from \\(\\Sigma\\). Length is denoted \\(|w|\\). Empty string is \\(\\epsilon\\) (where \\(|\\epsilon| = 0\\)).
+- **Powers of Alphabet:**
+  - \\(\\Sigma^0 = \\{\\epsilon\\}\\)
+  - \\(\\Sigma^1 = \\{0, 1\\}\\)
+  - \\(\\Sigma^2 = \\{00, 01, 10, 11\\}\\)
+- **Kleene Closure (\\(\\Sigma^*\\)):** Set of all strings of all lengths over \\(\\Sigma\\), including \\(\\epsilon\\):
+  \\[
+  \\Sigma^* = \\Sigma^0 \\cup \\Sigma^1 \\cup \\Sigma^2 \\cup \\dots
+  \\]
+- **Positive Closure (\\(\\Sigma^+\\)):** Excludes \\(\\epsilon\\): \\(\\Sigma^+ = \\Sigma^* - \\{\\epsilon\\}\\).
+
+#### 2. What is a Formal Language?
+A language \\(L\\) over \\(\\Sigma\\) is any subset of \\(\\Sigma^*\\) (\\(L \\subseteq \\Sigma^*\\)).
+- Finite Language: \\(L_1 = \\{01, 10\\}\\)
+- Infinite Language: \\(L_2 = \\{0^n 1^n \\mid n \\ge 1\\}\\)
+
+#### 3. Chomsky Hierarchy of Grammars:
+| Type | Language Family | Automaton Recognizer | Production Rules |
+| :--- | :--- | :--- | :--- |
+| **Type 3** | Regular Languages | Finite Automata (DFA / NFA) | \\(A \\to aB\\) or \\(A \\to a\\) |
+| **Type 2** | Context-Free (CFL) | Pushdown Automata (PDA) | \\(A \\to \\alpha\\) (where \\(A \\in V_N\\)) |
+| **Type 1** | Context-Sensitive (CSL) | Linear Bounded Automata (LBA) | \\(\\alpha A \\beta \\to \\alpha \\gamma \\beta\\) (\\(|\\alpha| \\le |\\beta|\\)) |
+| **Type 0** | Recursively Enumerable | Turing Machine | Unrestricted \\(\\alpha \\to \\beta\\) |`,
+      },
+      {
+        id: 'toc-2',
+        lectureNumber: 2,
+        subjectId: 'toc',
+        subjectName: 'Theory of Computation',
+        title: 'L2: Deterministic Finite Automata (DFA) Construction & 5-Tuples',
+        duration: '16:45',
+        videoId: 'vsEKN2f22bE',
+        topics: ['DFA 5-Tuple', 'Transition Function Delta', 'Trap / Dead State', 'Minimization of DFA'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# DFA Constructor: Accepts binary numbers divisible by 3
+def is_divisible_by_3(binary_str: str) -> bool:
+    # State represents remainder mod 3: 0, 1, or 2
+    state = 0
+    for bit in binary_str:
+        if bit not in ('0', '1'):
+            return False
+        state = (state * 2 + int(bit)) % 3
+    return state == 0
+
+nums = ["0", "11", "110", "1001", "1010"] # 0, 3, 6, 9, 10
+for b in nums:
+    val = int(b, 2)
+    print(f"Binary {b} (Dec {val}): Divisible by 3? {is_divisible_by_3(b)}")
+`,
+          cpp: `#include <iostream>
+#include <string>
+using namespace std;
+
+// DFA mod 3
+bool divBy3(const string& s) {
+    int rem = 0;
+    for (char c : s) {
+        rem = (rem * 2 + (c - '0')) % 3;
+    }
+    return rem == 0;
+}
+
+int main() {
+    cout << "Binary 110 (6): " << (divBy3("110") ? "ACCEPTED" : "REJECTED") << endl;
+    cout << "Binary 101 (5): " << (divBy3("101") ? "ACCEPTED" : "REJECTED") << endl;
+    return 0;
+}
+`,
+        },
+        detailedNotes: `### Lecture 2: DFA 5-Tuple Mathematical Formalism
+
+#### 1. Formal Definition:
+A Deterministic Finite Automaton (DFA) is defined as a 5-tuple:
+\\[
+M = (Q, \\Sigma, \\delta, q_0, F)
+\\]
+Where:
+1. \\(Q\\): Finite, non-empty set of states.
+2. \\(\\Sigma\\): Finite alphabet of input symbols.
+3. \\(\\delta\\): Transition function mapping \\(Q \\times \\Sigma \\to Q\\). Every state must have exactly ONE outgoing transition for each symbol in \\(\\Sigma\\).
+4. \\(q_0 \\in Q\\): Initial / Start state.
+5. \\(F \\subseteq Q\\): Set of Final / Accepting states (can be empty).
+
+#### 2. Key DFA Design Patterns:
+- **Substring Matching:** To accept strings containing 'ab':
+  - \\(q_0 \\xrightarrow{a} q_1 \\xrightarrow{b} q_2\\) (where \\(q_2\\) is final with self-loop on \\(a, b\\)).
+- **Modulo Counters:** To test if binary value is divisible by \\(k\\), create \\(k\\) states \\(q_0, q_1, \\dots, q_{k-1}\\). Transition on bit \\(b\\):
+  \\[
+  \\delta(q_r, b) = q_{(2r + b) \\bmod k}
+  \\]
+- **Dead / Trap State:** If an input sequence violates the condition irrevocably, transition to a non-final trap state with self-loops on all symbols.`,
+      },
+      {
+        id: 'toc-3',
+        lectureNumber: 3,
+        subjectId: 'toc',
+        subjectName: 'Theory of Computation',
+        title: 'L3: Non-Deterministic Finite Automata (NFA) & Subset Construction',
+        duration: '18:10',
+        videoId: 'h4v7x0IMhtI',
+        topics: ['NFA vs DFA', 'Epsilon Transitions', 'Subset Construction Algorithm', 'Equivalence Proof'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# NFA Subset Construction Simulation
+def nfa_epsilon_closure(states, transitions):
+    stack = list(states)
+    closure = set(states)
+    while stack:
+        curr = stack.pop()
+        for next_st in transitions.get((curr, 'eps'), []):
+            if next_st not in closure:
+                closure.add(next_st)
+                stack.append(next_st)
+    return closure
+
+print("Epsilon closure of state q0:", nfa_epsilon_closure({'q0'}, {('q0', 'eps'): ['q1', 'q2']}))
+`,
+        },
+        detailedNotes: `### Lecture 3: NFA Definition & DFA Equivalence
+
+#### 1. NFA 5-Tuple Definition:
+\\[
+M = (Q, \\Sigma, \\delta, q_0, F)
+\\]
+Where the transition function maps to the power set of states:
+\\[
+\\delta: Q \\times (\\Sigma \\cup \\{\\epsilon\\}) \\to 2^Q
+\\]
+In an NFA:
+- A state can have 0, 1, or multiple outgoing transitions on the same symbol.
+- It can transition without consuming input (\\(\\epsilon\\)-transition).
+- A string is accepted if AT LEAST ONE computational path ends in an accepting state \\(q \\in F\\).
+
+#### 2. Power of NFA vs DFA:
+- **Equivalence Theorem:** For every NFA, there exists an equivalent DFA that accepts the exact same language (\\(L(NFA) = L(DFA)\\)).
+- **State Complexity:** If an NFA has \\(n\\) states, the minimized equivalent DFA has at most \\(2^n\\) states.`,
+      },
+      {
+        id: 'toc-4',
+        lectureNumber: 4,
+        subjectId: 'toc',
+        subjectName: 'Theory of Computation',
+        title: 'L4: Pumping Lemma for Regular Languages & Non-Regularity Proofs',
+        duration: '21:05',
+        videoId: 'WdmbZnUesRw',
+        topics: ['Pumping Lemma Theorem', 'Pumping Length p', 'Pigeonhole Principle in Automata', 'Proof of a^n b^n'],
+        difficulty: 'Advanced',
+        starterCodes: {
+          python: `# Demonstrating that a^n b^n cannot be counted by finite states
+def cannot_be_regular():
+    print("Proof that L = {a^n b^n | n >= 0} is NOT regular:")
+    print("1. Assume L is regular with pumping length p.")
+    print("2. Choose string s = a^p b^p in L, |s| = 2p >= p.")
+    print("3. Split s = xyz such that |xy| <= p and |y| >= 1.")
+    print("4. Therefore y consists strictly of 'a's: y = a^k (k >= 1).")
+    print("5. Pump with i=2: xy^2 z = a^(p+k) b^p.")
+    print("6. Since p+k != p, xy^2 z is NOT in L. Contradiction!")
+    print("Conclusion: L is NOT regular.")
+
+if __name__ == "__main__":
+    cannot_be_regular()
+`,
+        },
+        detailedNotes: `### Lecture 4: Pumping Lemma for Regular Languages
+
+#### 1. Formal Statement:
+If \\(A\\) is a regular language, then there exists a number \\(p\\) (the **pumping length**) such that any string \\(s \\in A\\) of length \\(|s| \\ge p\\) may be divided into three pieces, \\(s = xyz\\), satisfying:
+1. For each \\(i \\ge 0\\), \\(x y^i z \\in A\\).
+2. \\(|y| > 0\\) (the pumped substring is non-empty).
+3. \\(|xy| \\le p\\) (the pumped substring occurs within the first \\(p\\) symbols).
+
+#### 2. Intuition & Pigeonhole Principle:
+Any DFA recognizing \\(A\\) has a finite number of states \\(p = |Q|\\). If a string has \\(|s| \\ge p\\), by the Pigeonhole Principle, the automaton MUST visit at least one state twice during the first \\(p\\) transitions. That state cycle corresponds to substring \\(y\\). That loop can be repeated \\(i\\) times (pumped) or skipped (\\(i=0\\)).`,
+      },
+      {
+        id: 'toc-5',
+        lectureNumber: 5,
+        subjectId: 'toc',
+        subjectName: 'Theory of Computation',
+        title: 'L5: Pushdown Automata (PDA) & Context-Free Grammars (CFG)',
+        duration: '19:30',
+        videoId: '7lcwlNNCP1E',
+        topics: ['Stack Memory Model', 'PDA 7-Tuple', 'Acceptance by Final State vs Empty Stack', 'Deterministic vs Non-Deterministic PDA'],
+        difficulty: 'Advanced',
+        starterCodes: {
+          python: `# Simulating a Pushdown Automaton for L = {0^n 1^n | n >= 1}
+def pda_simulate(w: str) -> bool:
+    stack = ['Z0'] # Initial stack symbol
+    state = 'q0'
+
+    for char in w:
+        if state == 'q0':
+            if char == '0':
+                stack.append('0')
+            elif char == '1':
+                if stack[-1] == '0':
+                    stack.pop()
+                    state = 'q1'
+                else:
+                    return False
+        elif state == 'q1':
+            if char == '1':
+                if stack[-1] == '0':
+                    stack.pop()
+                else:
+                    return False
+            else:
+                return False
+
+    return state == 'q1' and stack == ['Z0']
+
+tests = ["01", "0011", "000111", "001", "011"]
+for t in tests:
+    print(f"'{t}': {pda_simulate(t)}")
+`,
+        },
+        detailedNotes: `### Lecture 5: Pushdown Automata (PDA)
+
+#### 1. PDA Formal 7-Tuple:
+\\[
+M = (Q, \\Sigma, \\Gamma, \\delta, q_0, Z_0, F)
+\\]
+Where:
+- \\(\\Gamma\\): Finite stack alphabet.
+- \\(Z_0 \\in \\Gamma\\): Initial bottom-of-stack symbol.
+- \\(\\delta: Q \\times (\\Sigma \\cup \\{\\epsilon\\}) \\times \\Gamma \\to 2^{Q \\times \\Gamma^*}\\).
+
+#### 2. Key Difference: DPDA vs NPDA
+- **NPDA > DPDA in expressive power!** Unlike finite automata where NFA = DFA, a Non-Deterministic PDA is strictly more expressive than a Deterministic PDA.
+- Example: The language of palindromes \\(L = \\{w w^R \\mid w \\in \\Sigma^*\\}\\) requires an NPDA (to guess the midpoint), and cannot be recognized by a DPDA.`,
+      },
+      {
+        id: 'toc-6',
+        lectureNumber: 6,
+        subjectId: 'toc',
+        subjectName: 'Theory of Computation',
+        title: 'L6: Turing Machines, Halting Problem & Undecidability',
+        duration: '22:15',
+        videoId: 'LE_7krgRGt8',
+        topics: ['Infinite Tape Model', 'Turing 7-Tuple', 'Church-Turing Thesis', 'Halting Problem Proof via Diagonalization'],
+        difficulty: 'Advanced',
+        starterCodes: {
+          python: `# Turing Machine Tape Simulator for bit inversion
+def tm_invert_bits(tape_input: str):
+    tape = list(tape_input) + ['_'] # Infinite blank symbol
+    head = 0
+    state = 'q_invert'
+
+    while state != 'q_halt':
+        symbol = tape[head]
+        if state == 'q_invert':
+            if symbol == '0':
+                tape[head] = '1'
+                head += 1
+            elif symbol == '1':
+                tape[head] = '0'
+                head += 1
+            elif symbol == '_':
+                state = 'q_halt'
+
+    return "".join(tape[:-1])
+
+print("Inverted: 101100 ->", tm_invert_bits("101100"))
+`,
+        },
+        detailedNotes: `### Lecture 6: Turing Machines & Decidability
+
+#### 1. Turing Machine 7-Tuple:
+\\[
+M = (Q, \\Sigma, \\Gamma, \\delta, q_0, B, F)
+\\]
+- Unlimited, infinite tape divided into cells.
+- Read/Write head can move both Left (\\(L\\)) and Right (\\(R\\)).
+- Transition function: \\(\\delta: Q \\times \\Gamma \\to Q \\times \\Gamma \\times \\{L, R\\}\\).
+
+#### 2. The Halting Problem (Undecidable):
+- **Theorem (Alan Turing, 1936):** There is NO general algorithm that can determine whether an arbitrary program \\(M\\) on input \\(w\\) will eventually halt or loop forever.
+- **Proof by Diagonalization:** Assume decider \\(H(M, w)\\) exists. Construct adversary machine \\(D(M)\\):
+  - If \\(H(M, M)\\) says "halts", \\(D\\) enters an infinite loop.
+  - If \\(H(M, M)\\) says "loops", \\(D\\) immediately halts.
+  - What does \\(D(D)\\) do? If \\(D(D)\\) halts \\(\\implies\\) it loops. Contradiction!`,
+      },
+    ],
+  },
+
+  // =========================================================================
+  // 8. COMPILER DESIGN (CD)
+  // =========================================================================
+  {
+    id: 'compiler',
+    title: 'Compiler Design (CD)',
+    code: 'CS 402',
+    category: 'Theoretical Computer Science',
+    instructor: 'Gate Smashers (Varun Singla)',
+    icon: '📜',
+    color: '#EC4899', // Pink
+    playlistId: 'PLxCzCOWd7aiEKtKSIHYusizkESC42diyc',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiEKtKSIHYusizkESC42diyc',
+    description:
+      'Translating high-level source code into target machine code: Lexical Analysis, Context-Free Parsing (LL(1), LR(0), SLR, LALR), Syntax-Directed Translation, Intermediate Code Generation, and Optimization.',
+    lecturesCount: 5,
+    totalDuration: '2 hrs 10 mins',
+    keyTopics: [
+      'Phases of Compiler (Analysis & Synthesis)',
+      'Lexical Analysis, Tokenization & Symbol Tables',
+      'First() and Follow() Sets for LL(1) Grammar',
+      'Bottom-Up LR(0) and SLR(1) Parsing Table Items',
+      'Three-Address Code (TAC), Quadruples & DAG Optimization',
+    ],
+    lectures: [
+      {
+        id: 'cd-1',
+        lectureNumber: 1,
+        subjectId: 'compiler',
+        subjectName: 'Compiler Design',
+        title: 'L1: Phases of a Compiler & Lexical Analysis Tokens',
+        duration: '16:20',
+        videoId: 'XUsw5igq4DM',
+        topics: ['Analysis vs Synthesis', 'Lexical, Syntax, Semantic Phases', 'Intermediate Code Generator', 'Code Optimizer'],
+        difficulty: 'Beginner',
+        starterCodes: {
+          python: `# Simple Lexical Analyzer (Tokenizer) in Python
+import re
+
+TOKEN_TYPES = [
+    ('KEYWORD', r'\\b(if|else|while|int|float|return)\\b'),
+    ('NUMBER', r'\\b\\d+(\\.\\d+)?\\b'),
+    ('IDENTIFIER', r'\\b[a-zA-Z_][a-zA-Z0-9_]*\\b'),
+    ('OPERATOR', r'[+\\-*/=><]'),
+    ('PUNCTUATION', r'[;(),{}]'),
+    ('WHITESPACE', r'\\s+'),
+]
+
+def tokenize(code: str):
+    tokens = []
+    pos = 0
+    while pos < len(code):
+        matched = False
+        for tok_name, regex in TOKEN_TYPES:
+            match = re.match(regex, code[pos:])
+            if match:
+                val = match.group(0)
+                if tok_name != 'WHITESPACE':
+                    tokens.append((tok_name, val))
+                pos += len(val)
+                matched = True
+                break
+        if not matched:
+            raise ValueError(f"Lexical Error at pos {pos}: {code[pos]}")
+    return tokens
+
+source = "int x = 42 + y;"
+print("Tokens:", tokenize(source))
+`,
+        },
+        detailedNotes: `### Lecture 1: Compiler Architecture & Phases
+
+#### 1. Analysis Phase (Front-End) - Machine Independent:
+1. **Lexical Analysis (Scanner):** Reads stream of source characters and groups them into meaningful **Tokens** \\(\\langle\\text{token\\_name}, \\text{attribute\\_value}\\rangle\\).
+2. **Syntax Analysis (Parser):** Validates tokens against Context-Free Grammar, generating a **Parse Tree** or Abstract Syntax Tree (AST).
+3. **Semantic Analysis (Type Checker):** Verifies type compatibility, scope resolution, and array bounds.
+4. **Intermediate Code Generator (ICG):** Generates machine-independent representation (e.g., Three-Address Code).
+
+#### 2. Synthesis Phase (Back-End) - Machine Dependent:
+5. **Code Optimizer:** Transforms IR to execute faster and consume less memory (e.g., dead code elimination, constant folding, loop unrolling).
+6. **Code Generator:** Maps IR into target assembly or machine instructions, performing register allocation.`,
+      },
+      {
+        id: 'cd-2',
+        lectureNumber: 2,
+        subjectId: 'compiler',
+        subjectName: 'Compiler Design',
+        title: 'L2: First() and Follow() Sets in LL(1) Grammar',
+        duration: '19:45',
+        videoId: 'UXYqQ_CJsVE',
+        topics: ['First Set Rules', 'Follow Set Rules', 'Epsilon Propagation', 'End-of-Input Dollar Marker'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Computation of First and Follow in Python
+grammar = {
+    'E': ['T E1'],
+    'E1': ['+ T E1', 'eps'],
+    'T': ['F T1'],
+    'T1': ['* F T1', 'eps'],
+    'F': ['( E )', 'id']
+}
+print("Grammar loaded for arithmetic expressions.")
+`,
+        },
+        detailedNotes: `### Lecture 2: First & Follow Calculation Rules
+
+#### Rules for FIRST(\\(\\alpha\\)):
+1. If \\(X\\) is terminal, \\(\\text{FIRST}(X) = \\{X\\}\\).
+2. If \\(X \\to \\epsilon\\), then add \\(\\epsilon\\) to \\(\\text{FIRST}(X)\\).
+3. If \\(X \\to Y_1 Y_2 \\dots Y_k\\):
+   - Add all non-\\(\\epsilon\\) symbols of \\(\\text{FIRST}(Y_1)\\) to \\(\\text{FIRST}(X)\\).
+   - If \\(Y_1 \\implies \\epsilon\\), add \\(\\text{FIRST}(Y_2)\\), and so on.
+
+#### Rules for FOLLOW(\\(\\alpha\\)):
+1. Put \\(\\$\\) in \\(\\text{FOLLOW}(S)\\) where \\(S\\) is the start symbol.
+2. If \\(A \\to \\alpha B \\beta\\), everything in \\(\\text{FIRST}(\\beta)\\) (except \\(\\epsilon\\)) is in \\(\\text{FOLLOW}(B)\\).
+3. If \\(A \\to \\alpha B\\) or \\(A \\to \\alpha B \\beta\\) where \\(\\text{FIRST}(\\beta)\\) contains \\(\\epsilon\\), everything in \\(\\text{FOLLOW}(A)\\) is in \\(\\text{FOLLOW}(B)\\).`,
+      },
+      {
+        id: 'cd-3',
+        lectureNumber: 3,
+        subjectId: 'compiler',
+        subjectName: 'Compiler Design',
+        title: 'L3: Predictive Parsing Table Construction & LL(1) Conditions',
+        duration: '18:15',
+        videoId: 'YvGW4Z_6POU',
+        topics: ['LL(1) Table Construction', 'Parsing Conflicts', 'Left Recursion Removal', 'Left Factoring'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Verifying LL(1) Non-Ambiguity Condition
+print("LL(1) Condition: For any production A -> alpha | beta:")
+print("1. FIRST(alpha) ∩ FIRST(beta) = empty")
+print("2. If beta -> eps, then FIRST(alpha) ∩ FOLLOW(A) = empty")
+`,
+        },
+        detailedNotes: `### Lecture 3: LL(1) Parsing Table
+
+#### 1. What does LL(1) Mean?
+- First **L**: Left-to-right scan of the input.
+- Second **L**: Leftmost derivation is produced.
+- **1**: 1 symbol of lookahead is required to make a deterministic parsing decision.
+
+#### 2. Conflicts in LL(1):
+A grammar is NOT LL(1) if:
+- It contains **Left Recursion** (\\(A \\to A\\alpha\\)).
+- It is not **Left Factored** (common prefix in alternatives).
+- There is a multiply-defined entry in parsing table \\(M[A, a]\\).`,
+      },
+      {
+        id: 'cd-4',
+        lectureNumber: 4,
+        subjectId: 'compiler',
+        subjectName: 'Compiler Design',
+        title: 'L4: Bottom-Up Parsing: LR(0) Items & SLR(1) Table',
+        duration: '21:30',
+        videoId: 'QNv2g-lwH2c',
+        topics: ['Handle Pruning', 'LR(0) Items & Dot Notation', 'Shift-Reduce Conflict', 'Reduce-Reduce Conflict'],
+        difficulty: 'Advanced',
+        starterCodes: {
+          python: `# Demonstrating Shift vs Reduce
+print("Shift: Push current terminal onto stack and read next symbol.")
+print("Reduce: Replace handle on top of stack with Non-Terminal using A -> gamma.")
+`,
+        },
+        detailedNotes: `### Lecture 4: LR Parsing (Bottom-Up)
+
+#### 1. Types of LR Parsers:
+\\[
+\\text{LR}(0) < \\text{SLR}(1) < \\text{LALR}(1) < \\text{CLR}(1)
+\\]
+- **LR(0):** Uses canonical collection of LR(0) items with dot notation: \\(A \\to \\alpha \\cdot \\beta\\).
+- **SLR(1):** Uses FOLLOW sets to disambiguate reductions: only reduce \\(A \\to \\alpha\\) for terminal \\(a \\in \\text{FOLLOW}(A)\\).
+- **CLR(1):** Carries lookahead directly inside items \\([A \\to \\alpha \\cdot \\beta, a]\\). Most powerful, but large state space.
+- **LALR(1):** Merges CLR(1) states that have identical LR(0) cores. Used in Yacc & Bison.`,
+      },
+      {
+        id: 'cd-5',
+        lectureNumber: 5,
+        subjectId: 'compiler',
+        subjectName: 'Compiler Design',
+        title: 'L5: Three-Address Code (TAC), Quadruples & Optimization',
+        duration: '15:50',
+        videoId: 'j-bLeUysUiE',
+        topics: ['Three Address Code Formats', 'Quadruples vs Triples', 'DAG Construction', 'Common Subexpression Elimination'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Generate Three-Address Code for: x = a + b * c - d
+print("Generated TAC:")
+print("t1 = b * c")
+print("t2 = a + t1")
+print("t3 = t2 - d")
+print("x = t3")
+`,
+        },
+        detailedNotes: `### Lecture 5: Intermediate Representations & DAGs
+
+#### 1. Three-Address Code (TAC):
+Linear sequence of instructions where each instruction has at most one operator on the right-hand side: \\(x = y \\text{ op } z\\).
+
+#### 2. Data Structures for TAC:
+- **Quadruples:** Record with 4 fields: \\((\\text{op}, \\text{arg1}, \\text{arg2}, \\text{result})\\).
+- **Triples:** Avoids explicit temporary names by referencing array indices: \\((\\text{op}, \\text{arg1}, \\text{arg2})\\).
+
+#### 3. Directed Acyclic Graph (DAG):
+Constructing a DAG over a Basic Block automatically eliminates **Common Subexpressions** and identifies dead variables.`,
+      },
+    ],
+  },
+
+  // =========================================================================
+  // 9. DISCRETE MATHEMATICS (DM)
+  // =========================================================================
+  {
+    id: 'discrete-math',
+    title: 'Discrete Mathematics (DM)',
+    code: 'CS 202',
+    category: 'Theoretical Computer Science',
+    instructor: 'Gate Smashers',
+    icon: '🔢',
+    color: '#F59E0B', // Amber
+    playlistId: 'PLxCzCOWd7aiH2wwES9vPWsEL6ipTaUSl3',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiH2wwES9vPWsEL6ipTaUSl3',
+    description:
+      'Mathematical foundations of CS: Propositional & Predicate Logic, Sets, Equivalence Relations & Posets, Functions, Combinatorics, and Graph Theory.',
+    lecturesCount: 3,
+    totalDuration: '1 hr 35 mins',
+    keyTopics: [
+      'Propositional Logic, Truth Tables & Logical Equivalences',
+      'Relations: Reflexive, Symmetric, Transitive & Partial Orders',
+      'Graph Theory: Eulerian Trails, Hamiltonian Cycles & Planar Graphs',
+    ],
+    lectures: [
+      {
+        id: 'dm-1',
+        lectureNumber: 1,
+        subjectId: 'discrete-math',
+        subjectName: 'Discrete Mathematics',
+        title: 'L1: Propositional Logic, Truth Tables & Tautologies',
+        duration: '22:40',
+        videoId: '6490tKrGEic',
+        topics: ['Connectives (AND, OR, NOT, IMPLIES)', 'Truth Tables', 'Tautology vs Contradiction', 'De Morgan Laws'],
+        difficulty: 'Beginner',
+        starterCodes: {
+          python: `# Truth Table Generator for p -> q <=> ~p v q
+print(" p | q | p -> q | ~p v q | Equivalent?")
+print("-" * 38)
+for p in [True, False]:
+    for q in [True, False]:
+        p_imp_q = (not p) or q
+        not_p_or_q = (not p) or q
+        equiv = (p_imp_q == not_p_or_q)
+        print(f" {int(p)} | {int(q)} |   {int(p_imp_q)}    |   {int(not_p_or_q)}    |    {equiv}")
+`,
+        },
+        detailedNotes: `### Lecture 1: Propositional Logic Foundations
+
+#### 1. Fundamental Connectives:
+- **Negation (\\(\\neg P\\)):** Inverts truth value.
+- **Conjunction (\\(P \\land Q\\)):** True only when BOTH are True.
+- **Disjunction (\\(P \\lor Q\\)):** False only when BOTH are False.
+- **Conditional / Implication (\\(P \\to Q\\)):** Equivalent to \\(\\neg P \\lor Q\\). False ONLY when \\(P = T\\) and \\(Q = F\\).
+- **Biconditional (\\(P \\leftrightarrow Q\\)):** True when both share the same truth value.
+
+#### 2. Key Equivalence Laws:
+- **Contrapositive:** \\(P \\to Q \\equiv \\neg Q \\to \\neg P\\)
+- **De Morgan’s Laws:**
+  \\[
+  \\neg(P \\land Q) \\equiv \\neg P \\lor \\neg Q \\qquad \\neg(P \\lor Q) \\equiv \\neg P \\land \\neg Q
+  \\]`,
+      },
+      {
+        id: 'dm-2',
+        lectureNumber: 2,
+        subjectId: 'discrete-math',
+        subjectName: 'Discrete Mathematics',
+        title: 'L2: Relations, Equivalence Relations & Partial Orderings (Posets)',
+        duration: '18:50',
+        videoId: 'VkWGSqRGozw',
+        topics: ['Reflexive, Symmetric, Transitive', 'Equivalence Classes', 'Antisymmetric & Posets', 'Hasse Diagrams'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Equivalence Relation Validator
+def check_relation_properties(domain, R):
+    # Reflexive: (a, a) in R for all a
+    reflexive = all((a, a) in R for a in domain)
+    # Symmetric: if (a, b) in R, then (b, a) in R
+    symmetric = all((b, a) in R for (a, b) in R)
+    # Transitive: if (a, b) and (b, c) in R, then (a, c) in R
+    transitive = all((a, c) in R for (a, b) in R for (b2, c) in R if b == b2)
+    return reflexive, symmetric, transitive
+
+domain = {1, 2, 3}
+R = {(1, 1), (2, 2), (3, 3), (1, 2), (2, 1)}
+refl, symm, trans = check_relation_properties(domain, R)
+print(f"Reflexive: {refl}, Symmetric: {symm}, Transitive: {trans}")
+print("Is Equivalence Relation?", refl and symm and trans)
+`,
+        },
+        detailedNotes: `### Lecture 2: Relations & Posets
+
+#### 1. Properties of Binary Relations on Set \\(A\\):
+1. **Reflexive:** \\(\\forall a \\in A, (a, a) \\in R\\). Total reflexive relations on set of \\(n\\) elements = \\(2^{n(n-1)}\\).
+2. **Symmetric:** \\(\\forall a, b \\in A, (a, b) \\in R \\implies (b, a) \\in R\\).
+3. **Transitive:** \\(\\forall a, b, c \\in A, (a, b) \\in R \\land (b, c) \\in R \\implies (a, c) \\in R\\).
+4. **Antisymmetric:** \\(\\forall a, b \\in A, (a, b) \\in R \\land (b, a) \\in R \\implies a = b\\).
+
+#### 2. Classification:
+- **Equivalence Relation:** Reflexive + Symmetric + Transitive. Partitions set into disjoint equivalence classes.
+- **Partial Order Relation (Poset):** Reflexive + Antisymmetric + Transitive. Visualized using a **Hasse Diagram**.`,
+      },
+      {
+        id: 'dm-3',
+        lectureNumber: 3,
+        subjectId: 'discrete-math',
+        subjectName: 'Discrete Mathematics',
+        title: 'L3: Graph Theory: Eulerian vs Hamiltonian Cycles & Planarity',
+        duration: '21:10',
+        videoId: 'GiClUAJMMtw',
+        topics: ['Handshaking Lemma', 'Eulerian Path & Circuit Criteria', 'Hamiltonian Cycles', 'Euler Formula for Planar Graphs'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Eulerian Circuit Checker using Degree Parity
+def has_eulerian_circuit(adj_list):
+    # In connected graph, Eulerian circuit exists iff all vertices have EVEN degree
+    for node, neighbors in adj_list.items():
+        if len(neighbors) % 2 != 0:
+            return False
+    return True
+
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'C'],
+    'C': ['A', 'B']
+}
+print("Has Eulerian Circuit?", has_eulerian_circuit(graph))
+`,
+        },
+        detailedNotes: `### Lecture 3: Graph Theory Invariants
+
+#### 1. Handshaking Lemma:
+\\[
+\\sum_{v \\in V} \\deg(v) = 2|E|
+\\]
+**Corollary:** The number of vertices of odd degree in any undirected graph is ALWAYS EVEN.
+
+#### 2. Euler’s Criterion:
+- A connected graph has an **Eulerian Circuit** (traversing every edge exactly once and returning to start) if and only if **EVERY vertex has an EVEN degree**.
+- It has an **Eulerian Path** if and only if exactly 0 or 2 vertices have odd degrees.
+
+#### 3. Planar Graph Invariant (Euler’s Formula):
+For any connected planar graph with \\(V\\) vertices, \\(E\\) edges, and \\(R\\) faces/regions:
+\\[
+V - E + R = 2
+\\]`,
+      },
+    ],
+  },
+
+  // =========================================================================
+  // 10. SOFTWARE ENGINEERING (SE)
+  // =========================================================================
+  {
+    id: 'software-eng',
+    title: 'Software Engineering (SE)',
+    code: 'CS 304',
+    category: 'Software Architecture',
+    instructor: 'Gate Smashers',
+    icon: '📋',
+    color: '#14B8A6', // Teal
+    playlistId: 'PLxCzCOWd7aiEed7SKZBnC6ypFDWYLRvB2',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiEed7SKZBnC6ypFDWYLRvB2',
+    description:
+      'Industrial software processes: SDLC models (Waterfall, Spiral, Agile/Scrum), Requirement Engineering, Testing Strategies (Black Box & White Box), and Quality Metrics.',
+    lecturesCount: 2,
+    totalDuration: '45 mins',
+    keyTopics: [
+      'SDLC Models: Waterfall vs Prototype vs Spiral vs Agile Scrum',
+      'Testing: White Box (Basis Path, Cyclomatic Complexity) vs Black Box (BVA, Equivalence Partitioning)',
+    ],
+    lectures: [
+      {
+        id: 'se-1',
+        lectureNumber: 1,
+        subjectId: 'software-eng',
+        subjectName: 'Software Engineering',
+        title: 'L1: SDLC Models: Waterfall, Spiral, Agile & Scrum Framework',
+        duration: '18:15',
+        videoId: 'y2CnstDLhXM',
+        topics: ['Spiral Risk Driven Model', 'Agile Manifestos', 'Scrum Roles & Sprints', 'Burn-down Charts'],
+        difficulty: 'Beginner',
+        starterCodes: {
+          python: `# Scrum Sprint Velocity Simulator
+sprints = [
+    {"sprint": 1, "committed_points": 30, "completed_points": 26},
+    {"sprint": 2, "committed_points": 28, "completed_points": 28},
+    {"sprint": 3, "committed_points": 32, "completed_points": 30},
+]
+avg_velocity = sum(s["completed_points"] for s in sprints) / len(sprints)
+print(f"Average Team Velocity: {avg_velocity:.1f} story points per sprint")
+`,
+        },
+        detailedNotes: `### Lecture 1: SDLC Process Models Comparison
+
+| Model | Strengths | Weaknesses | Best Fit |
+| :--- | :--- | :--- | :--- |
+| **Waterfall** | Simple, clear milestones | High risk, zero customer feedback until late | Well-defined, stable requirements (e.g. defense, hardware drivers) |
+| **Spiral** | Risk analysis at every cycle | Expensive, requires expert risk analysts | Large, mission-critical projects |
+| **Agile (Scrum)** | Rapid iterations, continuous feedback | Hard to budget fixed time/cost | Modern web/mobile products with evolving requirements |`,
+      },
+      {
+        id: 'se-2',
+        lectureNumber: 2,
+        subjectId: 'software-eng',
+        subjectName: 'Software Engineering',
+        title: 'L2: White Box vs Black Box Testing & Cyclomatic Complexity',
+        duration: '19:40',
+        videoId: '89VOHd8F8Ao',
+        topics: ['Boundary Value Analysis', 'Equivalence Class Partitioning', 'Control Flow Graph (CFG)', 'McCabe Cyclomatic Complexity Formula'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Cyclomatic Complexity: V(G) = E - N + 2P
+def cyclomatic_complexity(edges: int, nodes: int, components: int = 1):
+    return edges - nodes + 2 * components
+
+# Example: CFG with 7 edges and 6 nodes
+print("Cyclomatic Complexity V(G):", cyclomatic_complexity(7, 6))
+`,
+        },
+        detailedNotes: `### Lecture 2: Software Testing & McCabe’s Complexity
+
+#### 1. Black Box Testing:
+- **Boundary Value Analysis (BVA):** Tests values at limits: \\(\\min, \\min+1, \\text{nominal}, \\max-1, \\max\\).
+- **Equivalence Class Partitioning:** Divides input domain into valid and invalid equivalence classes.
+
+#### 2. White Box Testing & Cyclomatic Complexity \\(V(G)\\):
+Calculates the number of linearly independent paths through program source code:
+\\[
+V(G) = E - N + 2P \\quad \\text{or} \\quad V(G) = P + 1 \\quad \\text{(where \\(P\\) is number of predicate nodes)}
+\\]`,
+      },
+    ],
+  },
+
+  // =========================================================================
+  // 11. DEVOPS & CLOUD INFRASTRUCTURE
+  // =========================================================================
+  {
+    id: 'devops',
+    title: 'DevOps & Cloud Engineering',
+    code: 'DEVOPS 101',
+    category: 'Applied Cloud & Infrastructure',
+    instructor: 'Kunal Kushwaha',
+    icon: '🐳',
+    color: '#06B6D4', // Cyan
+    playlistId: 'PL9gnSGHSqcnqWM4O5w4nQBGnviQcekgDF',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PL9gnSGHSqcnqWM4O5w4nQBGnviQcekgDF',
+    description:
+      'Modern cloud deployments: Linux fundamentals, Git & GitHub Actions CI/CD, Docker containerization, multi-stage builds, and Kubernetes orchestration.',
+    lecturesCount: 2,
+    totalDuration: '1 hr 15 mins',
+    keyTopics: [
+      'Docker Containerization, Dockerfile & Layer Caching',
+      'Kubernetes Core Architecture: Master Node, Worker Nodes, Pods & Services',
+    ],
+    lectures: [
+      {
+        id: 'devops-1',
+        lectureNumber: 1,
+        subjectId: 'devops',
+        subjectName: 'DevOps & Cloud Engineering',
+        title: 'L1: Docker Containerization, Images & Multi-Stage Builds',
+        duration: '38:20',
+        videoId: 'fqMOX6JJhGo',
+        topics: ['Containers vs Virtual Machines', 'Dockerfile Commands', 'Layer Caching', 'Multi-Stage Optimization'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Production Multi-Stage Dockerfile Blueprint
+dockerfile = """# Build Stage
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Production Stage (Minimal footprint)
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+"""
+print(dockerfile)
+`,
+        },
+        detailedNotes: `### Lecture 1: Docker Containerization
+
+#### 1. Container vs Virtual Machine:
+- **Virtual Machine:** Virtualizes the hardware layer (hypervisor). Each VM runs a full guest operating system (Gigabytes in size, minutes to boot).
+- **Container:** Virtualizes the OS kernel using Linux **cgroups** (resource limits) and **namespaces** (process isolation). Shares host kernel (Megabytes in size, milliseconds to boot).`,
+      },
+      {
+        id: 'devops-2',
+        lectureNumber: 2,
+        subjectId: 'devops',
+        subjectName: 'DevOps & Cloud Engineering',
+        title: 'L2: Kubernetes (K8s) Architecture: Control Plane, Pods & Services',
+        duration: '35:10',
+        videoId: 'KVBON1lA9N8',
+        topics: ['Control Plane (API Server, etcd, Scheduler)', 'Worker Node (Kubelet, Kube-Proxy)', 'Pods & ReplicaSets', 'ClusterIP vs NodePort vs LoadBalancer'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Kubernetes Deployment Manifest Template
+k8s_yaml = """apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api-service
+  template:
+    metadata:
+      labels:
+        app: api-service
+    spec:
+      containers:
+      - name: api
+        image: myorg/api:v1.0
+        ports:
+        - containerPort: 8080
+"""
+print(k8s_yaml)
+`,
+        },
+        detailedNotes: `### Lecture 2: Kubernetes Architecture
+
+#### 1. Control Plane Components:
+- **kube-apiserver:** Gateway exposing the Kubernetes API.
+- **etcd:** Distributed consistent key-value store holding cluster state.
+- **kube-scheduler:** Assigns unassigned Pods to worker nodes based on resource constraints.
+- **kube-controller-manager:** Runs controller processes (Node Controller, Replication Controller).
+
+#### 2. Worker Node Components:
+- **kubelet:** Agent ensuring containers declared in PodSpecs are running and healthy.
+- **kube-proxy:** Manages network rules and packet forwarding for Services.
+- **Container Runtime:** (containerd / CRI-O) pulls images and runs containers.`,
+      },
+    ],
+  },
+
+  // =========================================================================
+  // 12. MACHINE LEARNING & AI FOUNDATIONS
+  // =========================================================================
+  {
+    id: 'ml-ai',
+    title: 'Machine Learning & AI Foundations',
+    code: 'AI 401',
+    category: 'Data Science & AI',
+    instructor: 'Krish Naik & 3Blue1Brown',
+    icon: '🤖',
+    color: '#8B5CF6', // Purple
+    playlistId: 'PLZoTAELRMXVPBTrWtJkn3wWQxZkmTXGwe',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLZoTAELRMXVPBTrWtJkn3wWQxZkmTXGwe',
+    description:
+      'Mathematical foundations of ML and Deep Learning: Linear Regression, Cost Functions, Gradient Descent, Decision Trees, Entropy, and Neural Network Backpropagation.',
+    lecturesCount: 3,
+    totalDuration: '1 hr 20 mins',
+    keyTopics: [
+      'Supervised vs Unsupervised Learning & Overfitting',
+      'Linear Regression, Mean Squared Error (MSE) & Gradient Descent',
+      'Decision Trees, Shannon Entropy & Information Gain',
+      'Deep Learning: Neural Networks, Activation Functions & Backpropagation',
+    ],
+    lectures: [
+      {
+        id: 'ml-1',
+        lectureNumber: 1,
+        subjectId: 'ml-ai',
+        subjectName: 'Machine Learning & AI',
+        title: 'L1: Linear Regression & Gradient Descent Mathematics',
+        duration: '26:15',
+        videoId: '7uwa9aPbBRU',
+        topics: ['Hypothesis Function', 'Mean Squared Error (MSE)', 'Partial Derivatives', 'Learning Rate Alpha'],
+        difficulty: 'Beginner',
+        starterCodes: {
+          python: `# Gradient Descent from Scratch in Python
+def gradient_descent(x_vals, y_vals, lr=0.01, epochs=1000):
+    m, c = 0.0, 0.0 # Slope and intercept
+    n = len(x_vals)
+
+    for _ in range(epochs):
+        y_pred = [m * x + c for x in x_vals]
+        # Partial derivatives of MSE
+        dm = (-2 / n) * sum(x * (y - y_p) for x, y, y_p in zip(x_vals, y_vals, y_pred))
+        dc = (-2 / n) * sum(y - y_p for y, y_p in zip(y_vals, y_pred))
+        m -= lr * dm
+        c -= lr * dc
+
+    return m, c
+
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+slope, intercept = gradient_descent(x, y)
+print(f"Learned Equation: y = {slope:.2f}x + {intercept:.2f}")
+`,
+        },
+        detailedNotes: `### Lecture 1: Linear Regression & Gradient Descent
+
+#### 1. Hypothesis & Cost Function:
+\\[
+h_\\theta(x) = \\theta_0 + \\theta_1 x \\qquad J(\\theta_0, \\theta_1) = \\frac{1}{2m} \\sum_{i=1}^{m} (h_\\theta(x^{(i)}) - y^{(i)})^2
+\\]
+
+#### 2. Gradient Descent Update Rule:
+\\[
+\\theta_j := \\theta_j - \\alpha \\frac{\\partial}{\\partial \\theta_j} J(\\theta_0, \\theta_1)
+\\]
+Where \\(\\alpha\\) is the **learning rate**. Too large \\(\\implies\\) divergence. Too small \\(\\implies\\) slow convergence.`,
+      },
+      {
+        id: 'ml-2',
+        lectureNumber: 2,
+        subjectId: 'ml-ai',
+        subjectName: 'Machine Learning & AI',
+        title: 'L2: Decision Trees, Shannon Entropy & Information Gain',
+        duration: '24:40',
+        videoId: '1IQOtJ4NI_0',
+        topics: ['Shannon Entropy Formula', 'Information Gain', 'Gini Impurity', 'Pruning Decision Trees'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# Shannon Entropy & Information Gain in Python
+import math
+
+def entropy(probs):
+    return -sum(p * math.log2(p) for p in probs if p > 0)
+
+# Equal distribution (highest uncertainty): [0.5, 0.5]
+print("Entropy of fair coin [0.5, 0.5]:", entropy([0.5, 0.5]), "bits")
+# Pure distribution (zero uncertainty): [1.0, 0.0]
+print("Entropy of biased coin [1.0, 0.0]:", entropy([1.0, 0.0]), "bits")
+`,
+        },
+        detailedNotes: `### Lecture 2: Decision Trees & Information Theory
+
+#### 1. Shannon Entropy:
+Measures impurity / disorder in a dataset:
+\\[
+H(S) = - \\sum_{i=1}^{c} p_i \\log_2(p_i)
+\\]
+
+#### 2. Information Gain:
+Expected reduction in entropy when splitting on attribute \\(A\\):
+\\[
+\\text{Gain}(S, A) = H(S) - \\sum_{v \\in \\text{Values}(A)} \\frac{|S_v|}{|S|} H(S_v)
+\\]
+Decision tree algorithms (ID3, C4.5) choose the split that **maximizes Information Gain**.`,
+      },
+      {
+        id: 'ml-3',
+        lectureNumber: 3,
+        subjectId: 'ml-ai',
+        subjectName: 'Machine Learning & AI',
+        title: 'L3: Deep Learning: What is a Neural Network? (3Blue1Brown)',
+        duration: '19:12',
+        videoId: 'aircAruvnKk',
+        topics: ['Neurons & Activations', 'Weights and Biases', 'Sigmoid & ReLU Functions', 'Matrix Form of Layer Propagation'],
+        difficulty: 'Intermediate',
+        starterCodes: {
+          python: `# 2-Layer Neural Network Forward Propagation
+import math
+
+def relu(x): return max(0.0, x)
+def sigmoid(x): return 1.0 / (1.0 + math.exp(-x))
+
+# Simple neuron: a = sigma(w1*x1 + w2*x2 + b)
+w = [0.8, -0.5]
+x = [1.0, 2.0]
+bias = 0.1
+z = sum(wi * xi for wi, xi in zip(w, x)) + bias
+activation = sigmoid(z)
+print(f"Weighted sum z = {z:.3f}, Activation a = {activation:.3f}")
+`,
+        },
+        detailedNotes: `### Lecture 3: Neural Networks Architecture
+
+#### 1. Neuron Mathematical Operation:
+\\[
+a^{(l)} = \\sigma(W^{(l)} a^{(l-1)} + b^{(l)})
+\\]
+Where:
+- \\(a^{(l-1)}\\): Activation vector from the previous layer.
+- \\(W^{(l)}\\): Weight matrix connecting layers.
+- \\(b^{(l)}\\): Bias vector adjusting threshold.
+- \\(\\sigma\\): Non-linear activation function (ReLU, Sigmoid, Tanh, GELU).
+
+#### 2. Why Non-Linear Activations?
+Without non-linear activations, stacking multiple layers collapses mathematically into a single linear transformation: \\(W_2 (W_1 x) = (W_2 W_1) x = W' x\\). Non-linearity enables neural networks to approximate ANY arbitrary continuous function (**Universal Approximation Theorem**).`,
+      },
+    ],
+  },
 ];
 
 /**

@@ -115,7 +115,7 @@ export const VerticalSidebar: React.FC = () => {
     {
       label: 'Studios & Compilers',
       items: [
-        { id: 'lecture-studio', label: 'Lecture & VS Code Studio', icon: Video, badge: 'Vertical Panel', highlight: true },
+        { id: 'lecture-studio', label: 'Core CS Subjects & Studio', icon: Video, badge: '12 Subjects', highlight: true },
         { id: 'ide', label: 'Python 3 Studio IDE', icon: Code2, badge: 'VS Code' },
         { id: 'hightech', label: 'High-Tech Cyber Lab', icon: Cpu, badge: 'Wasm' },
         { id: 'visualizer', label: 'Algorithm Visualizer', icon: Compass, badge: '8 Modes' },

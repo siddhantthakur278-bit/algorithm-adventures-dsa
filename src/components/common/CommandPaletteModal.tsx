@@ -193,6 +193,72 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       },
     },
     {
+      id: 'tab-toc',
+      title: 'Theory of Computation (TOC / Automata) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Cpu,
+      badge: 'CS 401 • DFA, NFA, PDA, Turing',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-compiler',
+      title: 'Compiler Design (CD) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: BookOpen,
+      badge: 'CS 402 • Lexical, LL(1), LR(0)',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-discrete-math',
+      title: 'Discrete Mathematics (DM) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Calculator,
+      badge: 'CS 202 • Logic, Relations, Graphs',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-software-eng',
+      title: 'Software Engineering (SE) — Gate Smashers',
+      category: 'Core CS Subjects',
+      icon: Layers,
+      badge: 'CS 304 • SDLC, Agile Scrum, Testing',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-devops',
+      title: 'DevOps & Cloud Engineering — Kunal Kushwaha',
+      category: 'Core CS Subjects',
+      icon: Globe,
+      badge: 'Docker • Kubernetes • CI/CD',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
+      id: 'tab-ml-ai',
+      title: 'Machine Learning & AI Foundations — Krish Naik & 3B1B',
+      category: 'Core CS Subjects',
+      icon: Sparkles,
+      badge: 'AI 401 • Regression, Trees, Neural Nets',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
+      },
+    },
+    {
       id: 'tab-leaderboard',
       title: 'Global Algorithm Leaderboard & World Ranks',
       category: 'Navigation',
