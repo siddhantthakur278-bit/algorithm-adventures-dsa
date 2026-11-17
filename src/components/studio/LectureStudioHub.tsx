@@ -26,7 +26,9 @@ import {
   Upload,
   Swords,
   Award,
+  Zap,
 } from 'lucide-react';
+import { useCourse } from '../../context/CourseContext';
 import { SupportedLanguage, generateStarterCode } from '../../utils/languageTemplates';
 import {
   convertCppToPython,
@@ -156,6 +158,7 @@ const STORAGE_KEY_COMPLETED = 'ada_coder_army_completed_lectures';
 
 export type StudioTrack =
   | 'coder-army'
+  | 'dp-masterclass'
   | 'os'
   | 'dbms'
   | 'cn'
@@ -172,11 +175,14 @@ export type StudioTrack =
   | 'custom';
 
 export const LectureStudioHub: React.FC = () => {
+  const { triggerBurst, addXP } = useCourse();
+
   // Track Selection: Core DSA, Academic Subjects, Curated, or Custom
   const [selectedTrack, setSelectedTrack] = useState<StudioTrack>('coder-army');
 
   // Active Lecture Tracking per Subject
   const [activeSubjectLectureIds, setActiveSubjectLectureIds] = useState<Record<string, string>>({
+    'dp-masterclass': 'dp-1',
     os: 'os-1',
     dbms: 'dbms-1',
     cn: 'cn-1',
@@ -207,7 +213,7 @@ export const LectureStudioHub: React.FC = () => {
   // Studio Layout Modes
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
   const [splitRatio, setSplitRatio] = useState<'balanced' | 'video-large' | 'code-large'>('balanced');
-  const [isSyllabusDrawerOpen, setIsSyllabusDrawerOpen] = useState<boolean>(false);
+  const [isSyllabusDrawerOpen, setIsSyllabusDrawerOpen] = useState<boolean>(true);
 
   // Editor / Interpreter / Debugger State
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('cpp');
@@ -473,7 +479,7 @@ export const LectureStudioHub: React.FC = () => {
     }
   };
 
-  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<'all' | 'systems' | 'design' | 'theory' | 'modern'>('all');
+  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<'all' | 'dsa' | 'systems' | 'design' | 'theory' | 'modern'>('all');
 
   const ALL_STUDIO_TRACKS: {
     id: StudioTrack;
@@ -483,7 +489,8 @@ export const LectureStudioHub: React.FC = () => {
     desc: string;
     category: 'dsa' | 'systems' | 'design' | 'theory' | 'modern' | 'misc';
   }[] = [
-    { id: 'coder-army', label: 'Coder Army (DSA)', icon: '⚔️', badge: '100+ Qs', desc: 'Rohit Negi Complete DSA Curriculum', category: 'dsa' },
+    { id: 'coder-army', label: 'Coder Army (DSA)', icon: '⚔️', badge: '78 Ls', desc: 'Rohit Negi Complete DSA Curriculum with DP', category: 'dsa' },
+    { id: 'dp-masterclass', label: 'Dynamic Programming (DP)', icon: '🧩', badge: 'Hot 🔥', desc: "Striver's Take U Forward 56-Video DP Masterclass", category: 'dsa' },
     { id: 'os', label: 'Operating Systems', icon: '💻', badge: 'Gate Smashers', desc: 'Processes, Memory, Paging, Semaphores', category: 'systems' },
     { id: 'dbms', label: 'DBMS & SQL', icon: '🗄️', badge: 'Gate Smashers', desc: 'ER, Normalization, ACID, 2PL, B+ Trees', category: 'systems' },
     { id: 'cn', label: 'Computer Networks', icon: '🌐', badge: 'Gate Smashers', desc: 'OSI 7-Layer, Subnetting, TCP Handshake, ARQ', category: 'systems' },
@@ -502,7 +509,8 @@ export const LectureStudioHub: React.FC = () => {
 
   const visibleStudioTracks = ALL_STUDIO_TRACKS.filter((t) => {
     if (subjectCategoryFilter === 'all') return true;
-    if (subjectCategoryFilter === 'systems') return t.category === 'systems' || t.category === 'dsa';
+    if (subjectCategoryFilter === 'dsa') return t.category === 'dsa';
+    if (subjectCategoryFilter === 'systems') return t.category === 'systems';
     if (subjectCategoryFilter === 'design') return t.category === 'design';
     if (subjectCategoryFilter === 'theory') return t.category === 'theory';
     if (subjectCategoryFilter === 'modern') return t.category === 'modern';
@@ -559,6 +567,23 @@ export const LectureStudioHub: React.FC = () => {
 
         {/* Right: Layout Switcher & Proportions */}
         <div className="flex items-center gap-2">
+          {/* Quick Jump: Dynamic Programming (DP) */}
+          <button
+            onClick={() => {
+              sound.playPop();
+              setSelectedTrack('dp-masterclass');
+              setSelectedModuleId('mod-17');
+              if (triggerBurst) {
+                triggerBurst('🧩 DP Masterclass Activated!', "Opened Striver's Take U Forward DP curriculum & 16 patterns!", 'zap');
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-purple-500/20 hover:from-amber-500/30 hover:to-purple-500/30 text-amber-300 hover:text-white border border-amber-400/40 hover:border-amber-400/70 transition-all cursor-pointer text-xs font-bold shadow-sm"
+            title="Jump directly to complete Dynamic Programming (DP) Masterclass"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+            <span className="whitespace-nowrap">⚡ Quick Jump: Dynamic Programming (DP)</span>
+          </button>
+
           {/* Orientation Toggle */}
           <div className="flex items-center gap-1 p-1 bg-white/[0.04] rounded-xl border border-white/10 text-xs font-semibold">
             <button
@@ -644,7 +669,8 @@ export const LectureStudioHub: React.FC = () => {
             Tracks:
           </span>
           {[
-            { id: 'all', label: 'All Subjects (15)' },
+            { id: 'all', label: 'All Tracks (16)' },
+            { id: 'dsa', label: '⚔️ DSA & Dynamic Programming' },
             { id: 'systems', label: '💻 Core Systems (OS, DBMS, CN, COA)' },
             { id: 'design', label: '🏗️ System Design & LLD' },
             { id: 'theory', label: '⚙️ Theory of Computation & Compiler' },
@@ -973,12 +999,16 @@ export const LectureStudioHub: React.FC = () => {
                         const target = CODER_ARMY_LECTURES.find((l) => l.id === e.target.value);
                         if (target) handleSelectCoderArmyLecture(target);
                       }}
-                      className="bg-[#0b0e1b] text-slate-200 border border-white/15 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-400 font-mono cursor-pointer max-w-[220px] truncate"
+                      className="bg-[#0b0e1b] text-slate-200 border border-white/15 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-400 font-mono cursor-pointer max-w-[240px] truncate"
                     >
-                      {CODER_ARMY_LECTURES.map((lec) => (
-                        <option key={lec.id} value={lec.id}>
-                          L{lec.lectureNumber}: {lec.title.split(':')[1]?.trim() || lec.title} ({lec.duration})
-                        </option>
+                      {CODER_ARMY_MODULES.map((mod) => (
+                        <optgroup key={mod.id} label={`${mod.title} (${mod.lecturesCount})`}>
+                          {CODER_ARMY_LECTURES.filter((l) => l.moduleId === mod.id).map((lec) => (
+                            <option key={lec.id} value={lec.id}>
+                              L{lec.lectureNumber}: {lec.title.split(':')[1]?.trim() || lec.title} ({lec.duration})
+                            </option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                   </div>
