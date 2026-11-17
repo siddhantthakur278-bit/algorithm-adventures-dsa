@@ -44,7 +44,6 @@ import {
   Award,
 } from 'lucide-react';
 import { Problem, Difficulty } from '../../types';
-import { GlossyStudioHero } from './GlossyStudioHero';
 
 // Company pill styling helper
 const getCompanyBadgeClass = (company: string): string => {
@@ -390,10 +389,7 @@ export const ProblemLibraryHub: React.FC = () => {
 
   return (
     <div className="min-h-screen text-slate-100 p-3 sm:p-5 md:p-7 space-y-6">
-      {/* 1. Flagship Glossy Studio Interactive Preview */}
-      <GlossyStudioHero />
-
-      {/* 2. Header & Live Stats Banner */}
+      {/* 1. Header & Live Stats Banner */}
       <div className="relative overflow-hidden rounded-2xl glass p-6 md:p-8 shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none -mb-20" />

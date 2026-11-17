@@ -352,10 +352,11 @@ const FooterContent: React.FC = () => {
 };
 
 export const AppContent: React.FC = () => {
-  const { layoutMode, isSidebarCollapsed, setIsSidebarCollapsed } = useCourse();
+  const { layoutMode, isSidebarCollapsed, setIsSidebarCollapsed, activeTab } = useCourse();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => !isProfileSetupComplete());
   const [isResetJourneyModalOpen, setIsResetJourneyModalOpen] = useState(false);
+  const [showMasterClock, setShowMasterClock] = useState(false);
 
   useEffect(() => {
     applyTheme(getStoredTheme());
@@ -379,21 +380,31 @@ export const AppContent: React.FC = () => {
       setIsResetJourneyModalOpen(true);
     };
 
+    const handleToggleMasterClock = () => {
+      setShowMasterClock((prev) => !prev);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('open-command-palette', handleCustomOpen);
     window.addEventListener('open-reset-journey', handleOpenResetJourney);
+    window.addEventListener('toggle-master-clock', handleToggleMasterClock);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-command-palette', handleCustomOpen);
       window.removeEventListener('open-reset-journey', handleOpenResetJourney);
+      window.removeEventListener('toggle-master-clock', handleToggleMasterClock);
     };
   }, [setIsSidebarCollapsed]);
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#f8fafc] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black relative">
-      {/* Real-Time Live Telemetry Bar */}
-      <RealTimeStatusBar />
+    <div className="min-h-screen bg-[radial-gradient(120%_90%_at_15%_0%,#161036_0%,#090a16_55%,#05060d_100%)] text-[#f8fafc] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black relative overflow-x-hidden">
+      {/* Ambient Glowing Orbs Background (from Glossy UI Specification) */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="orb o1" />
+        <div className="orb o2" />
+        <div className="orb o3" />
+      </div>
 
       {layoutMode === 'vertical-panel' ? (
         <>
@@ -402,18 +413,23 @@ export const AppContent: React.FC = () => {
 
           {/* Main Frame offset by Vertical Sidebar on lg+ screens */}
           <div
-            className={`flex-1 flex flex-col transition-all duration-300 ${
+            className={`flex-1 flex flex-col transition-all duration-300 relative z-10 ${
               isSidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
             }`}
           >
             {/* Top Header Bar */}
             <TopHeaderBar />
 
-            {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
-            <MasterClockHud />
+            {/* Master Live Clock, Full Dates & Cohort Timeline Matrix (Toggleable or active in Quest) */}
+            {(showMasterClock || activeTab === 'quest') && (
+              <MasterClockHud />
+            )}
 
             {/* Dynamic Tab Router */}
             <MainContent />
+
+            {/* Real-Time Live Telemetry Bar */}
+            <RealTimeStatusBar />
 
             {/* Dynamic Comic Footer */}
             <FooterContent />
@@ -425,10 +441,15 @@ export const AppContent: React.FC = () => {
           <Navbar />
 
           {/* Master Live Clock, Full Dates & Cohort Timeline Matrix */}
-          <MasterClockHud />
+          {(showMasterClock || activeTab === 'quest') && (
+            <MasterClockHud />
+          )}
 
           {/* Dynamic Tab Router */}
           <MainContent />
+
+          {/* Real-Time Live Telemetry Bar */}
+          <RealTimeStatusBar />
 
           {/* Dynamic Comic Footer */}
           <FooterContent />

@@ -7,6 +7,7 @@ import {
   Search,
   MessagesSquare,
   Palette,
+  Clock,
 } from 'lucide-react';
 import { NotificationBell } from '../common/NotificationBell';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
@@ -94,8 +95,8 @@ export const TopHeaderBar: React.FC = () => {
         <span className="hidden sm:inline">Algorithm Adventures</span>
       </div>
 
-      {/* 4. Glossy Quick Tabs Bar (Only on ultra-wide viewports to guarantee zero collision) */}
-      <div className="hidden min-[1720px]:flex items-center shrink-0">
+      {/* 4. Glossy Quick Tabs Bar (Responsive: visible on desktop/laptop viewports) */}
+      <div className="hidden lg:flex items-center shrink-0">
         <div className="tabs">
           <button
             onClick={() => setActiveTab('problems')}
@@ -126,6 +127,18 @@ export const TopHeaderBar: React.FC = () => {
             className={activeTab === 'duel' ? 'on' : ''}
           >
             Duel
+          </button>
+          <button
+            onClick={() => setActiveTab('interview')}
+            className={activeTab === 'interview' ? 'on' : ''}
+          >
+            Interview
+          </button>
+          <button
+            onClick={() => setActiveTab('leaderboard')}
+            className={activeTab === 'leaderboard' ? 'on' : ''}
+          >
+            Leaderboard
           </button>
         </div>
       </div>
@@ -175,15 +188,28 @@ export const TopHeaderBar: React.FC = () => {
 
       {/* 8. Streak Flame Badge */}
       <div
-        className="stat hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-400 font-bold text-xs shrink-0"
+        className="stat hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-400 font-bold text-xs shrink-0"
         title={`Active Streak: ${realStreak.currentStreak} consecutive days`}
       >
         <span>🔥</span>
         <span className="font-mono">{realStreak.currentStreak} days</span>
       </div>
 
-      {/* 9. Shimmering XP Bar with Ambient Sweep */}
-      <div className="hidden 2xl:flex items-center gap-2 text-xs font-bold font-mono shrink-0">
+      {/* 9. Master Clock & Cohort Timeline Quick Toggle */}
+      <button
+        onClick={() => {
+          sound.playPop();
+          window.dispatchEvent(new CustomEvent('toggle-master-clock'));
+        }}
+        className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-slate-300 hover:text-white text-xs font-mono font-semibold transition cursor-pointer shrink-0"
+        title="Toggle Master Clock & Cohort Matrix"
+      >
+        <Clock className="w-3.5 h-3.5 text-sky-400" />
+        <span className="hidden xl:inline">Timeline</span>
+      </button>
+
+      {/* 10. Shimmering XP Bar with Ambient Sweep */}
+      <div className="hidden xl:flex items-center gap-2 text-xs font-bold font-mono shrink-0">
         <div className="xp" title={`Level ${stats.level} Progress: ${progressPercent}%`}>
           <b style={{ width: `${progressPercent}%` }} />
         </div>
@@ -192,12 +218,12 @@ export const TopHeaderBar: React.FC = () => {
         </div>
       </div>
 
-      {/* 10. Live Notification Bell */}
+      {/* 11. Live Notification Bell */}
       <div className="shrink-0">
         <NotificationBell />
       </div>
 
-      {/* 11. Quick Community Chat Trigger */}
+      {/* 12. Quick Community Chat Trigger */}
       <button
         onClick={() => setActiveTab('chat')}
         className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-full border transition cursor-pointer text-xs font-semibold shrink-0 flex items-center gap-1.5 ${
@@ -211,12 +237,12 @@ export const TopHeaderBar: React.FC = () => {
         <span className="hidden 2xl:inline">Voice Chat</span>
       </button>
 
-      {/* 12. LoFi Radio Widget Dropdown Pill */}
+      {/* 13. LoFi Radio Widget Dropdown Pill */}
       <div className="hidden xl:block shrink-0">
         <LoFiRadioWidget />
       </div>
 
-      {/* 13. User Human Avatar Button */}
+      {/* 14. User Human Avatar Button */}
       <button
         onClick={() => setShowOnboardingModal(true)}
         className="p-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-xs transition cursor-pointer shadow-sm group shrink-0 flex items-center"

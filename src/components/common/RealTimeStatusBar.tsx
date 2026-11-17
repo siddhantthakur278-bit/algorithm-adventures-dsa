@@ -70,7 +70,7 @@ export const RealTimeStatusBar: React.FC = () => {
   };
 
   return (
-    <aside aria-label="Live Telemetry Bar" className="bg-[#05070d] border-b border-[#1b2236] text-[11px] text-slate-300 select-none">
+    <aside aria-label="Live Telemetry Bar" className="bg-[#05070d]/90 backdrop-blur-md border-t border-[#1b2236]/80 text-[11px] text-slate-300 select-none">
       <div className="max-w-7xl mx-auto px-3 py-1.5 flex flex-wrap items-center justify-between gap-2">
         {/* Left: Engine Health, Ping & WebAssembly */}
         <div className="flex items-center gap-3">

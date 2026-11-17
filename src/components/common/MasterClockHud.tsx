@@ -16,6 +16,7 @@ import {
   Lock,
   Unlock,
   SlidersHorizontal,
+  X,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { realTimeEngine, RealTimeEngineState } from '../../utils/realTimeEngine';
@@ -235,6 +236,18 @@ export const MasterClockHud: React.FC<MasterClockHudProps> = ({ variant = 'banne
               <Calendar className="w-3 h-3 text-amber-400" />
               <span>Timeline Matrix</span>
               {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+
+            <button
+              onClick={() => {
+                sound.playPop();
+                window.dispatchEvent(new CustomEvent('toggle-master-clock'));
+                if (onClose) onClose();
+              }}
+              className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition cursor-pointer"
+              title="Close Timeline Banner"
+            >
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
