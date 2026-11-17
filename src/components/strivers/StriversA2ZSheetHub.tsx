@@ -968,6 +968,7 @@ export const StriversA2ZSheetHub: React.FC = () => {
             {/* Editor Body */}
             <div className="flex-1 min-h-0 overflow-hidden">
               <UniversalVSCodeEditor
+                key={`${activeCodeQuestion.id}-${codeLanguage}`}
                 language={codeLanguage}
                 onLanguageChange={setCodeLanguage}
                 problemTitle={activeCodeQuestion.title}

@@ -214,6 +214,7 @@ export const LectureStudioHub: React.FC = () => {
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
   const [splitRatio, setSplitRatio] = useState<'balanced' | 'video-large' | 'code-large'>('balanced');
   const [isSyllabusDrawerOpen, setIsSyllabusDrawerOpen] = useState<boolean>(true);
+  const [isTheatreMode, setIsTheatreMode] = useState<boolean>(false);
 
   // Editor / Interpreter / Debugger State
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('cpp');
@@ -382,6 +383,26 @@ export const LectureStudioHub: React.FC = () => {
     }
   };
 
+  // Global Keyboard Shortcuts: [ and ] for Navigation, T for Theatre, \ for Syllabus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.key === '[') {
+        handlePrevLecture();
+      } else if (e.key === ']') {
+        handleNextLecture();
+      } else if (e.key === 't' || e.key === 'T') {
+        setIsTheatreMode((prev) => !prev);
+        sound.playPop();
+      } else if (e.key === '\\') {
+        setIsSyllabusDrawerOpen((prev) => !prev);
+        sound.playPop();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, currentSubjIndex, currentAcademicSubject]);
+
   // Custom Video ID Extractor
   const handleLoadCustomVideo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -454,6 +475,7 @@ export const LectureStudioHub: React.FC = () => {
 
   // Split width classes
   const getVideoWidthClass = () => {
+    if (isTheatreMode) return 'w-full';
     if (layoutMode === 'vertical') return 'w-full';
     switch (splitRatio) {
       case 'video-large':
@@ -467,6 +489,7 @@ export const LectureStudioHub: React.FC = () => {
   };
 
   const getCodeWidthClass = () => {
+    if (isTheatreMode) return 'w-full';
     if (layoutMode === 'vertical') return 'w-full';
     switch (splitRatio) {
       case 'video-large':
@@ -1016,6 +1039,23 @@ export const LectureStudioHub: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                {/* Theatre Mode Toggle */}
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    setIsTheatreMode(!isTheatreMode);
+                  }}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer ${
+                    isTheatreMode
+                      ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold shadow-sm'
+                      : 'bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 hover:text-white border-white/10'
+                  }`}
+                  title={isTheatreMode ? 'Exit Theatre Mode (T)' : 'Theatre Mode Full-Width (T)'}
+                >
+                  {isTheatreMode ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+                  <span>{isTheatreMode ? 'Exit Theatre' : 'Theatre'}</span>
+                </button>
+
                 {/* Watch on YouTube button */}
                 <a
                   href={`https://www.youtube.com/watch?v=${activeVideoId}&list=${activePlaylistId}`}

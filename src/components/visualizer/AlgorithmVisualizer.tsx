@@ -5,10 +5,19 @@ import { ByteAvatar, ProfessorAvatar, ComicBubble } from '../characters/Characte
 import { sound } from '../../utils/soundEffects';
 import { InteractiveGraphStudio } from './InteractiveGraphStudio';
 import { MemoryLayoutVisualizer } from './MemoryLayoutVisualizer';
+import { DynamicProgrammingVisualizer } from './DynamicProgrammingVisualizer';
 
 export const AlgorithmVisualizer: React.FC = () => {
   const [activeMode, setActiveMode] = useState<
-    'lomuto' | 'bst' | 'heap' | 'slidingWindow' | 'mergeSort' | 'dijkstra' | 'interactiveGraph' | 'memoryLayout'
+    | 'lomuto'
+    | 'bst'
+    | 'heap'
+    | 'slidingWindow'
+    | 'mergeSort'
+    | 'dijkstra'
+    | 'interactiveGraph'
+    | 'memoryLayout'
+    | 'dynamicProgramming'
   >('lomuto');
 
   // --- LOMUTO PARTITION STATE ---
@@ -386,6 +395,20 @@ export const AlgorithmVisualizer: React.FC = () => {
             >
               <Cpu className="w-3.5 h-3.5" />
               8. RAM Stack vs Heap Pointer Sandbox
+            </button>
+            <button
+              onClick={() => {
+                setActiveMode('dynamicProgramming');
+                sound.playPop();
+              }}
+              className={`px-4 py-2 rounded-xl font-bangers text-xs tracking-wider border-2 transition flex items-center gap-1.5 ${
+                activeMode === 'dynamicProgramming'
+                  ? 'bg-purple-500 text-white border-black shadow-comic-sm font-black'
+                  : 'bg-[#13182b] text-slate-300 border-[#222c48] hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              9. Dynamic Programming 2D Table Matrix
             </button>
           </div>
         </div>
@@ -1404,6 +1427,9 @@ export const AlgorithmVisualizer: React.FC = () => {
 
       {/* 8. RAM STACK VS HEAP POINTER SANDBOX */}
       {activeMode === 'memoryLayout' && <MemoryLayoutVisualizer />}
+
+      {/* 9. DYNAMIC PROGRAMMING 2D TABLE MATRIX & RECURRENCE STUDIO */}
+      {activeMode === 'dynamicProgramming' && <DynamicProgrammingVisualizer />}
     </div>
   );
 };

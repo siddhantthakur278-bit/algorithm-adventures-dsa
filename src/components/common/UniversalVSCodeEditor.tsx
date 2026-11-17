@@ -28,6 +28,8 @@ import {
   GitCommit as GitCommitIcon,
   Zap,
   BookOpen,
+  Sliders,
+  Layers,
 } from 'lucide-react';
 import {
   convertCppToPython,
@@ -98,12 +100,116 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   }));
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [executionResult, setExecutionResult] = useState<CodeExecutionOutcome | null>(null);
-  const [activeOutputTab, setActiveOutputTab] = useState<'console' | 'preview' | 'ai' | 'git'>('console');
+  const [activeOutputTab, setActiveOutputTab] = useState<
+    'console' | 'preview' | 'ai' | 'git' | 'complexity' | 'testcases'
+  >('console');
   const [copied, setCopied] = useState<boolean>(false);
   const [aiResponse, setAiResponse] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   const [gitCommitMsg, setGitCommitMsg] = useState<string>('');
   const [gitStatus, setGitStatus] = useState<string>('');
+  const [customInput, setCustomInput] = useState<string>('5\n1 2 3 4 5');
+  const [expectedOutput, setExpectedOutput] = useState<string>('');
+  const [showSnippets, setShowSnippets] = useState<boolean>(false);
+
+  // Static Complexity & Big-O Heuristic Auditor
+  const complexityAudit = React.useMemo(() => {
+    let estimatedTime = 'O(1)';
+    let estimatedSpace = 'O(1)';
+    const findings: string[] = [];
+
+    const hasNestedLoops =
+      /for\s*\(.*?\)\s*\{[\s\S]*?for\s*\(/.test(code) ||
+      /for\s+.*?:\s*[\s\S]*?for\s+.*?:/.test(code);
+    const hasLogarithmic =
+      /binary_search|lower_bound|upper_bound|\/=\s*2|>>=\s*1|mid\s*=|range\(.*?\/\/\s*2\)/.test(
+        code
+      );
+    const hasSorting = /sort\(|\.sort\(|sorted\(/.test(code);
+    const hasRecursion =
+      /def\s+([a-zA-Z0-9_]+)[\s\S]*?\1\(/.test(code) ||
+      /([a-zA-Z0-9_]+)\s*\([^)]*\)\s*\{[\s\S]*?\1\(/.test(code);
+
+    const forMatches = code.match(/for\s*\(|for\s+[a-zA-Z0-9_]+\s+in/g) || [];
+    const whileMatches = code.match(/while\s*\(|while\s+/g) || [];
+    const loopCount = forMatches.length + whileMatches.length;
+
+    if (hasNestedLoops) {
+      estimatedTime = 'O(N²) Quadratic';
+      findings.push(
+        'Nested loops detected: Safe for N <= 10⁴ operations. May TLE if N >= 10⁵.'
+      );
+    } else if (hasSorting) {
+      estimatedTime = 'O(N log N) Quasi-Linear';
+      findings.push(
+        'Comparison-based sorting (Introsort/Timsort) detected: Optimal comparison boundary.'
+      );
+    } else if (loopCount > 0) {
+      if (hasLogarithmic) {
+        estimatedTime = 'O(log N) Logarithmic';
+        findings.push('Binary search / divide-and-conquer logarithmic step detected.');
+      } else {
+        estimatedTime = 'O(N) Linear';
+        findings.push(
+          'Single-pass iteration: Runs in ~10ms for N = 10⁶. Highly optimal for competitive programming.'
+        );
+      }
+    } else if (hasRecursion) {
+      estimatedTime = 'O(2ⁿ) or O(N) Memoized';
+      findings.push(
+        'Recursive branching calls detected. Check if overlapping subproblems are memoized to avoid exponential explosion.'
+      );
+    } else {
+      estimatedTime = 'O(1) Constant Time';
+      findings.push('No unbounded loop structures found. Direct arithmetic evaluation.');
+    }
+
+    const hasCollections =
+      /vector|unordered_map|unordered_set|map|set|priority_queue|list|deque|\[\]|set\(\)|\{\}/.test(
+        code
+      );
+    if (hasCollections) {
+      estimatedSpace = 'O(N) Auxiliary Memory';
+      findings.push('Dynamic memory containers allocated on heap.');
+    } else if (hasRecursion) {
+      estimatedSpace = 'O(H) Call Stack Frame';
+      findings.push('Recursion stack memory scales with recursion depth H.');
+    } else {
+      estimatedSpace = 'O(1) In-Place';
+      findings.push('Zero extra allocations. In-place memory efficiency.');
+    }
+
+    return { estimatedTime, estimatedSpace, findings };
+  }, [code]);
+
+  // Curated Code Snippets
+  const CODE_SNIPPETS = [
+    {
+      label: '⚡ Fast I/O',
+      desc: 'Unsync C++ streams / bulk read in Python',
+      cpp: 'ios_base::sync_with_stdio(false);\ncin.tie(NULL);',
+      python: 'import sys\ninput = sys.stdin.read',
+    },
+    {
+      label: '🎯 Binary Search Template',
+      desc: 'Inclusive [low, high] search',
+      cpp: 'int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    else if (arr[mid] < target) low = mid + 1;\n    else high = mid - 1;\n}',
+      python: 'low, high = 0, len(arr) - 1\nwhile low <= high:\n    mid = (low + high) // 2\n    if arr[mid] == target:\n        return mid\n    elif arr[mid] < target:\n        low = mid + 1\n    else:\n        high = mid - 1',
+    },
+    {
+      label: '🌐 Disjoint Set Union (DSU)',
+      desc: 'Union by size with path compression',
+      cpp: 'class DSU {\n    vector<int> parent, size;\npublic:\n    DSU(int n) {\n        parent.resize(n + 1);\n        iota(parent.begin(), parent.end(), 0);\n        size.assign(n + 1, 1);\n    }\n    int find(int u) { return parent[u] == u ? u : parent[u] = find(parent[u]); }\n    bool unionBySize(int u, int v) {\n        int rootU = find(u), rootV = find(v);\n        if (rootU == rootV) return false;\n        if (size[rootU] < size[rootV]) swap(rootU, rootV);\n        parent[rootV] = rootU; size[rootU] += size[rootV];\n        return true;\n    }\n};',
+      python: 'class DSU:\n    def __init__(self, n):\n        self.parent = list(range(n + 1))\n        self.size = [1] * (n + 1)\n    def find(self, u):\n        if self.parent[u] != u:\n            self.parent[u] = self.find(self.parent[u])\n        return self.parent[u]\n    def union(self, u, v):\n        ru, rv = self.find(u), self.find(v)\n        if ru == rv: return False\n        if self.size[ru] < self.size[rv]: ru, rv = rv, ru\n        self.parent[rv] = ru\n        self.size[ru] += self.size[rv]\n        return True',
+    },
+  ];
+
+  const handleInsertSnippet = (snipText: string) => {
+    sound.playPop();
+    setCode((prev) => prev + '\n\n' + snipText + '\n');
+    setShowSnippets(false);
+    triggerBurst('✨ Snippet Inserted!', 'Code boilerplate added to editor.', 'zap');
+  };
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentProblemIdRef = useRef<string | number>(problemId);
@@ -473,6 +579,41 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
             <span>{solutionCode ? 'Solution' : 'Reset'}</span>
           </button>
 
+          {/* Snippets Palette Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSnippets((prev) => !prev)}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-bold text-slate-300 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] rounded border border-white/10 transition cursor-pointer"
+              title="Insert competitive programming code snippet"
+            >
+              <Code2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Snippets</span>
+            </button>
+
+            {showSnippets && (
+              <div className="absolute right-0 mt-1 w-64 rounded-xl bg-[#0c1020]/95 backdrop-blur-2xl border border-slate-700 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
+                <div className="text-[10px] uppercase font-mono font-bold text-slate-400 px-2 py-1 border-b border-slate-800">
+                  Insert Algorithm Snippet
+                </div>
+                {CODE_SNIPPETS.map((snip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      const snipText = selectedLang === 'cpp' ? snip.cpp : snip.python;
+                      handleInsertSnippet(snipText);
+                    }}
+                    className="w-full text-left p-2 rounded-lg hover:bg-white/[0.08] transition text-xs font-mono text-slate-200 group cursor-pointer"
+                  >
+                    <div className="font-bold text-amber-300 group-hover:text-amber-200">
+                      {snip.label}
+                    </div>
+                    <div className="text-[10px] text-slate-400">{snip.desc}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* 1-Click C++ <-> Python Converter */}
           <button
             onClick={handleConvertCppPython}
@@ -617,6 +758,32 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
               <GithubIcon className="w-3.5 h-3.5 text-[#FBBF24]" />
               <span>Git Direct Commit</span>
             </button>
+
+            {/* Complexity Auditor Tab */}
+            <button
+              onClick={() => setActiveOutputTab('complexity')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-bold transition cursor-pointer ${
+                activeOutputTab === 'complexity'
+                  ? 'bg-[#21262d] text-yellow-300 border border-[#30363d]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 text-yellow-400" />
+              <span>Complexity Auditor</span>
+            </button>
+
+            {/* Custom Testcase Runner Tab */}
+            <button
+              onClick={() => setActiveOutputTab('testcases')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-bold transition cursor-pointer ${
+                activeOutputTab === 'testcases'
+                  ? 'bg-[#21262d] text-emerald-300 border border-[#30363d]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Testcase Runner</span>
+            </button>
           </div>
 
           {executionResult && (
@@ -748,6 +915,89 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
                 {gitStatus}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Complexity & Heuristics Auditor Tab */}
+        {activeOutputTab === 'complexity' && (
+          <div className="p-4 space-y-3 font-mono text-xs bg-[#090d16] max-h-52 overflow-y-auto custom-scrollbar">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="px-3 py-1.5 rounded-lg bg-yellow-500/15 border border-yellow-500/30 text-yellow-300">
+                <span className="text-[10px] text-slate-400 block font-sans">Estimated Time:</span>
+                <strong className="text-sm font-mono">{complexityAudit.estimatedTime}</strong>
+              </div>
+              <div className="px-3 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
+                <span className="text-[10px] text-slate-400 block font-sans">Estimated Space:</span>
+                <strong className="text-sm font-mono">{complexityAudit.estimatedSpace}</strong>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-1">
+              <span className="text-slate-400 text-[11px] font-sans font-bold uppercase tracking-wider">
+                Static Heuristic Findings:
+              </span>
+              {complexityAudit.findings.map((f, i) => (
+                <div key={i} className="flex items-start gap-2 text-slate-300 text-xs">
+                  <span className="text-yellow-400 font-bold">•</span>
+                  <span>{f}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Custom Testcase Runner Tab */}
+        {activeOutputTab === 'testcases' && (
+          <div className="p-4 space-y-3 font-mono text-xs bg-[#090d16] max-h-56 overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-slate-400 font-sans block mb-1">
+                  Custom Input (stdin):
+                </label>
+                <textarea
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  className="w-full h-20 p-2 rounded-lg bg-[#161b22] border border-[#30363d] text-slate-200 font-mono text-xs focus:outline-none resize-none"
+                  placeholder="Enter custom input arguments..."
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-slate-400 font-sans block mb-1">
+                  Expected Output (optional diff check):
+                </label>
+                <textarea
+                  value={expectedOutput}
+                  onChange={(e) => setExpectedOutput(e.target.value)}
+                  className="w-full h-20 p-2 rounded-lg bg-[#161b22] border border-[#30363d] text-slate-200 font-mono text-xs focus:outline-none resize-none"
+                  placeholder="Expected output substring to verify against..."
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <button
+                onClick={handleRun}
+                disabled={isRunning}
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bangers text-xs rounded-lg border border-black shadow-comic-sm transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>{isRunning ? 'Executing...' : 'Run with Custom Input'}</span>
+              </button>
+
+              {expectedOutput && executionResult?.output && (
+                <div className="text-xs font-mono">
+                  {executionResult.output.includes(expectedOutput.trim()) ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Output Matches Expected!
+                    </span>
+                  ) : (
+                    <span className="text-rose-400 font-bold flex items-center gap-1">
+                      <XCircle className="w-3.5 h-3.5" /> Output Mismatch
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -22,6 +22,7 @@ import {
   HelpCircle,
   Maximize2,
   Minimize2,
+  Download,
 } from 'lucide-react';
 import { SupportedLanguage } from '../../utils/languageTemplates';
 import { LanguageSelectorDropdown } from '../common/LanguageSelectorDropdown';
@@ -573,18 +574,39 @@ export const DebuggerSidePanel: React.FC<DebuggerSidePanelProps> = ({
                   Rohit Negi Coder Army Study Blueprint
                 </span>
               </div>
-              <button
-                onClick={() => {
-                  sound.playPop();
-                  navigator.clipboard.writeText(lectureNotes);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 border border-white/10 text-xs transition cursor-pointer"
-              >
-                {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                <span>{copied ? 'Copied' : 'Copy Notes'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    const blob = new Blob([`# ${lectureTitle}\n\n${lectureNotes}`], {
+                      type: 'text/markdown;charset=utf-8;',
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `${lectureTitle.replace(/[^a-zA-Z0-9_-]/g, '_')}_notes.md`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 border border-white/10 text-xs transition cursor-pointer"
+                  title="Export notes as Markdown file"
+                >
+                  <Download className="w-3 h-3 text-cyan-400" />
+                  <span>Export .md</span>
+                </button>
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    navigator.clipboard.writeText(lectureNotes);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 border border-white/10 text-xs transition cursor-pointer"
+                >
+                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
             </div>
 
             <div className="prose prose-invert prose-xs max-w-none space-y-3 leading-relaxed whitespace-pre-line font-mono text-[11px]">
