@@ -106,14 +106,44 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   const [gitStatus, setGitStatus] = useState<string>('');
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const currentProblemIdRef = useRef<string | number>(problemId);
 
-  // Sync when starterCode or language prop changes
+  // Sync when problemId changes (user navigated to a different problem)
   useEffect(() => {
-    setSelectedLang(language);
-    const resolved = getResolvedInitialCode(language, starterCode);
-    setCode(resolved);
-    setCodeByLang((prev) => ({ ...prev, [language]: resolved }));
-  }, [language, starterCode, problemTitle]);
+    if (currentProblemIdRef.current !== problemId) {
+      currentProblemIdRef.current = problemId;
+      setSelectedLang(language);
+      const resolved = getResolvedInitialCode(language, starterCode);
+      setCode(resolved);
+      setCodeByLang({ [language]: resolved });
+    }
+  }, [problemId, language, starterCode, problemTitle]);
+
+  // Sync when parent externally changes the language prop
+  useEffect(() => {
+    if (language !== selectedLang) {
+      handleLanguageChange(language);
+    }
+  }, [language]);
+
+  // Active self-healing guard: ensure code syntax and compiler language are 100% synchronized
+  useEffect(() => {
+    if (!code || !code.trim()) return;
+    const detected = detectCodeLanguage(code);
+    if (selectedLang === 'python' && detected === 'cpp') {
+      const converted = convertCppToPython(code, problemTitle);
+      if (converted && converted.trim()) {
+        setCode(converted);
+        setCodeByLang((prev) => ({ ...prev, python: converted }));
+      }
+    } else if (selectedLang === 'cpp' && detected === 'python') {
+      const converted = convertPythonToCpp(code, problemTitle);
+      if (converted && converted.trim()) {
+        setCode(converted);
+        setCodeByLang((prev) => ({ ...prev, cpp: converted }));
+      }
+    }
+  }, [selectedLang, code, problemTitle]);
 
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     setCodeByLang((prev) => ({ ...prev, [selectedLang]: code }));

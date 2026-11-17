@@ -812,11 +812,7 @@ export const StriversA2ZSheetHub: React.FC = () => {
             <div className="relative w-full aspect-video bg-black overflow-hidden">
               <iframe
                 title="striver-video-tutorial"
-                src={`https://www.youtube.com/embed/${activeVideoQuestion.youtubeId}?autoplay=1&rel=0${
-                  typeof window !== 'undefined' && window.location.origin
-                    ? `&origin=${encodeURIComponent(window.location.origin)}`
-                    : ''
-                }`}
+                src={`https://www.youtube.com/embed/${activeVideoQuestion.youtubeId}?autoplay=1&rel=0`}
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="no-referrer-when-downgrade"

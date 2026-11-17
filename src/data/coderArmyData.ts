@@ -130,8 +130,40 @@ export const CODER_ARMY_MODULES: CoderArmyModule[] = [
     title: 'Module 12: Queues & Deques',
     description: 'Circular Queue, Sliding Window Maximum & BFS Queue Architecture',
     icon: '⏳',
-    lecturesCount: 1,
-    totalDuration: '53 mins',
+    lecturesCount: 4,
+    totalDuration: '3 hrs 40 mins',
+  },
+  {
+    id: 'mod-13',
+    title: 'Module 13: Binary Trees Masterclass',
+    description: 'Tree Traversals (Inorder, Preorder, Postorder, Level Order), Height, Diameter, Views, LCA & Construction',
+    icon: '🌳',
+    lecturesCount: 6,
+    totalDuration: '5 hrs 45 mins',
+  },
+  {
+    id: 'mod-14',
+    title: 'Module 14: Binary Search Trees (BST) & Heaps',
+    description: 'BST Insertion, Deletion, LCA, Min/Max Heap, Priority Queue & Heap Sort',
+    icon: '⛰️',
+    lecturesCount: 6,
+    totalDuration: '5 hrs 15 mins',
+  },
+  {
+    id: 'mod-15',
+    title: 'Module 15: Graph Data Structures & Algorithms',
+    description: 'Adjacency Lists, BFS, DFS, Cycle Detection, Topological Sort, Dijkstra & Kruskal MST',
+    icon: '🕸️',
+    lecturesCount: 6,
+    totalDuration: '5 hrs 50 mins',
+  },
+  {
+    id: 'mod-16',
+    title: 'Module 16: Dynamic Programming (DP) Mastery',
+    description: 'Memoization, Tabulation, 1D DP, 2D Grid DP, 0/1 Knapsack, LCS & LIS',
+    icon: '🧩',
+    lecturesCount: 6,
+    totalDuration: '6 hrs 10 mins',
   },
 ];
 
@@ -2139,4 +2171,1168 @@ int main() {
     notes: `### Circular Queue Modulo Trick:
 \`(index + 1) % capacity\` wraps pointers seamlessly back to 0 when reaching the buffer boundary without shifting elements!`,
   },
+
+  // ================= MODULE 13: BINARY TREES =================
+  {
+    id: 'ca-97',
+    lectureNumber: 97,
+    moduleId: 'mod-13',
+    moduleName: 'Binary Trees Masterclass',
+    title: 'L97: Introduction To Tree Data Structure & Binary Tree Representation',
+    duration: '52:40',
+    videoId: '_b0bfpO3b4I',
+    topics: ['Non-linear Data Structures', 'Root, Node, Leaf, Internal', 'Binary Tree Node Definition in C++', 'Tree Creation using Pointers'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+Node* buildTree() {
+    int val;
+    cout << "Enter node value (-1 for null): ";
+    if (!(cin >> val) || val == -1) return nullptr;
+    Node* root = new Node(val);
+    cout << "Left child of " << val << ": ";
+    root->left = buildTree();
+    cout << "Right child of " << val << ": ";
+    root->right = buildTree();
+    return root;
+}
+
+int main() {
+    cout << "Creating Binary Tree..." << endl;
+    Node* root = new Node(10);
+    root->left = new Node(20);
+    root->right = new Node(30);
+    cout << "Root: " << root->data << ", Left: " << root->left->data << ", Right: " << root->right->data << endl;
+    return 0;
+}
+`,
+      python: `class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+root = TreeNode(10)
+root.left = TreeNode(20)
+root.right = TreeNode(30)
+print(f"Root: {root.val}, Left: {root.left.val}, Right: {root.right.val}")
+`,
+    },
+    notes: `### Binary Tree Properties:
+1. Maximum nodes at level $L$: $2^L$ (root at $L=0$).
+2. Maximum nodes in a binary tree of height $H$: $2^H - 1$.
+3. For $N$ nodes, minimum height is $\lceil \log_2(N+1) \rceil$.`,
+  },
+  {
+    id: 'ca-98',
+    lectureNumber: 98,
+    moduleId: 'mod-13',
+    moduleName: 'Binary Trees Masterclass',
+    title: 'L98: Binary Tree Traversals: Inorder, Preorder, Postorder & Level Order (BFS)',
+    duration: '58:15',
+    videoId: 'pMHXL46exp4',
+    topics: ['Depth First Traversals (DFS)', 'Preorder (Root, L, R)', 'Inorder (L, Root, R)', 'Postorder (L, R, Root)', 'Level Order Traversal with Queue'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <queue>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int v) : data(v), left(nullptr), right(nullptr) {}
+};
+
+void inorder(Node* root) {
+    if (!root) return;
+    inorder(root->left);
+    cout << root->data << " ";
+    inorder(root->right);
+}
+
+void levelOrder(Node* root) {
+    if (!root) return;
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node* curr = q.front();
+        q.pop();
+        cout << curr->data << " ";
+        if (curr->left) q.push(curr->left);
+        if (curr->right) q.push(curr->right);
+    }
+}
+
+int main() {
+    Node* root = new Node(1);
+    root->left = new Node(2);
+    root->right = new Node(3);
+    root->left->left = new Node(4);
+    root->left->right = new Node(5);
+
+    cout << "Inorder: "; inorder(root); cout << endl;
+    cout << "Level Order: "; levelOrder(root); cout << endl;
+    return 0;
+}
+`,
+      python: `from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def inorder(root):
+    if not root: return []
+    return inorder(root.left) + [root.val] + inorder(root.right)
+
+def level_order(root):
+    if not root: return []
+    res, q = [], deque([root])
+    while q:
+        curr = q.popleft()
+        res.append(curr.val)
+        if curr.left: q.append(curr.left)
+        if curr.right: q.append(curr.right)
+    return res
+
+root = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
+print("Inorder:", inorder(root))
+print("Level Order:", level_order(root))
+`,
+    },
+    notes: `### DFS vs BFS Traversals:
+- **DFS** uses call stack / recursion ($O(H)$ extra space).
+- **BFS (Level Order)** uses explicit queue ($O(W)$ extra space where $W$ is max width of tree).`,
+  },
+  {
+    id: 'ca-99',
+    lectureNumber: 99,
+    moduleId: 'mod-13',
+    moduleName: 'Binary Trees Masterclass',
+    title: 'L99: Binary Tree Size, Height, Maximum Node & Leaf Count',
+    duration: '47:20',
+    videoId: 'T78jHD4fNgc',
+    topics: ['Recursive Tree Subproblem Decomposition', 'Height of Tree (max(left, right) + 1)', 'Total Node Count', 'Counting Leaves'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <algorithm>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int v) : data(v), left(nullptr), right(nullptr) {}
+};
+
+int getHeight(Node* root) {
+    if (!root) return 0;
+    return 1 + max(getHeight(root->left), getHeight(root->right));
+}
+
+int countNodes(Node* root) {
+    if (!root) return 0;
+    return 1 + countNodes(root->left) + countNodes(root->right);
+}
+
+int main() {
+    Node* root = new Node(10);
+    root->left = new Node(20);
+    root->right = new Node(30);
+    root->left->left = new Node(40);
+    cout << "Tree Height: " << getHeight(root) << endl;
+    cout << "Total Nodes: " << countNodes(root) << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Tree Recursion Master Formula:
+\`result(root) = combine(result(root->left), result(root->right), root->val)\``,
+  },
+  {
+    id: 'ca-100',
+    lectureNumber: 100,
+    moduleId: 'mod-13',
+    moduleName: 'Binary Trees Masterclass',
+    title: 'L100: Check for Balanced Binary Tree & Mirror Trees',
+    duration: '54:30',
+    videoId: 'f7IZ0IXLvhI',
+    topics: ['Height Balanced Condition (|h_L - h_R| <= 1)', 'O(N) Optimized Height Check', 'Symmetric / Mirror Trees', 'Identical Tree Comparison'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <cmath>
+#include <algorithm>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int v) : data(v), left(nullptr), right(nullptr) {}
+};
+
+// Returns height if balanced, -1 if unbalanced
+int checkBalance(Node* root) {
+    if (!root) return 0;
+    int lh = checkBalance(root->left);
+    if (lh == -1) return -1;
+    int rh = checkBalance(root->right);
+    if (rh == -1) return -1;
+    if (abs(lh - rh) > 1) return -1;
+    return 1 + max(lh, rh);
+}
+
+bool isBalanced(Node* root) {
+    return checkBalance(root) != -1;
+}
+
+int main() {
+    Node* root = new Node(1);
+    root->left = new Node(2);
+    root->right = new Node(3);
+    root->left->left = new Node(4);
+    cout << "Is Balanced: " << (isBalanced(root) ? "Yes" : "No") << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### O(N) Balanced Check:
+Return -1 immediately up the recursion call stack as soon as any subtree violates the balance condition!`,
+  },
+  {
+    id: 'ca-101',
+    lectureNumber: 101,
+    moduleId: 'mod-13',
+    moduleName: 'Binary Trees Masterclass',
+    title: 'L101: Construct Binary Tree from Inorder & Preorder Traversal',
+    duration: '59:10',
+    videoId: 'XGnLaRwh0bY',
+    topics: ['Unique Tree Construction Condition', 'Root from Preorder', 'Partitioning Inorder with Hash Map', 'Boundary Index Math'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int v) : data(v), left(nullptr), right(nullptr) {}
+};
+
+Node* build(vector<int>& pre, int preStart, int preEnd,
+            vector<int>& in, int inStart, int inEnd,
+            unordered_map<int, int>& inMap) {
+    if (preStart > preEnd || inStart > inEnd) return nullptr;
+    Node* root = new Node(pre[preStart]);
+    int inRoot = inMap[root->data];
+    int numsLeft = inRoot - inStart;
+
+    root->left = build(pre, preStart + 1, preStart + numsLeft, in, inStart, inRoot - 1, inMap);
+    root->right = build(pre, preStart + numsLeft + 1, preEnd, in, inRoot + 1, inEnd, inMap);
+    return root;
+}
+
+int main() {
+    vector<int> preorder = {3, 9, 20, 15, 7};
+    vector<int> inorder = {9, 3, 15, 20, 7};
+    unordered_map<int, int> inMap;
+    for (int i = 0; i < inorder.size(); i++) inMap[inorder[i]] = i;
+    Node* root = build(preorder, 0, preorder.size() - 1, inorder, 0, inorder.size() - 1, inMap);
+    cout << "Tree successfully constructed! Root: " << root->data << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Key Rule for Construction:
+Preorder tells you the **Root**. Inorder partitions that root's **Left Subtree** and **Right Subtree**.`,
+  },
+  {
+    id: 'ca-102',
+    lectureNumber: 102,
+    moduleId: 'mod-13',
+    moduleName: 'Binary Trees Masterclass',
+    title: 'L102: Vertical Traversal, Boundary View & Lowest Common Ancestor (LCA)',
+    duration: '1:02:15',
+    videoId: 'aBqPnkXmvpY',
+    topics: ['Horizontal Distance (HD)', 'Top View & Bottom View', 'Boundary Clockwise Traversal', 'Lowest Common Ancestor (LCA) in O(N)'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int v) : data(v), left(nullptr), right(nullptr) {}
+};
+
+Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
+    if (!root || root == p || root == q) return root;
+    Node* left = lowestCommonAncestor(root->left, p, q);
+    Node* right = lowestCommonAncestor(root->right, p, q);
+    if (!left) return right;
+    if (!right) return left;
+    return root; // Both left and right found, current root is LCA
+}
+
+int main() {
+    Node* root = new Node(3);
+    root->left = new Node(5);
+    root->right = new Node(1);
+    root->left->left = new Node(6);
+    root->left->right = new Node(2);
+
+    Node* lca = lowestCommonAncestor(root, root->left->left, root->left->right);
+    cout << "LCA of 6 and 2 is: " << lca->data << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### LCA Recursive Rule:
+If root is p or q, return root. If both left and right calls return non-null, root is the LCA.`,
+  },
+
+  // ================= MODULE 14: BST & HEAPS =================
+  {
+    id: 'ca-103',
+    lectureNumber: 103,
+    moduleId: 'mod-14',
+    moduleName: 'Binary Search Trees & Heaps',
+    title: 'L103: Binary Search Tree (BST) – Implementation, Search, Insert & Delete',
+    duration: '57:45',
+    videoId: 'Ir9Ni46g8Qo',
+    topics: ['BST Ordering Property', 'Inorder of BST is Sorted', 'Search in O(log N)', 'Node Deletion (0, 1, and 2 children cases)'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+using namespace std;
+
+struct Node {
+    int val;
+    Node* left;
+    Node* right;
+    Node(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+Node* insertBST(Node* root, int val) {
+    if (!root) return new Node(val);
+    if (val < root->val) root->left = insertBST(root->left, val);
+    else root->right = insertBST(root->right, val);
+    return root;
+}
+
+Node* searchBST(Node* root, int val) {
+    if (!root || root->val == val) return root;
+    return val < root->val ? searchBST(root->left, val) : searchBST(root->right, val);
+}
+
+int main() {
+    Node* root = nullptr;
+    root = insertBST(root, 50);
+    insertBST(root, 30);
+    insertBST(root, 70);
+    insertBST(root, 20);
+    insertBST(root, 40);
+
+    Node* found = searchBST(root, 40);
+    cout << "Search 40: " << (found ? "Found!" : "Not Found") << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### BST Deletion:
+- Leaf node: simply delete.
+- 1 child: replace with child.
+- 2 children: replace with Inorder Successor (smallest in right subtree), then delete successor.`,
+  },
+  {
+    id: 'ca-104',
+    lectureNumber: 104,
+    moduleId: 'mod-14',
+    moduleName: 'Binary Search Trees & Heaps',
+    title: 'L104: Lowest Common Ancestor (LCA) in BST & Range Search',
+    duration: '48:30',
+    videoId: 'YKo8QaW02z8',
+    topics: ['BST LCA without extra space', 'Range Sum in BST', 'Check if Tree is Valid BST', 'Inorder Predecessor & Successor'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+using namespace std;
+
+struct Node {
+    int val;
+    Node* left;
+    Node* right;
+    Node(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+Node* lcaBST(Node* root, int p, int q) {
+    if (!root) return nullptr;
+    if (p < root->val && q < root->val) return lcaBST(root->left, p, q);
+    if (p > root->val && q > root->val) return lcaBST(root->right, p, q);
+    return root; // Split point is the LCA!
+}
+
+int main() {
+    Node* root = new Node(6);
+    root->left = new Node(2);
+    root->right = new Node(8);
+    root->left->left = new Node(0);
+    root->left->right = new Node(4);
+
+    Node* lca = lcaBST(root, 0, 4);
+    cout << "LCA of 0 and 4 in BST: " << lca->val << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### BST LCA Insight:
+In a BST, the LCA is the first node where paths to p and q split (one goes left, one goes right)!`,
+  },
+  {
+    id: 'ca-105',
+    lectureNumber: 105,
+    moduleId: 'mod-14',
+    moduleName: 'Binary Search Trees & Heaps',
+    title: 'L105: Heap Data Structure – Min Heap & Max Heap Insertion / Deletion',
+    duration: '56:20',
+    videoId: 'ilz-VZBz5Vg',
+    topics: ['Complete Binary Tree (CBT)', 'Array Representation (2i+1, 2i+2)', 'Heap Property', 'Push & Pop in O(log N)'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+class MaxHeap {
+    vector<int> arr;
+public:
+    void push(int val) {
+        arr.push_back(val);
+        int idx = arr.size() - 1;
+        while (idx > 0) {
+            int parent = (idx - 1) / 2;
+            if (arr[parent] < arr[idx]) {
+                swap(arr[parent], arr[idx]);
+                idx = parent;
+            } else break;
+        }
+    }
+    int top() { return arr.empty() ? -1 : arr[0]; }
+};
+
+int main() {
+    MaxHeap h;
+    h.push(10);
+    h.push(40);
+    h.push(30);
+    h.push(60);
+    cout << "Max element: " << h.top() << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Complete Binary Tree Array Indexing:
+- Parent: \`(i - 1) / 2\`
+- Left child: \`2 * i + 1\`
+- Right child: \`2 * i + 2\``,
+  },
+  {
+    id: 'ca-106',
+    lectureNumber: 106,
+    moduleId: 'mod-14',
+    moduleName: 'Binary Search Trees & Heaps',
+    title: 'L106: Heapify Algorithm & Heap Sort Implementation in C++',
+    duration: '52:10',
+    videoId: 'kcGENCHENgY',
+    topics: ['Heapify in O(log N)', 'Building Heap in O(N) Time Proof', 'In-Place Heap Sort Algorithm', 'Ascending vs Descending Sort'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+void heapify(vector<int>& arr, int n, int i) {
+    int largest = i;
+    int left = 2 * i + 1, right = 2 * i + 2;
+    if (left < n && arr[left] > arr[largest]) largest = left;
+    if (right < n && arr[right] > arr[largest]) largest = right;
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+        heapify(arr, n, largest);
+    }
+}
+
+void heapSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
+    for (int i = n - 1; i > 0; i--) {
+        swap(arr[0], arr[i]);
+        heapify(arr, i, 0);
+    }
+}
+
+int main() {
+    vector<int> arr = {12, 11, 13, 5, 6, 7};
+    heapSort(arr);
+    cout << "Sorted array: ";
+    for (int x : arr) cout << x << " ";
+    cout << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Heap Sort Complexity:
+- Time: $O(N \log N)$ in all cases (best, average, worst).
+- Space: $O(1)$ auxiliary memory (in-place).`,
+  },
+  {
+    id: 'ca-107',
+    lectureNumber: 107,
+    moduleId: 'mod-14',
+    moduleName: 'Binary Search Trees & Heaps',
+    title: 'L107: Priority Queues & Kth Largest Element',
+    duration: '49:15',
+    videoId: 'pCsWDX2K06o',
+    topics: ['C++ STL priority_queue', 'Min-Heap vs Max-Heap syntax', 'Kth Largest using Min-Heap of size K', 'Top K Frequent Elements'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+int findKthLargest(vector<int>& nums, int k) {
+    priority_queue<int, vector<int>, greater<int>> minHeap;
+    for (int num : nums) {
+        minHeap.push(num);
+        if (minHeap.size() > k) minHeap.pop();
+    }
+    return minHeap.top();
+}
+
+int main() {
+    vector<int> nums = {3, 2, 1, 5, 6, 4};
+    cout << "2nd Largest: " << findKthLargest(nums, 2) << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Top K Elements Pattern:
+To find Kth **Largest**, maintain a **Min-Heap** of size $K$.
+To find Kth **Smallest**, maintain a **Max-Heap** of size $K$.`,
+  },
+
+  // ================= MODULE 15: GRAPH ALGORITHMS =================
+  {
+    id: 'ca-109',
+    lectureNumber: 109,
+    moduleId: 'mod-15',
+    moduleName: 'Graph Data Structures & Algorithms',
+    title: 'L109: Introduction To Graph Representation (Adjacency Matrix & List)',
+    duration: '55:30',
+    videoId: 'gGlfzqPT-hE',
+    topics: ['Graph Terminology (Nodes, Edges, Weights)', 'Directed vs Undirected', 'Adjacency Matrix (O(V^2))', 'Adjacency List (O(V + E))'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+class Graph {
+    int V;
+    vector<vector<int>> adj;
+public:
+    Graph(int v) : V(v), adj(v) {}
+    void addEdge(int u, int v, bool directed = false) {
+        adj[u].push_back(v);
+        if (!directed) adj[v].push_back(u);
+    }
+    void print() {
+        for (int i = 0; i < V; i++) {
+            cout << i << " -> ";
+            for (int neighbor : adj[i]) cout << neighbor << " ";
+            cout << endl;
+        }
+    }
+};
+
+int main() {
+    Graph g(4);
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(1, 2);
+    g.addEdge(2, 3);
+    g.print();
+    return 0;
+}
+`,
+    },
+    notes: `### Adjacency Representation Tradeoffs:
+- **Matrix**: $O(1)$ edge existence query, but $O(V^2)$ memory.
+- **List**: $O(V+E)$ memory, ideal for sparse real-world graphs.`,
+  },
+  {
+    id: 'ca-110',
+    lectureNumber: 110,
+    moduleId: 'mod-15',
+    moduleName: 'Graph Data Structures & Algorithms',
+    title: 'L110: Graph Traversals: Breadth-First Search (BFS) & Depth-First Search (DFS)',
+    duration: '1:01:20',
+    videoId: 'bxbrUGvBCnY',
+    topics: ['BFS using Queue', 'Visited Array to prevent infinite cycles', 'DFS using Call Stack / Recursion', 'Disconnected Components Handling'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+void bfs(int start, vector<vector<int>>& adj, vector<bool>& visited) {
+    queue<int> q;
+    visited[start] = true;
+    q.push(start);
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        cout << u << " ";
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}
+
+int main() {
+    int V = 5;
+    vector<vector<int>> adj(V);
+    adj[0] = {1, 2}; adj[1] = {0, 3}; adj[2] = {0, 4}; adj[3] = {1}; adj[4] = {2};
+    vector<bool> visited(V, false);
+    cout << "BFS Traversal: ";
+    bfs(0, adj, visited);
+    cout << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Graph Traversal Complexities:
+- Time: $O(V + E)$ where $V$ is number of vertices and $E$ is number of edges.
+- Space: $O(V)$ for the visited array and traversal queue/stack.`,
+  },
+  {
+    id: 'ca-111',
+    lectureNumber: 111,
+    moduleId: 'mod-15',
+    moduleName: 'Graph Data Structures & Algorithms',
+    title: 'L111: Detect Cycle in Undirected Graph using BFS & DFS',
+    duration: '53:40',
+    videoId: 'oz1EaP_Bw4s',
+    topics: ['Parent Pointer Tracking', 'Visited Neighbor != Parent Condition', 'BFS Cycle Detection with queue<pair<node, parent>>', 'DFS Cycle Detection'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+bool detectCycleBFS(int src, vector<vector<int>>& adj, vector<bool>& vis) {
+    queue<pair<int, int>> q; // {node, parent}
+    vis[src] = true;
+    q.push({src, -1});
+    while (!q.empty()) {
+        int node = q.front().first;
+        int parent = q.front().second;
+        q.pop();
+        for (int adjNode : adj[node]) {
+            if (!vis[adjNode]) {
+                vis[adjNode] = true;
+                q.push({adjNode, node});
+            } else if (adjNode != parent) {
+                return true; // Cycle detected!
+            }
+        }
+    }
+    return false;
+}
+
+int main() {
+    int V = 4;
+    vector<vector<int>> adj(V);
+    adj[0] = {1, 2}; adj[1] = {0, 2}; adj[2] = {0, 1, 3}; adj[3] = {2};
+    vector<bool> vis(V, false);
+    cout << "Has Cycle: " << (detectCycleBFS(0, adj, vis) ? "Yes" : "No") << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Cycle in Undirected Graph:
+A cycle exists if we encounter a visited neighbor that is NOT the immediate parent from which we arrived!`,
+  },
+  {
+    id: 'ca-112',
+    lectureNumber: 112,
+    moduleId: 'mod-15',
+    moduleName: 'Graph Data Structures & Algorithms',
+    title: 'L112: Detect Cycle in Directed Graph & Topological Sort (Kahn Algorithm)',
+    duration: '58:50',
+    videoId: 'sPlN86EpjJA',
+    topics: ['Directed Acyclic Graph (DAG)', 'Indegree Calculation', 'Kahn Algorithm using BFS queue', 'Topological Ordering for Dependency Graphs'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+vector<int> topoSort(int V, vector<vector<int>>& adj) {
+    vector<int> indegree(V, 0);
+    for (int i = 0; i < V; i++) {
+        for (int v : adj[i]) indegree[v]++;
+    }
+    queue<int> q;
+    for (int i = 0; i < V; i++) {
+        if (indegree[i] == 0) q.push(i);
+    }
+    vector<int> topo;
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        topo.push_back(u);
+        for (int v : adj[u]) {
+            indegree[v]--;
+            if (indegree[v] == 0) q.push(v);
+        }
+    }
+    return topo;
+}
+
+int main() {
+    int V = 4;
+    vector<vector<int>> adj(V);
+    adj[0].push_back(1); adj[0].push_back(2);
+    adj[1].push_back(3); adj[2].push_back(3);
+    vector<int> order = topoSort(V, adj);
+    cout << "Topological Order: ";
+    for (int x : order) cout << x << " ";
+    cout << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Kahn's Algorithm Cycle Check:
+If the topological sort output contains fewer than $V$ vertices, the graph contains a directed cycle!`,
+  },
+
+  // ================= MODULE 16: DYNAMIC PROGRAMMING =================
+  {
+    id: 'ca-115',
+    lectureNumber: 115,
+    moduleId: 'mod-16',
+    moduleName: 'Dynamic Programming Mastery',
+    title: 'L115: Introduction to Dynamic Programming: Memoization vs Tabulation',
+    duration: '54:10',
+    videoId: '_kio3U6CV2c',
+    topics: ['Overlapping Subproblems', 'Optimal Substructure', 'Top-Down (Recursion + DP Array)', 'Bottom-Up (Iterative Tabulation) & Space Optimization'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+// Space-optimized O(1) space Fibonacci DP
+int fib(int n) {
+    if (n <= 1) return n;
+    int prev2 = 0, prev = 1;
+    for (int i = 2; i <= n; i++) {
+        int curr = prev + prev2;
+        prev2 = prev;
+        prev = curr;
+    }
+    return prev;
+}
+
+int main() {
+    cout << "Fibonacci(10) = " << fib(10) << endl;
+    return 0;
+}
+`,
+      python: `def fib(n: int) -> int:
+    if n <= 1: return n
+    prev2, prev = 0, 1
+    for _ in range(2, n + 1):
+        prev2, prev = prev, prev + prev2
+    return prev
+
+print("Fibonacci(10) =", fib(10))
+`,
+    },
+    notes: `### DP Golden Rule:
+1. Write brute-force recursive relation.
+2. Memoize overlapping calls with a state array \`dp[state]\`.
+3. Convert to iterative bottom-up table.
+4. Optimize space if only previous $k$ states are needed!`,
+  },
+  {
+    id: 'ca-116',
+    lectureNumber: 116,
+    moduleId: 'mod-16',
+    moduleName: 'Dynamic Programming Mastery',
+    title: 'L116: 1D DP: Climbing Stairs & Frog Jump Problem',
+    duration: '51:40',
+    videoId: '9sr3aWtqpGA',
+    topics: ['Climbing Stairs Recurrence (f(n) = f(n-1) + f(n-2))', 'Frog Jump with Minimum Energy', 'State Transition Graph', 'Space Optimization to O(1)'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+int frogJump(int n, vector<int>& heights) {
+    int prev = 0, prev2 = 0;
+    for (int i = 1; i < n; i++) {
+        int jumpOne = prev + abs(heights[i] - heights[i - 1]);
+        int jumpTwo = (i > 1) ? prev2 + abs(heights[i] - heights[i - 2]) : 1e9;
+        int curr = min(jumpOne, jumpTwo);
+        prev2 = prev;
+        prev = curr;
+    }
+    return prev;
+}
+
+int main() {
+    vector<int> heights = {10, 20, 30, 10};
+    cout << "Min Energy: " << frogJump(heights.size(), heights) << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Frog Jump Recurrence:
+\`dp[i] = min(dp[i-1] + |h[i] - h[i-1]|, dp[i-2] + |h[i] - h[i-2]|)\``,
+  },
+  {
+    id: 'ca-118',
+    lectureNumber: 118,
+    moduleId: 'mod-16',
+    moduleName: 'Dynamic Programming Mastery',
+    title: 'L118: 2D Grid DP: Unique Paths & 0/1 Knapsack Masterclass',
+    duration: '1:04:15',
+    videoId: 'tGQ3XFZMHCQ',
+    topics: ['Grid DP (Paths from (0,0) to (m-1, n-1))', '0/1 Knapsack Problem', 'Pick vs Not-Pick Choice Diagram', 'Space Optimization with 1D Array'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int knapsack(int W, vector<int>& wt, vector<int>& val, int n) {
+    vector<int> dp(W + 1, 0);
+    for (int i = 0; i < n; i++) {
+        for (int w = W; w >= wt[i]; w--) {
+            dp[w] = max(dp[w], val[i] + dp[w - wt[i]]);
+        }
+    }
+    return dp[W];
+}
+
+int main() {
+    vector<int> val = {60, 100, 120};
+    vector<int> wt = {10, 20, 30};
+    int W = 50;
+    cout << "Max Knapsack Value: " << knapsack(W, wt, val, val.size()) << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Knapsack 1D Array Trick:
+Loop weights **backward** from \`W\` down to \`wt[i]\` to prevent reusing the same item multiple times in 0/1 Knapsack!`,
+  },
+
+
+  // ================= MODULE 12: EXTRA QUEUE LECTURES =================
+  {
+    id: 'ca-96-b',
+    lectureNumber: 97,
+    moduleId: 'mod-12',
+    moduleName: 'Queues & Deques',
+    title: 'L97: Implement Queue using Two Stacks & Deque in C++',
+    duration: '46:30',
+    videoId: 'Ah-ZDJf9QW0',
+    topics: ['Amortized O(1) Push/Pop', 'Two Stacks Technique', 'Double Ended Queue (Deque)', 'C++ STL deque'],
+    difficulty: 'Intermediate',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <stack>
+using namespace std;
+
+class MyQueue {
+    stack<int> s1, s2;
+public:
+    void push(int x) { s1.push(x); }
+    int pop() {
+        if (s2.empty()) {
+            while (!s1.empty()) { s2.push(s1.top()); s1.pop(); }
+        }
+        int val = s2.top(); s2.pop();
+        return val;
+    }
+};
+
+int main() {
+    MyQueue q;
+    q.push(1); q.push(2); q.push(3);
+    cout << "Popped: " << q.pop() << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Amortized Complexity:
+Each element is pushed into $s_1$ once, popped from $s_1$ once, pushed into $s_2$ once, and popped from $s_2$ once $\rightarrow$ exactly $4$ operations per element $\implies$ **Amortized $O(1)$** time!`,
+  },
+  {
+    id: 'ca-96-c',
+    lectureNumber: 98,
+    moduleId: 'mod-12',
+    moduleName: 'Queues & Deques',
+    title: 'L98: Sliding Window Maximum using Monotonic Deque',
+    duration: '52:15',
+    videoId: 'Ah-ZDJf9QW0',
+    topics: ['Monotonic Decreasing Deque', 'Sliding Window O(N) Technique', 'Removing Out of Bound Indices', 'First Negative in Window'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <deque>
+using namespace std;
+
+vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+    deque<int> dq;
+    vector<int> ans;
+    for (int i = 0; i < nums.size(); i++) {
+        if (!dq.empty() && dq.front() == i - k) dq.pop_front();
+        while (!dq.empty() && nums[dq.back()] <= nums[i]) dq.pop_back();
+        dq.push_back(i);
+        if (i >= k - 1) ans.push_back(nums[dq.front()]);
+    }
+    return ans;
+}
+
+int main() {
+    vector<int> nums = {1, 3, -1, -3, 5, 3, 6, 7};
+    vector<int> res = maxSlidingWindow(nums, 3);
+    cout << "Sliding Window Max: ";
+    for (int x : res) cout << x << " ";
+    cout << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Monotonic Deque Invariant:
+Indices in the deque maintain values in strictly decreasing order. The front of the deque is ALWAYS the maximum element in the current window!`,
+  },
+
+  // ================= MODULE 15: EXTRA GRAPH LECTURES =================
+  {
+    id: 'ca-113',
+    lectureNumber: 113,
+    moduleId: 'mod-15',
+    moduleName: 'Graph Data Structures & Algorithms',
+    title: 'L113: Shortest Path in Weighted Graph: Dijkstra Algorithm',
+    duration: '58:20',
+    videoId: 'bxbrUGvBCnY',
+    topics: ['Greedy Shortest Path', 'Min-Heap Priority Queue', 'Edge Relaxation (dist[v] > dist[u] + w)', 'Why Dijkstra Fails on Negative Weights'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+vector<int> dijkstra(int V, vector<vector<pair<int, int>>>& adj, int src) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    vector<int> dist(V, 1e9);
+    dist[src] = 0;
+    pq.push({0, src});
+
+    while (!pq.empty()) {
+        int d = pq.top().first;
+        int u = pq.top().second;
+        pq.pop();
+        if (d > dist[u]) continue;
+
+        for (auto& edge : adj[u]) {
+            int v = edge.first, w = edge.second;
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+int main() {
+    int V = 4;
+    vector<vector<pair<int, int>>> adj(V);
+    adj[0].push_back({1, 4}); adj[0].push_back({2, 1});
+    adj[2].push_back({1, 2}); adj[1].push_back({3, 1});
+    adj[2].push_back({3, 5});
+
+    vector<int> d = dijkstra(V, adj, 0);
+    cout << "Shortest distance from 0 to 3: " << d[3] << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Dijkstra Complexity:
+- Time: $O((V + E) \log V)$ using Min-Heap priority queue.
+- Space: $O(V)$ for distance array and priority queue.`,
+  },
+  {
+    id: 'ca-114',
+    lectureNumber: 114,
+    moduleId: 'mod-15',
+    moduleName: 'Graph Data Structures & Algorithms',
+    title: 'L114: Disjoint Set Union (DSU) by Rank & Kruskal Minimum Spanning Tree',
+    duration: '1:02:10',
+    videoId: 'gGlfzqPT-hE',
+    topics: ['Union by Rank / Size', 'Path Compression Optimization', 'Amortized O(alpha(V)) Ackermann Time', 'Kruskal Greedy MST Algorithm'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+class DSU {
+    vector<int> parent, rank;
+public:
+    DSU(int n) : parent(n), rank(n, 0) {
+        for (int i = 0; i < n; i++) parent[i] = i;
+    }
+    int find(int i) {
+        if (parent[i] == i) return i;
+        return parent[i] = find(parent[i]); // Path compression
+    }
+    bool unite(int i, int j) {
+        int root_i = find(i), root_j = find(j);
+        if (root_i == root_j) return false;
+        if (rank[root_i] < rank[root_j]) swap(root_i, root_j);
+        parent[root_j] = root_i;
+        if (rank[root_i] == rank[root_j]) rank[root_i]++;
+        return true;
+    }
+};
+
+int main() {
+    DSU d(5);
+    cout << "Unite 0 and 1: " << d.unite(0, 1) << endl;
+    cout << "Unite 1 and 2: " << d.unite(1, 2) << endl;
+    cout << "Is 0 connected to 2: " << (d.find(0) == d.find(2) ? "Yes" : "No") << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### Disjoint Set Union:
+With both **Path Compression** and **Union by Rank**, any sequence of $M$ operations on $N$ elements takes $O(M \alpha(N))$ time, where $\alpha$ is the Inverse Ackermann function (effectively constant $\le 4$ for all practical inputs).`,
+  },
+
+  // ================= MODULE 16: EXTRA DP LECTURES =================
+  {
+    id: 'ca-119-b',
+    lectureNumber: 121,
+    moduleId: 'mod-16',
+    moduleName: 'Dynamic Programming Mastery',
+    title: 'L121: Longest Common Subsequence (LCS) & String DP Patterns',
+    duration: '57:40',
+    videoId: '_kio3U6CV2c',
+    topics: ['2D DP on Strings', 'Recurrence: match vs mismatch', 'Printing the LCS String', 'Edit Distance (Levenshtein Distance)'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+int lcs(string& s1, string& s2) {
+    int m = s1.size(), n = s2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (s1[i - 1] == s2[j - 1]) dp[i][j] = 1 + dp[i - 1][j - 1];
+            else dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+    return dp[m][n];
+}
+
+int main() {
+    string s1 = "abcde", s2 = "ace";
+    cout << "LCS of 'abcde' and 'ace': " << lcs(s1, s2) << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### LCS Recurrence:
+$$\text{dp}[i][j] = \begin{cases} 1 + \text{dp}[i-1][j-1] & \text{if } s_1[i-1] == s_2[j-1] \\ \max(\text{dp}[i-1][j], \text{dp}[i][j-1]) & \text{otherwise} \end{cases}$$`,
+  },
+  {
+    id: 'ca-119-c',
+    lectureNumber: 122,
+    moduleId: 'mod-16',
+    moduleName: 'Dynamic Programming Mastery',
+    title: 'L122: Longest Increasing Subsequence (LIS) in O(N log N) via Binary Search',
+    duration: '51:15',
+    videoId: '9sr3aWtqpGA',
+    topics: ['O(N^2) Tabulation Formulation', 'Patience Sorting Concept', 'Binary Search with std::lower_bound', 'Printing LIS with Hash Parent Arrays'],
+    difficulty: 'Advanced',
+    starterCodes: {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int lengthOfLIS(vector<int>& nums) {
+    vector<int> tails;
+    for (int x : nums) {
+        auto it = lower_bound(tails.begin(), tails.end(), x);
+        if (it == tails.end()) tails.push_back(x);
+        else *it = x;
+    }
+    return tails.size();
+}
+
+int main() {
+    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    cout << "Length of LIS: " << lengthOfLIS(nums) << endl;
+    return 0;
+}
+`,
+    },
+    notes: `### O(N log N) LIS Magic:
+Maintain an array \`tails\` where \`tails[i]\` is the smallest tail of all increasing subsequences of length $i+1$. Each incoming element replaces the first element $\ge x$ via binary search!`,
+  },
+
 ];

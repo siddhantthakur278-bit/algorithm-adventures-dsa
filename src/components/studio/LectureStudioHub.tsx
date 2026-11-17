@@ -1020,16 +1020,8 @@ export const LectureStudioHub: React.FC = () => {
                 title="lecture-video-player"
                 src={
                   embedMode === 'playlist'
-                    ? `${embedHost}/embed/videoseries?list=${activePlaylistId}&rel=0${
-                        typeof window !== 'undefined' && window.location.origin
-                          ? `&origin=${encodeURIComponent(window.location.origin)}`
-                          : ''
-                      }`
-                    : `${embedHost}/embed/${activeVideoId}?rel=0${
-                        typeof window !== 'undefined' && window.location.origin
-                          ? `&origin=${encodeURIComponent(window.location.origin)}`
-                          : ''
-                      }`
+                    ? `${embedHost}/embed/videoseries?list=${activePlaylistId}&rel=0`
+                    : `${embedHost}/embed/${activeVideoId}?list=${activePlaylistId}&rel=0`
                 }
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
