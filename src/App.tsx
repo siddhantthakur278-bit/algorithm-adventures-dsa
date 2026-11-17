@@ -45,6 +45,7 @@ const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/G
 const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityChatHub').then((m) => ({ default: m.CommunityChatHub })));
 import { isProfileSetupComplete } from './utils/universalLeaderboardService';
 import { GlobalOnboardingModal } from './components/common/GlobalOnboardingModal';
+import { ResetJourneyModal } from './components/common/ResetJourneyModal';
 
 const ComicSuspenseLoader: React.FC<{ label?: string }> = ({ label = 'Loading Adventure...' }) => (
   <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-3 animate-fadeIn">
@@ -354,6 +355,7 @@ export const AppContent: React.FC = () => {
   const { layoutMode, isSidebarCollapsed, setIsSidebarCollapsed } = useCourse();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => !isProfileSetupComplete());
+  const [isResetJourneyModalOpen, setIsResetJourneyModalOpen] = useState(false);
 
   useEffect(() => {
     applyTheme(getStoredTheme());
@@ -373,12 +375,18 @@ export const AppContent: React.FC = () => {
       setIsCommandPaletteOpen(true);
     };
 
+    const handleOpenResetJourney = () => {
+      setIsResetJourneyModalOpen(true);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('open-command-palette', handleCustomOpen);
+    window.addEventListener('open-reset-journey', handleOpenResetJourney);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-command-palette', handleCustomOpen);
+      window.removeEventListener('open-reset-journey', handleOpenResetJourney);
     };
   }, [setIsSidebarCollapsed]);
 
@@ -447,6 +455,12 @@ export const AppContent: React.FC = () => {
         isOpen={showWelcomeModal}
         onClose={() => setShowWelcomeModal(false)}
         isInitialWelcome={true}
+      />
+
+      {/* Reset Journey Modal (Start Fresh with 0 XP) */}
+      <ResetJourneyModal
+        isOpen={isResetJourneyModalOpen}
+        onClose={() => setIsResetJourneyModalOpen(false)}
       />
     </div>
   );

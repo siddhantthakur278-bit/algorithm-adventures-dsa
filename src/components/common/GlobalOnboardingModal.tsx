@@ -751,23 +751,40 @@ export const GlobalOnboardingModal: React.FC<GlobalOnboardingModalProps> = ({
               Your details are instantly saved locally and shared to the global leaderboard.
             </span>
 
-            <button
-              type="submit"
-              disabled={isSubmitting || handleStatus.available === false || handleStatus.checking}
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase tracking-wider border-2 border-slate-900 shadow-comic flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <Sparkles className="w-4 h-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  {isInitialWelcome ? 'Launch My Adventure →' : 'Save & Sync Leaderboard'}
-                </>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              {!isInitialWelcome && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playPop();
+                    onClose();
+                    window.dispatchEvent(new CustomEvent('open-reset-journey'));
+                  }}
+                  className="px-3 py-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-950/40 border border-red-500/20 text-xs font-mono font-semibold transition cursor-pointer"
+                  title="Reset your adventure progress to strictly 0 XP"
+                >
+                  ↺ Reset to 0 XP
+                </button>
               )}
-            </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting || handleStatus.available === false || handleStatus.checking}
+                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm uppercase tracking-wider border-2 border-slate-900 shadow-comic flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Sparkles className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isInitialWelcome ? 'Launch My Adventure →' : 'Save & Sync Leaderboard'}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

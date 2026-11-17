@@ -57,6 +57,7 @@ interface UniversalVSCodeEditorProps {
   onGoNext?: () => void;
   onOpenTopicTheory?: () => void;
   topicSubStep?: string;
+  onLanguageChange?: (lang: SupportedLanguage) => void;
 }
 
 export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
@@ -74,13 +75,27 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   onGoNext,
   onOpenTopicTheory,
   topicSubStep,
+  onLanguageChange,
 }) => {
   const { addXP, triggerBurst, stats, unlockBadge } = useCourse();
+
+  // Helper to ensure initial code matches the target compiler language
+  const getResolvedInitialCode = (targetLang: SupportedLanguage, rawCode: string) => {
+    const detected = detectCodeLanguage(rawCode);
+    if (targetLang === 'python' && detected === 'cpp') {
+      return convertCppToPython(rawCode, problemTitle);
+    }
+    if (targetLang === 'cpp' && detected === 'python') {
+      return convertPythonToCpp(rawCode, problemTitle);
+    }
+    return rawCode;
+  };
+
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language);
-  const [codeByLang, setCodeByLang] = useState<Record<string, string>>({
-    [language]: starterCode,
-  });
-  const [code, setCode] = useState<string>(starterCode);
+  const [code, setCode] = useState<string>(() => getResolvedInitialCode(language, starterCode));
+  const [codeByLang, setCodeByLang] = useState<Record<string, string>>(() => ({
+    [language]: getResolvedInitialCode(language, starterCode),
+  }));
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [executionResult, setExecutionResult] = useState<CodeExecutionOutcome | null>(null);
   const [activeOutputTab, setActiveOutputTab] = useState<'console' | 'preview' | 'ai' | 'git'>('console');
@@ -95,31 +110,28 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
   // Sync when starterCode or language prop changes
   useEffect(() => {
     setSelectedLang(language);
-    let initialCode = starterCode;
-
-    // Guard against mismatch: C++ starter code passed while language is set to Python
-    if (language === 'python' && detectCodeLanguage(starterCode) === 'cpp') {
-      initialCode = convertCppToPython(starterCode, problemTitle);
-    } else if (language === 'cpp' && detectCodeLanguage(starterCode) === 'python') {
-      initialCode = convertPythonToCpp(starterCode, problemTitle);
-    }
-
-    setCode(initialCode);
-    setCodeByLang((prev) => ({ ...prev, [language]: initialCode }));
+    const resolved = getResolvedInitialCode(language, starterCode);
+    setCode(resolved);
+    setCodeByLang((prev) => ({ ...prev, [language]: resolved }));
   }, [language, starterCode, problemTitle]);
 
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     setCodeByLang((prev) => ({ ...prev, [selectedLang]: code }));
 
-    const currentIsCpp = detectCodeLanguage(code) === 'cpp' || selectedLang === 'cpp';
-    const currentIsPython = detectCodeLanguage(code) === 'python' || selectedLang === 'python';
+    const currentDetected = detectCodeLanguage(code);
+    const currentIsCpp = currentDetected === 'cpp' || selectedLang === 'cpp';
+    const currentIsPython = currentDetected === 'python' || selectedLang === 'python';
 
     setSelectedLang(newLang);
+    if (onLanguageChange) {
+      onLanguageChange(newLang);
+    }
 
     const cached = codeByLang[newLang];
+    const cachedDetected = cached ? detectCodeLanguage(cached) : null;
     const cachedIsInvalid =
-      (newLang === 'python' && cached && detectCodeLanguage(cached) === 'cpp') ||
-      (newLang === 'cpp' && cached && detectCodeLanguage(cached) === 'python');
+      (newLang === 'python' && cachedDetected === 'cpp') ||
+      (newLang === 'cpp' && cachedDetected === 'python');
 
     if (cached && !cachedIsInvalid) {
       setCode(cached);
@@ -146,12 +158,14 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
     if (shouldConvertToPython) {
       const converted = convertCppToPython(code, problemTitle);
       setSelectedLang('python');
+      if (onLanguageChange) onLanguageChange('python');
       setCode(converted);
       setCodeByLang((prev) => ({ ...prev, cpp: code, python: converted }));
       triggerBurst('⚡ Syntax Converted!', 'Translated C++ ➔ Python 3.12 syntax!', 'star');
     } else {
       const converted = convertPythonToCpp(code, problemTitle);
       setSelectedLang('cpp');
+      if (onLanguageChange) onLanguageChange('cpp');
       setCode(converted);
       setCodeByLang((prev) => ({ ...prev, python: code, cpp: converted }));
       triggerBurst('⚡ Syntax Converted!', 'Translated Python ➔ C++20 syntax!', 'star');
@@ -432,14 +446,14 @@ export const UniversalVSCodeEditor: React.FC<UniversalVSCodeEditorProps> = ({
           {/* 1-Click C++ <-> Python Converter */}
           <button
             onClick={handleConvertCppPython}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-semibold text-purple-300 hover:text-white bg-purple-950/70 hover:bg-purple-900/90 rounded border border-purple-500/40 transition cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1 text-xs font-mono font-bold text-amber-300 hover:text-white bg-gradient-to-r from-purple-950 to-indigo-950 hover:from-purple-900 hover:to-indigo-900 rounded-lg border border-purple-500/50 transition cursor-pointer shadow-sm"
             title={
               selectedLang === 'python'
                 ? 'Convert current Python code to C++20 syntax'
                 : 'Convert current C++ code to Python 3.12 syntax'
             }
           >
-            <Zap className="w-3 h-3 text-purple-400" />
+            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
             <span>{selectedLang === 'python' ? '⚡ Py ➔ C++' : '⚡ C++ ➔ Py'}</span>
           </button>
 

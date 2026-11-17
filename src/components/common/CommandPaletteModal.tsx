@@ -30,6 +30,7 @@ import {
   BookOpen,
   Video,
   Globe,
+  RotateCcw,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -554,6 +555,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       onSelect: () => {
         sound.toggle();
         sound.playPop();
+      },
+    },
+    {
+      id: 'action-reset-journey',
+      title: 'Reset Journey to 0 XP (Start Over)',
+      category: 'Action',
+      icon: RotateCcw,
+      badge: '0 XP Hard Reset',
+      onSelect: () => {
+        sound.playPop();
+        window.dispatchEvent(new CustomEvent('open-reset-journey'));
       },
     },
   ];

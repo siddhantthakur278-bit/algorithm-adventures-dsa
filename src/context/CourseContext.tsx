@@ -33,7 +33,7 @@ import {
 } from '../utils/streakEngine';
 import { sound } from '../utils/soundEffects';
 import confetti from 'canvas-confetti';
-import { syncActiveScores } from '../utils/universalLeaderboardService';
+import { syncActiveScores, resetActiveScores } from '../utils/universalLeaderboardService';
 
 export type ActiveSaga = 'dsa' | 'sql' | 'prisma' | 'linear-algebra' | 'web-dev' | 'python-dsa' | 'roadmap';
 export type LayoutMode = 'vertical-panel' | 'top-bar';
@@ -96,12 +96,13 @@ interface CourseContextType {
   updateCohortConfig: (newCfg: Partial<UserCohortConfig>) => void;
   resetCohortToToday: () => void;
   setManualCohortDay: (day: number) => void;
+  resetJourney: (options?: { keepIdentity?: boolean; keepGitConfig?: boolean }) => void;
 }
 
 const STORAGE_KEY_STATS = 'ada_course_stats';
 
 const initialStats: UserStats = {
-  xp: 150,
+  xp: 0,
   level: 1,
   streakCount: 0,
   bestStreak: 0,
@@ -109,15 +110,15 @@ const initialStats: UserStats = {
   shieldCount: 2,
   solvedProblemIds: [],
   completedDailyTargetDates: [],
-  completedSubtopics: ['1-1'],
+  completedSubtopics: [],
   completedQuizzes: {},
   bugHuntDefeated: [],
-  powerCardsCollected: ['pc-1'],
+  powerCardsCollected: [],
   bossBeaten: false,
   gitCommits: [],
-  blitzHighScore: 350,
+  blitzHighScore: 0,
   inventory: initialInventory,
-  badges: initialBadges.filter(b => b.isUnlocked).map(b => b.id),
+  badges: [],
   lastLootChestDate: '',
   activeXpMultiplier: 1,
   activeTitle: 'Byte Novice',
@@ -381,6 +382,100 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       manualDayNumber: day,
     });
     sound.playPop();
+  };
+
+  const resetJourney = (options: { keepIdentity?: boolean; keepGitConfig?: boolean } = { keepIdentity: true, keepGitConfig: true }) => {
+    // 1. Fresh 0 XP stats
+    const freshStats: UserStats = {
+      xp: 0,
+      level: 1,
+      streakCount: 0,
+      bestStreak: 0,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      shieldCount: 2,
+      solvedProblemIds: [],
+      completedDailyTargetDates: [],
+      completedSubtopics: [],
+      completedQuizzes: {},
+      bugHuntDefeated: [],
+      powerCardsCollected: [],
+      bossBeaten: false,
+      gitCommits: options.keepGitConfig ? (stats.gitCommits || []) : [],
+      blitzHighScore: 0,
+      inventory: initialInventory,
+      badges: [],
+      lastLootChestDate: '',
+      activeXpMultiplier: 1,
+      activeTitle: 'Byte Novice',
+      notifications: [
+        {
+          id: `reset-welcome-${Date.now()}`,
+          title: '✨ Journey Reset — Clean Slate (0 XP)',
+          message: 'Byte & Professor: "Your journey has been reset to 0 XP! All tracks, problems, and streaks are primed for a brand new beginning. Good luck on your ascent!"',
+          timestamp: new Date().toISOString(),
+          type: 'general',
+          read: false,
+          actionTab: 'quest',
+          speaker: 'byte',
+        },
+      ],
+      browserNotificationsEnabled: stats.browserNotificationsEnabled || false,
+    };
+
+    setStats(freshStats);
+    localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(freshStats));
+
+    // 2. Clear Striver's sheet solved & starred items
+    localStorage.removeItem('ada_strivers_a2z_solved');
+    localStorage.removeItem('ada_strivers_a2z_starred');
+    localStorage.removeItem('ada_strivers_solved');
+    localStorage.removeItem('ada_strivers_starred');
+
+    // 3. Clear Coder Army & Academic subject completed lectures
+    localStorage.removeItem('ada_coder_army_completed_lectures');
+
+    // 4. Clear Sagas progress
+    setPrismaCompletedTopics([]);
+    setPrismaXP(0);
+    localStorage.removeItem('ada_prisma_completed_topics');
+    localStorage.removeItem('ada_prisma_xp');
+
+    setRoadmapCheckedTopics([]);
+    setReadinessChecked([]);
+    setProjectStatuses({});
+    localStorage.removeItem('ada_roadmap_checked_topics');
+    localStorage.removeItem('ada_roadmap_readiness');
+    localStorage.removeItem('ada_roadmap_project_statuses');
+
+    // Clear Linear Algebra, Python DSA, Web Dev localStorage cleanups
+    localStorage.removeItem('ada_la_tracker_read');
+    localStorage.removeItem('ada_la_tracker_mcqs');
+    localStorage.removeItem('ada_la_tracker_gym');
+    localStorage.removeItem('ada_la_tracker_teach');
+    localStorage.removeItem('ada_la_completed_chapters');
+    localStorage.removeItem('ada_la_completed_80');
+    localStorage.removeItem('ada_la_completed_braingym');
+    localStorage.removeItem('ada_pydsa_coins');
+    localStorage.removeItem('ada_pydsa_completed_chapters');
+    localStorage.removeItem('ada_pydsa_completed_80');
+    localStorage.removeItem('ada_pydsa_blitz_hi');
+    localStorage.removeItem('ada_pydsa_cards');
+    localStorage.removeItem('ada_pydsa_chests');
+    localStorage.removeItem('ada_mythsmasher_hi');
+    localStorage.removeItem('ada_web_completed_chapters');
+    localStorage.removeItem('ada_web_solved_problems');
+    localStorage.removeItem('ada_coding_seconds');
+    localStorage.removeItem('ada_simulated_date');
+
+    // 5. Reset Cohort to today
+    resetCohortToToday();
+
+    // 6. Reset Leaderboard Profile score
+    resetActiveScores(!options.keepIdentity);
+
+    // 7. Play sound & trigger notification
+    sound.playCelebration();
+    window.dispatchEvent(new CustomEvent('journey-reset'));
   };
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
@@ -916,6 +1011,7 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateCohortConfig,
         resetCohortToToday,
         setManualCohortDay,
+        resetJourney,
         recentCommits: stats.gitCommits && stats.gitCommits.length > 0 ? stats.gitCommits : loadStoredCommits(),
       }}
     >

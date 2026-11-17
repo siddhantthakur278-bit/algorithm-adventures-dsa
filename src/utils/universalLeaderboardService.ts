@@ -474,6 +474,51 @@ export async function syncActiveScores(
 }
 
 /**
+ * Hard-reset the user's active scores and progress back to 0 XP.
+ * Optionally preserve or reset the user's handle/identity.
+ */
+export async function resetActiveScores(resetProfileIdentity: boolean = false): Promise<void> {
+  let profile = getStoredUserProfile();
+  if (resetProfileIdentity) {
+    profile = getDefaultUserProfile();
+  } else {
+    profile.totalXp = 0;
+    profile.problemsSolved = 0;
+    profile.streakDays = 0;
+    profile.activeDay = 1;
+    profile.solvedProblemIds = [];
+    profile.completedDailyTargets = [];
+    profile.gitCommitsCount = 0;
+    profile.gitCommitsLog = [];
+    profile.bugHuntDefeated = [];
+    profile.blitzHighScore = 0;
+    profile.inventory = [];
+    profile.lastActive = 'Just now (Reset to 0 XP)';
+  }
+
+  localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('profiles').upsert(
+        {
+          user_handle: profile.handle,
+          display_name: profile.displayName,
+          total_xp: 0,
+          problems_solved: 0,
+          current_streak: 0,
+          active_day: 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_handle' }
+      );
+    } catch {
+      // ignore offline sync
+    }
+  }
+}
+
+/**
  * Fetch the global leaderboard ranking (from Supabase if configured, otherwise simulated world board)
  */
 export async function getGlobalLeaderboard(

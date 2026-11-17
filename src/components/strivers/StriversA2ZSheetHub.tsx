@@ -72,6 +72,16 @@ export const StriversA2ZSheetHub: React.FC = () => {
     }
   });
 
+  // Listen for journey-reset event to immediately reset solved state
+  useEffect(() => {
+    const handleJourneyReset = () => {
+      setSolvedIds(new Set<string>());
+      setStarredIds(new Set<string>());
+    };
+    window.addEventListener('journey-reset', handleJourneyReset);
+    return () => window.removeEventListener('journey-reset', handleJourneyReset);
+  }, []);
+
   // View Mode: 'sheet' (Problems) vs 'theory' (Concept Masterclasses)
   const [viewMode, setViewMode] = useState<'sheet' | 'theory'>('sheet');
 
@@ -802,10 +812,14 @@ export const StriversA2ZSheetHub: React.FC = () => {
             <div className="relative w-full aspect-video bg-black overflow-hidden">
               <iframe
                 title="striver-video-tutorial"
-                src={`https://www.youtube-nocookie.com/embed/${activeVideoQuestion.youtubeId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
+                src={`https://www.youtube.com/embed/${activeVideoQuestion.youtubeId}?autoplay=1&rel=0${
+                  typeof window !== 'undefined' && window.location.origin
+                    ? `&origin=${encodeURIComponent(window.location.origin)}`
+                    : ''
+                }`}
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
+                referrerPolicy="no-referrer-when-downgrade"
                 allowFullScreen
               />
             </div>
@@ -959,6 +973,7 @@ export const StriversA2ZSheetHub: React.FC = () => {
             <div className="flex-1 min-h-0 overflow-hidden">
               <UniversalVSCodeEditor
                 language={codeLanguage}
+                onLanguageChange={setCodeLanguage}
                 problemTitle={activeCodeQuestion.title}
                 problemId={activeCodeQuestion.id}
                 starterCode={generateQuestionStarterCode(codeLanguage, {

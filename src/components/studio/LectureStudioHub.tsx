@@ -222,6 +222,15 @@ export const LectureStudioHub: React.FC = () => {
     return new Set<string>();
   });
 
+  // Listen for journey-reset event to immediately reset completed lectures
+  useEffect(() => {
+    const handleJourneyReset = () => {
+      setCompletedLectures(new Set<string>());
+    };
+    window.addEventListener('journey-reset', handleJourneyReset);
+    return () => window.removeEventListener('journey-reset', handleJourneyReset);
+  }, []);
+
   const activeLecture: CoderArmyLecture =
     CODER_ARMY_LECTURES.find((l) => l.id === activeLectureId) || CODER_ARMY_LECTURES[0];
 
@@ -389,8 +398,8 @@ export const LectureStudioHub: React.FC = () => {
     return matchesModule && matchesSearch;
   });
 
-  // Privacy embed host toggle to prevent any browser/adblock video failure
-  const [usePrivacyHost, setUsePrivacyHost] = useState<boolean>(true);
+  // Privacy embed host toggle to prevent any browser/adblock video failure (defaults to official youtube.com)
+  const [usePrivacyHost, setUsePrivacyHost] = useState<boolean>(false);
 
   // Active Video ID, Title, Duration, Notes, Playlist URL, and Counts
   const activeVideoId =
@@ -1005,18 +1014,26 @@ export const LectureStudioHub: React.FC = () => {
             </div>
 
             {/* Video Frame with Fail-Proof Fallback Domain */}
-            <div className="relative w-full aspect-video bg-black overflow-hidden">
+            <div className="relative w-full aspect-video bg-black overflow-hidden group">
               <iframe
                 key={`${embedHost}-${embedMode}-${activeVideoId}-${activePlaylistId}`}
                 title="lecture-video-player"
                 src={
                   embedMode === 'playlist'
-                    ? `${embedHost}/embed/videoseries?list=${activePlaylistId}&enablejsapi=1`
-                    : `${embedHost}/embed/${activeVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`
+                    ? `${embedHost}/embed/videoseries?list=${activePlaylistId}&rel=0${
+                        typeof window !== 'undefined' && window.location.origin
+                          ? `&origin=${encodeURIComponent(window.location.origin)}`
+                          : ''
+                      }`
+                    : `${embedHost}/embed/${activeVideoId}?rel=0${
+                        typeof window !== 'undefined' && window.location.origin
+                          ? `&origin=${encodeURIComponent(window.location.origin)}`
+                          : ''
+                      }`
                 }
                 className="absolute inset-0 w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
+                referrerPolicy="no-referrer-when-downgrade"
                 allowFullScreen
               />
             </div>

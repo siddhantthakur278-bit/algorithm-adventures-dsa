@@ -38,6 +38,7 @@ import {
   Calendar,
   Check,
   Zap,
+  RotateCcw,
 } from 'lucide-react';
 import { GithubIcon } from '../common/Icons';
 import { ByteAvatar, ProfessorAvatar, BugsyAvatar } from '../characters/Characters';
@@ -912,6 +913,32 @@ export const LiveDeveloperProfile: React.FC = () => {
             <DeveloperPassportCard />
           </div>
         )}
+
+        {/* Journey Lifecycle & Hard Reset (Start at 0 XP) */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-950/20 via-[#0d1117] to-amber-950/20 border border-red-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
+              <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <span>Journey Lifecycle & Progress Management</span>
+              </h4>
+            </div>
+            <p className="text-xs text-slate-400 max-w-lg">
+              Want to start your algorithm adventures journey fresh from scratch? You can reset your stats, completed sheets, lectures, and streaks back to strictly <strong className="text-amber-300 font-mono">0 XP</strong> while preserving your username and GitHub config.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              sound.playPop();
+              window.dispatchEvent(new CustomEvent('open-reset-journey'));
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-950/80 hover:bg-red-900 text-red-200 hover:text-white border border-red-500/40 text-xs font-bold font-mono transition cursor-pointer shadow-md shrink-0"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-red-400" />
+            <span>Reset Journey to 0 XP</span>
+          </button>
+        </div>
       </div>
 
       {/* Global Onboarding & Universal Identity Modal */}
