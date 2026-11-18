@@ -32,6 +32,8 @@ import {
   Globe,
   RotateCcw,
   LayoutDashboard,
+  Key,
+  Shield,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -346,6 +348,28 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       onSelect: () => {
         setActiveSaga('dsa');
         setActiveTab('visualizer');
+      },
+    },
+    {
+      id: 'tab-oauth-jwt',
+      title: 'OAuth 2.0 PKCE & JWT Cryptographic Studio (Animations & Interactive Verifier)',
+      category: 'High-Tech Lab',
+      icon: Key,
+      badge: 'RFC 7636 • RFC 7519',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('visualizer');
+      },
+    },
+    {
+      id: 'tab-auth-security-course',
+      title: 'CS 405: Authentication, OAuth 2.0 & JWT Security Architecture',
+      category: 'Core CS Subjects',
+      icon: Shield,
+      badge: 'CS 405 • 8 Lectures',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('lecture-studio');
       },
     },
     {

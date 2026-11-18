@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, ChevronRight, ChevronLeft, Sparkles, Plus, Search, Eye, Network, Cpu } from 'lucide-react';
+import { Play, Pause, RotateCcw, ChevronRight, ChevronLeft, Sparkles, Plus, Search, Eye, Network, Cpu, Key } from 'lucide-react';
 import { ByteAvatar, ProfessorAvatar, ComicBubble } from '../characters/Characters';
 import { sound } from '../../utils/soundEffects';
 import { InteractiveGraphStudio } from './InteractiveGraphStudio';
 import { MemoryLayoutVisualizer } from './MemoryLayoutVisualizer';
 import { DynamicProgrammingVisualizer } from './DynamicProgrammingVisualizer';
+import { OAuthJwtVisualizer } from './OAuthJwtVisualizer';
 
 export const AlgorithmVisualizer: React.FC = () => {
   const [activeMode, setActiveMode] = useState<
@@ -18,6 +19,7 @@ export const AlgorithmVisualizer: React.FC = () => {
     | 'interactiveGraph'
     | 'memoryLayout'
     | 'dynamicProgramming'
+    | 'oauthJwt'
   >('lomuto');
 
   // --- LOMUTO PARTITION STATE ---
@@ -409,6 +411,20 @@ export const AlgorithmVisualizer: React.FC = () => {
             >
               <Sparkles className="w-3.5 h-3.5" />
               9. Dynamic Programming 2D Table Matrix
+            </button>
+            <button
+              onClick={() => {
+                setActiveMode('oauthJwt');
+                sound.playPop();
+              }}
+              className={`px-4 py-2 rounded-xl font-bangers text-xs tracking-wider border-2 transition flex items-center gap-1.5 ${
+                activeMode === 'oauthJwt'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-black shadow-comic-sm font-black'
+                  : 'bg-[#13182b] text-slate-300 border-[#222c48] hover:text-white'
+              }`}
+            >
+              <Key className="w-3.5 h-3.5" />
+              10. OAuth 2.0 PKCE &amp; JWT Studio
             </button>
           </div>
         </div>
@@ -1430,6 +1446,9 @@ export const AlgorithmVisualizer: React.FC = () => {
 
       {/* 9. DYNAMIC PROGRAMMING 2D TABLE MATRIX & RECURRENCE STUDIO */}
       {activeMode === 'dynamicProgramming' && <DynamicProgrammingVisualizer />}
+
+      {/* 10. OAUTH 2.0 PKCE & JWT SECURITY VISUALIZER */}
+      {activeMode === 'oauthJwt' && <OAuthJwtVisualizer />}
     </div>
   );
 };

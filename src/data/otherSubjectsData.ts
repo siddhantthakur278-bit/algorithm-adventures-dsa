@@ -3266,6 +3266,193 @@ export const OTHER_ACADEMIC_SUBJECTS: AcademicSubject[] = [
         "detailedNotes": "### DP 48-50: Partition DP Framework\n- **MCM Recurrence:**\n  For subchain matrices from i to j, test every partition cut k (i <= k < j):\n  dp[i][j] = min_{i <= k < j} { dp[i][k] + dp[k+1][j] + dims[i-1] * dims[k] * dims[j] }\n- **Burst Balloons (LeetCode #312):**\n  Work in reverse: think which balloon bursts last in range (i, j) so that subproblems remain independent!"
       }
     ]
+  },
+  {
+    "id": "auth-security",
+    "title": "Authentication, OAuth 2.0 & JWT Security Architecture",
+    "code": "CS 405",
+    "category": "Security & Identity Systems",
+    "instructor": "Identity & Cryptography Masterclass",
+    "icon": "🔐",
+    "color": "#8B5CF6",
+    "playlistId": "PL0X6fGhFFNTcc3q11T8nZqF7c8x2aQ2yV",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PL0X6fGhFFNTcc3q11T8nZqF7c8x2aQ2yV",
+    "description": "Comprehensive engineering deep-dive into modern identity protocols, OAuth 2.0 framework (RFC 6749), Authorization Code Flow with PKCE (RFC 7636), OpenID Connect (OIDC), JSON Web Tokens (RFC 7519), HMAC-SHA256 vs RS256 cryptography, token rotation, and HttpOnly SameSite storage defense.",
+    "lecturesCount": 8,
+    "totalDuration": "4 hrs 15 mins",
+    "keyTopics": [
+      "Authentication vs Authorization & Cryptographic Primitives (Hashing vs Encryption vs Signing)",
+      "OAuth 2.0 Architecture & The 4 Roles (Resource Owner, Client, Auth Server, Resource Server)",
+      "PKCE (Proof Key for Code Exchange) RFC 7636: code_verifier & code_challenge",
+      "The 8-Step Authorization Code Handshake & State Parameter CSRF Defense",
+      "OpenID Connect (OIDC) Identity Layer: ID Tokens, UserInfo Endpoint & Single Sign-On (SSO)",
+      "JWT (JSON Web Token) Internals (RFC 7519): Base64Url Header, Claims Payload & HMAC Signature",
+      "Token Lifecycle: Stateless 15-Minute Access Tokens, Refresh Token Rotation & Token Family Invalidation",
+      "Storage Security Matrix: LocalStorage XSS Vulnerabilities vs HttpOnly Secure SameSite Cookie Defense"
+    ],
+    "lectures": [
+      {
+        "id": "auth-1",
+        "lectureNumber": 1,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L1: Authentication vs Authorization & Cryptographic Primitives",
+        "duration": "28:10",
+        "videoId": "926U5sguCJ4",
+        "topics": [
+          "AuthN vs AuthZ",
+          "Cryptographic Hashing (SHA-256, bcrypt, Argon2)",
+          "Symmetric vs Asymmetric Encryption",
+          "Digital Signatures (HMAC, RSA, ECDSA)"
+        ],
+        "difficulty": "Beginner",
+        "starterCodes": {
+          "python": "import hashlib, hmac\n\n# 1. One-Way Cryptographic Hash\npassword = b'SuperSecurePassword2026!'\nhash_val = hashlib.sha256(password).hexdigest()\nprint('SHA-256 Digest:', hash_val)\n\n# 2. HMAC Message Authentication Code\nsecret_key = b'server-vault-secret'\nmessage = b'user_id=42&role=admin'\nsig = hmac.new(secret_key, message, hashlib.sha256).hexdigest()\nprint('HMAC-SHA256 Signature:', sig)\n",
+          "cpp": "#include <iostream>\n#include <string>\nusing namespace std;\n\n// Conceptual Cryptographic Distinction:\n// Hashing: One-way lossy digest (passwords)\n// Encryption: Two-way invertible with key (confidential data)\n// Signing: Proves integrity and authenticity (tokens)\nint main() {\n    cout << \"AuthN = Identity Verification (Who you are)\" << endl;\n    cout << \"AuthZ = Permission Authorization (What you can access)\" << endl;\n    return 0;\n}\n"
+        },
+        "detailedNotes": "### Fundamental Concepts:\n1. **Authentication (AuthN):** Verifying the identity of a subject (e.g. passwords, WebAuthn Passkeys, MFA, biometric).\n2. **Authorization (AuthZ):** Determining whether an authenticated identity has permission to perform an action on a specific resource (e.g. RBAC, ABAC, OAuth scopes).\n3. **Cryptographic Primitives:**\n   - *Hashing:* One-way deterministic digest. Never store raw passwords—use salted, slow hashes (Argon2id, bcrypt).\n   - *Symmetric Encryption (AES-GCM):* Shared secret encrypts and decrypts.\n   - *Digital Signatures (HMAC, RSA, ECDSA):* Verifies payload was not tampered with."
+      },
+      {
+        "id": "auth-2",
+        "lectureNumber": 2,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L2: OAuth 2.0 Core Roles, Client Types & Protocol Handshake",
+        "duration": "32:45",
+        "videoId": "CPbvxxslDTU",
+        "topics": [
+          "The 4 OAuth Roles",
+          "Confidential vs Public Clients",
+          "Access Tokens vs Client Secrets",
+          "Redirect URI Security"
+        ],
+        "difficulty": "Intermediate",
+        "starterCodes": {
+          "python": "# OAuth 2.0 Client Configuration Definition\noauth_client_config = {\n    'client_id': 'ada_web_spa_app',\n    'client_type': 'public', # SPAs cannot keep a client_secret safe!\n    'auth_endpoint': 'https://auth.company.com/oauth/v2/authorize',\n    'token_endpoint': 'https://auth.company.com/oauth/v2/token',\n    'redirect_uri': 'https://app.company.com/oauth/callback',\n    'scopes': ['openid', 'profile', 'email', 'offline_access']\n}\nprint('Client registered:', oauth_client_config['client_id'])\n"
+        },
+        "detailedNotes": "### The 4 OAuth 2.0 Roles (RFC 6749):\n1. **Resource Owner:** The human end-user who grants access to their protected data.\n2. **Client:** The application requesting access (e.g. Single Page App, Mobile App, Backend Service).\n3. **Authorization Server (IdP):** Issues identity assertions and access tokens after verifying user consent (e.g. Google, Auth0, Okta).\n4. **Resource Server:** The backend API hosting protected resources, accepting Bearer tokens."
+      },
+      {
+        "id": "auth-3",
+        "lectureNumber": 3,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L3: PKCE (Proof Key for Code Exchange) & Auth Code Handshake (RFC 7636)",
+        "duration": "35:10",
+        "videoId": "CHzERullHe8",
+        "topics": [
+          "Authorization Code Flow",
+          "PKCE code_verifier generation",
+          "code_challenge = Base64Url(SHA256(verifier))",
+          "Anti-CSRF State Parameter"
+        ],
+        "difficulty": "Advanced",
+        "starterCodes": {
+          "python": "import os, hashlib, base64\n\n# 1. Generate high-entropy 32-byte code_verifier\ncode_verifier = base64.urlsafe_b64encode(os.urandom(32)).decode('utf-8').rstrip('=')\n\n# 2. Derive code_challenge via SHA-256\nhashed = hashlib.sha256(code_verifier.encode('utf-8')).digest()\ncode_challenge = base64.urlsafe_b64encode(hashed).decode('utf-8').rstrip('=')\n\nprint('code_verifier:', code_verifier)\nprint('code_challenge (sent in Step 2):', code_challenge)\n"
+        },
+        "detailedNotes": "### Why PKCE is Mandatory (RFC 7636):\n- On mobile devices and Single Page Applications (SPAs), authorization codes returned over custom URI schemes (`myapp://callback`) or browser redirects could be intercepted by malicious apps registered on the same device.\n- With PKCE, even if an attacker steals the temporary `authorization_code`, they cannot exchange it at `/oauth/token` because only the legitimate client possesses the secret, in-memory `code_verifier`!"
+      },
+      {
+        "id": "auth-4",
+        "lectureNumber": 4,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L4: OpenID Connect (OIDC) Identity Layer & Single Sign-On (SSO)",
+        "duration": "30:20",
+        "videoId": "TmOC_g9x2qA",
+        "topics": [
+          "OIDC Identity Layer over OAuth 2.0",
+          "ID Token (JWT) vs Access Token",
+          "Standard OIDC Claims",
+          "UserInfo Endpoint & JWKS"
+        ],
+        "difficulty": "Intermediate",
+        "starterCodes": {
+          "python": "# OIDC ID Token Claims Structure\nid_token_payload = {\n    'iss': 'https://accounts.google.com',\n    'sub': '1098239018239012',\n    'aud': 'my-client-app-id',\n    'exp': 1773820000,\n    'iat': 1773816400,\n    'nonce': 'random_anti_replay_nonce_772',\n    'name': 'Ada Lovelace',\n    'email': 'ada@cyber.org',\n    'email_verified': True\n}\nprint('Subject (User ID):', id_token_payload['sub'])\n"
+        },
+        "detailedNotes": "### OAuth 2.0 vs OpenID Connect (OIDC):\n- **OAuth 2.0:** An *Authorization* framework. It hands out Access Tokens that say *'The bearer can read:photos'*. It does NOT define user identity, format of tokens, or user profiles.\n- **OpenID Connect (OIDC):** An *Identity (AuthN)* layer on top of OAuth 2.0. It introduces the `openid` scope, a standardized `id_token` (JWT format), and a `/userinfo` endpoint."
+      },
+      {
+        "id": "auth-5",
+        "lectureNumber": 5,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L5: JWT Internals - Header, Payload, Signature & Cryptography (RFC 7519)",
+        "duration": "38:40",
+        "videoId": "7Q17ubqLfaM",
+        "topics": [
+          "JWT Anatomy: Header.Payload.Signature",
+          "Base64Url Encoding (NOT Encryption!)",
+          "HMAC-SHA256 (Symmetric) vs RS256 (Asymmetric JWKS)",
+          "The 'alg: none' Exploit & Signature Stripping"
+        ],
+        "difficulty": "Advanced",
+        "starterCodes": {
+          "python": "import json, base64, hmac, hashlib\n\ndef b64url(data: bytes) -> str:\n    return base64.urlsafe_b64encode(data).decode('utf-8').rstrip('=')\n\nheader = {'alg': 'HS256', 'typ': 'JWT'}\npayload = {'sub': '1234567890', 'name': 'John Doe', 'iat': 1516239022}\nsecret = b'my-secret-key-12345'\n\nh_b64 = b64url(json.dumps(header, separators=(',', ':')).encode())\np_b64 = b64url(json.dumps(payload, separators=(',', ':')).encode())\nmsg = f'{h_b64}.{p_b64}'.encode()\nsig = b64url(hmac.new(secret, msg, hashlib.sha256).digest())\n\njwt_token = f'{h_b64}.{p_b64}.{sig}'\nprint('Generated Valid JWT:', jwt_token)\n"
+        },
+        "detailedNotes": "### Crucial Security Warning:\n- JWT payloads are **only Base64Url encoded, NOT encrypted**! Anyone with network access can decode the payload.\n- **Never store passwords, secrets, or private PII in a JWT payload**.\n- The signature only guarantees *tamper-evident integrity* (i.e. the server detects if any claim was altered)."
+      },
+      {
+        "id": "auth-6",
+        "lectureNumber": 6,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L6: Token Lifecycle - Access Tokens, Refresh Token Rotation & Revocation",
+        "duration": "33:15",
+        "videoId": "mbsmsi7l3r4",
+        "topics": [
+          "Access Token Lifespan (10-15 mins)",
+          "Silent Refresh with Axios / Fetch Interceptors",
+          "Refresh Token Rotation (RFC 6819)",
+          "Token Family Invalidation on Replay Detection"
+        ],
+        "difficulty": "Advanced",
+        "starterCodes": {
+          "python": "# Token Family Revocation State Machine\ntoken_families = {\n    'family_usr_99': {\n        'active_refresh_token': 'rfr_v2',\n        'invalidated_tokens': {'rfr_v1'}\n    }\n}\n\ndef exchange_refresh_token(presented_token: str, family_id: str):\n    fam = token_families[family_id]\n    if presented_token in fam['invalidated_tokens']:\n        # BREACH DETECTED: A revoked token is being reused!\n        fam['active_refresh_token'] = None\n        raise Exception('BREACH DETECTED: Revoking entire token family!')\n    \n    # Rotate: invalidate old, issue new\n    fam['invalidated_tokens'].add(presented_token)\n    fam['active_refresh_token'] = 'rfr_v3'\n    return 'new_access_token', 'rfr_v3'\n\nprint('Token Lifecycle Engine Ready')\n"
+        },
+        "detailedNotes": "### Token Rotation Defense:\n- When a client presents `rfr_v1`, the Auth Server invalidates `rfr_v1` and returns `rfr_v2`.\n- If an attacker stole `rfr_v1` and later attempts to use it, the server sees that `rfr_v1` was already invalidated.\n- It detects an immediate breach, revokes `rfr_v2` as well, and forces all sessions to re-authenticate."
+      },
+      {
+        "id": "auth-7",
+        "lectureNumber": 7,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L7: Storage Security Architecture - Cookies vs LocalStorage & XSS/CSRF Defense",
+        "duration": "31:50",
+        "videoId": "472e39-h73o",
+        "topics": [
+          "LocalStorage Vulnerabilities to XSS",
+          "HttpOnly, Secure, SameSite Cookie Flags",
+          "SameSite=Lax vs SameSite=Strict",
+          "In-Memory State + Refresh Cookie Best Practice"
+        ],
+        "difficulty": "Intermediate",
+        "starterCodes": {
+          "python": "# Express / FastAPI Secure Cookie Attributes\ncookie_attributes = {\n    'key': 'refresh_token',\n    'httponly': True,    # JavaScript document.cookie cannot read it! Defeats XSS token theft.\n    'secure': True,      # Sent only over encrypted HTTPS connections.\n    'samesite': 'lax',   # Blocks cross-site automatic transmission. Defeats CSRF.\n    'path': '/api/auth/refresh',\n    'max_age': 7 * 24 * 3600\n}\nprint('Cookie Security Configuration:', cookie_attributes)\n"
+        },
+        "detailedNotes": "### Enterprise Defense In Depth:\n1. **Short-Lived Access Token (15 min):** Keep in memory (JavaScript variable or React state). If XSS occurs, the token expires quickly.\n2. **Long-Lived Refresh Token (7 days):** Store in an `HttpOnly, Secure, SameSite=Lax` cookie scoped strictly to `/api/auth/refresh`."
+      },
+      {
+        "id": "auth-8",
+        "lectureNumber": 8,
+        "subjectId": "auth-security",
+        "subjectName": "Auth & JWT Security",
+        "title": "L8: Production End-to-End Implementation in Next.js, Express & FastAPI",
+        "duration": "42:10",
+        "videoId": "2PPX34S_C4w",
+        "topics": [
+          "Next.js App Router Middleware Auth",
+          "Express requireAuth Middleware",
+          "FastAPI OAuth2PasswordBearer",
+          "JWT Signing & Verification with jose"
+        ],
+        "difficulty": "Advanced",
+        "starterCodes": {
+          "python": "from fastapi import FastAPI, Depends, HTTPException\nfrom fastapi.security import OAuth2PasswordBearer\n\napp = FastAPI()\noauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')\n\n@app.get('/api/protected')\ndef protected_route(token: str = Depends(oauth2_scheme)):\n    # In production: jwt.decode(token, SECRET, algorithms=['HS256'])\n    return {'status': 'authorized', 'token_received': token[:10] + '...'}\n"
+        },
+        "detailedNotes": "### Production Architecture Checklist:\n- Centralized authentication middleware.\n- Asymmetric keys (RS256) for multi-service architectures using JWKS.\n- Short access token lifetimes (15 min) with automated rotation.\n- Defense against algorithm confusion attacks (enforce `algorithms=['RS256']`)."
+      }
+    ]
   }
 ];
 

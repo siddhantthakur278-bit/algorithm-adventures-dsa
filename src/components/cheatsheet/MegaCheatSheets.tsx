@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useCourse } from '../../context/CourseContext';
 import { hallOfFameProblems } from '../../data/hallOfFameData';
-import { FileSpreadsheet, Award, CheckCircle, Code, Printer, Download, Sparkles } from 'lucide-react';
+import { FileSpreadsheet, Award, CheckCircle, Code, Printer, Download, Sparkles, Key, Shield, Lock, ExternalLink } from 'lucide-react';
 import { ByteAvatar, ProfessorAvatar } from '../characters/Characters';
 import { sound } from '../../utils/soundEffects';
 
 export const MegaCheatSheets: React.FC = () => {
-  const { stats, loadProblemInIDE } = useCourse();
+  const { stats, loadProblemInIDE, setActiveTab: setAppActiveTab } = useCourse();
   const [userName, setUserName] = useState('Adventurer Byte');
-  const [activeTab, setActiveTab] = useState<'matrix' | 'masterTheorem' | 'hallOfFame' | 'certificate'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'masterTheorem' | 'hallOfFame' | 'certificate' | 'authMatrix'>('matrix');
 
   const printCertificate = () => {
     sound.playPop();
@@ -96,6 +96,20 @@ export const MegaCheatSheets: React.FC = () => {
               }`}
             >
               Certificate
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('authMatrix');
+                sound.playPop();
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bangers tracking-wider border-2 transition flex items-center gap-1.5 ${
+                activeTab === 'authMatrix'
+                  ? 'bg-purple-600 text-white border-black shadow-comic-sm'
+                  : 'bg-[#13182b] text-slate-300 border-[#222c48] hover:text-white'
+              }`}
+            >
+              <Key className="w-3.5 h-3.5" />
+              OAuth 2.0 &amp; JWT Matrix
             </button>
           </div>
         </div>
@@ -316,6 +330,150 @@ export const MegaCheatSheets: React.FC = () => {
                   <div className="font-bold italic">Byte the Hero</div>
                   <div className="text-gray-500 text-[10px]">Algorithm Adventurer</div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. OAUTH 2.0 & JWT SECURITY MATRIX */}
+      {activeTab === 'authMatrix' && (
+        <div className="space-y-6">
+          <div className="bg-[#0c101d] border-2 border-[#1c243a] rounded-2xl p-6 shadow-comic-sm space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="font-bangers text-2xl text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-purple-400" />
+                  <span>OAUTH 2.0 (RFC 6749) &amp; JWT (RFC 7519) ARCHITECTURE CHEAT SHEET</span>
+                </h2>
+                <p className="text-xs text-slate-300">
+                  Comprehensive reference for identity tokens, authorization flows, PKCE math, claims, and storage security.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  setAppActiveTab('visualizer');
+                }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bangers text-xs tracking-wider border border-black shadow-comic-sm transition cursor-pointer flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Open Interactive OAuth &amp; JWT Visualizer</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Matrix 1: OAuth 2.0 PKCE vs Traditional Flows */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-sm text-amber-400 font-mono uppercase tracking-wider">
+                1. OAuth 2.0 Grant Types Decision Matrix
+              </h3>
+              <div className="overflow-x-auto rounded-xl border border-gray-800">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#141829] text-gray-400 font-mono text-[11px] border-b border-gray-800">
+                      <th className="p-3">Grant Type</th>
+                      <th className="p-3">Client Type</th>
+                      <th className="p-3">Client Secret?</th>
+                      <th className="p-3">Use Case</th>
+                      <th className="p-3">Security Level</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800/60 font-mono text-slate-300">
+                    <tr className="hover:bg-white/[0.02]">
+                      <td className="p-3 font-bold text-emerald-400">Authorization Code + PKCE</td>
+                      <td className="p-3">Public / Confidential</td>
+                      <td className="p-3">No (uses verifier)</td>
+                      <td className="p-3">SPAs (React/Vue), Mobile Apps, Next.js</td>
+                      <td className="p-3"><span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">Gold Standard (RFC 7636)</span></td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02]">
+                      <td className="p-3 font-bold text-cyan-400">Client Credentials</td>
+                      <td className="p-3">Confidential (Server)</td>
+                      <td className="p-3">Yes (Secure Vault)</td>
+                      <td className="p-3">Machine-to-Machine (M2M), Cron Daemons, Microservices</td>
+                      <td className="p-3"><span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">High (No User Involved)</span></td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02]">
+                      <td className="p-3 font-bold text-purple-400">Refresh Token Grant</td>
+                      <td className="p-3">Both</td>
+                      <td className="p-3">Depends</td>
+                      <td className="p-3">Silent access token renewal without prompt</td>
+                      <td className="p-3"><span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">High (with Token Rotation)</span></td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] bg-red-950/10">
+                      <td className="p-3 font-bold text-red-400 line-through">Implicit Grant</td>
+                      <td className="p-3">Public</td>
+                      <td className="p-3">No</td>
+                      <td className="p-3">Deprecated legacy browser token return via URI hash fragment</td>
+                      <td className="p-3"><span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold">DEPRECATED &amp; INSECURE</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Matrix 2: JWT RFC 7519 Registered Claims */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-sm text-purple-400 font-mono uppercase tracking-wider">
+                2. JWT Registered Claims Standard (RFC 7519)
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+                {[
+                  { claim: 'sub', desc: 'Subject: Unique User Identifier (e.g. usr_10482)' },
+                  { claim: 'iss', desc: 'Issuer: URL of Auth Server (e.g. https://auth.company.com)' },
+                  { claim: 'exp', desc: 'Expiration: Unix timestamp in seconds after which token expires' },
+                  { claim: 'iat', desc: 'Issued At: Timestamp when token was created' },
+                  { claim: 'aud', desc: 'Audience: Intended recipient API (e.g. https://api.company.com)' },
+                  { claim: 'nbf', desc: 'Not Before: Token cannot be accepted prior to this time' },
+                  { claim: 'jti', desc: 'JWT ID: Unique nonce to prevent replay attacks' },
+                  { claim: 'scope', desc: 'Permissions granted (e.g. read:profile write:orders)' },
+                ].map(c => (
+                  <div key={c.claim} className="p-3 rounded-xl bg-[#141829] border border-gray-800 space-y-1">
+                    <span className="text-purple-400 font-bold text-sm">"{c.claim}"</span>
+                    <p className="text-[11px] text-slate-300">{c.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Matrix 3: Storage Security & Threat Defense */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-sm text-cyan-400 font-mono uppercase tracking-wider">
+                3. Token Storage Security &amp; Attack Vector Comparison
+              </h3>
+              <div className="overflow-x-auto rounded-xl border border-gray-800">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#141829] text-gray-400 font-mono text-[11px] border-b border-gray-800">
+                      <th className="p-3">Storage Location</th>
+                      <th className="p-3">XSS Vulnerability</th>
+                      <th className="p-3">CSRF Vulnerability</th>
+                      <th className="p-3">Mitigation / Recommendation</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800/60 font-mono text-slate-300">
+                    <tr className="hover:bg-white/[0.02]">
+                      <td className="p-3 font-bold text-red-400">LocalStorage</td>
+                      <td className="p-3 text-red-400">CRITICAL: Any script can read localStorage.token</td>
+                      <td className="p-3 text-emerald-400">None: Not sent automatically by browser</td>
+                      <td className="p-3">Never store sensitive long-lived tokens in localStorage.</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02]">
+                      <td className="p-3 font-bold text-emerald-400">HttpOnly + Secure Cookie</td>
+                      <td className="p-3 text-emerald-400">IMMUNE: JavaScript (document.cookie) cannot read it</td>
+                      <td className="p-3 text-amber-400">Protected with SameSite=Lax or anti-CSRF token</td>
+                      <td className="p-3 font-bold text-emerald-300">Recommended for Refresh Tokens and Session Cookies.</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02]">
+                      <td className="p-3 font-bold text-cyan-400">In-Memory (React State / Closure)</td>
+                      <td className="p-3 text-emerald-400">High: Token lost on page refresh, cannot be read from disk</td>
+                      <td className="p-3 text-emerald-400">None: Must be manually added to Authorization header</td>
+                      <td className="p-3 font-bold text-cyan-300">Recommended for Short-Lived Access Tokens (15m).</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ import {
   Activity,
   Layers,
   ShieldAlert,
+  Key,
 } from 'lucide-react';
 import { BytecodeDisassemblerStudio } from './BytecodeDisassemblerStudio';
 import { NeuralCodeSpaceVisualizer } from './NeuralCodeSpaceVisualizer';
@@ -16,11 +17,12 @@ import { RaftConsensusSimulator } from './RaftConsensusSimulator';
 import { WasmJitAstStudio } from './WasmJitAstStudio';
 import { QuantumCircuitStudio } from './QuantumCircuitStudio';
 import { DistributedRateLimiterStudio } from './DistributedRateLimiterStudio';
+import { OAuthJwtVisualizer } from '../visualizer/OAuthJwtVisualizer';
 import { sound } from '../../utils/soundEffects';
 
 export const HighTechLabHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
-    'bytecode' | 'neural' | 'raft' | 'ast_jit' | 'quantum' | 'ratelimit'
+    'bytecode' | 'neural' | 'raft' | 'ast_jit' | 'quantum' | 'ratelimit' | 'oauth_jwt'
   >('bytecode');
 
   return (
@@ -63,6 +65,7 @@ export const HighTechLabHub: React.FC = () => {
           { id: 'ast_jit', label: 'AST Explorer & Wasm JIT', icon: Layers },
           { id: 'quantum', label: 'Quantum Circuit & Qubits', icon: Sparkles },
           { id: 'ratelimit', label: 'Distributed Rate Limiter', icon: ShieldAlert },
+          { id: 'oauth_jwt', label: 'OAuth 2.0 PKCE & JWT Lab', icon: Key },
           { id: 'neural', label: 'Neural Code Vector Space (AST)', icon: Brain },
           { id: 'raft', label: 'Distributed Raft Consensus', icon: Network },
         ].map((tab) => {
@@ -93,6 +96,7 @@ export const HighTechLabHub: React.FC = () => {
       {activeTab === 'ast_jit' && <WasmJitAstStudio />}
       {activeTab === 'quantum' && <QuantumCircuitStudio />}
       {activeTab === 'ratelimit' && <DistributedRateLimiterStudio />}
+      {activeTab === 'oauth_jwt' && <OAuthJwtVisualizer />}
       {activeTab === 'neural' && <NeuralCodeSpaceVisualizer />}
       {activeTab === 'raft' && <RaftConsensusSimulator />}
     </div>
