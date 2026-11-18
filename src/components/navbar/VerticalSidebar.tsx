@@ -40,6 +40,7 @@ import {
   MessagesSquare,
   Palette,
   Target,
+  LayoutDashboard,
 } from 'lucide-react';
 import { FlameIcon } from '../common/Icons';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
@@ -103,6 +104,7 @@ export const VerticalSidebar: React.FC = () => {
     {
       label: 'Curriculum & Live Track',
       items: [
+        { id: 'home', label: 'Command Center Home', icon: LayoutDashboard, badge: 'Overview', highlight: true },
         { id: 'problems', label: '1,000+ Problem Library', icon: BookOpen, badge: '1,010 FAANG', highlight: true },
         { id: 'strivers-sheet', label: "Striver's A2Z Sheet & Theory", icon: Target, badge: '346 Qs • 18 Steps', highlight: true },
         { id: 'quest', label: 'Daily POTD Quests', icon: Sparkles, badge: '5 AM' },
@@ -165,8 +167,8 @@ export const VerticalSidebar: React.FC = () => {
         <div className="h-16 px-3.5 border-b border-slate-800/80 flex items-center justify-between gap-2 bg-[#090d16]">
           <div
             className="flex items-center gap-2.5 overflow-hidden cursor-pointer"
-            onClick={() => setActiveTab('problems')}
-            title="Algorithm Adventures Home"
+            onClick={() => setActiveTab('home')}
+            title="Algorithm Adventures Command Center"
           >
             <b className="logo-badge shrink-0">
               ⚡

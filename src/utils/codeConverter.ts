@@ -226,6 +226,7 @@ export function convertCppToPython(cppCode: string, title: string = 'Solution'):
   const headerComments: string[] = [];
   let inClass = false;
   let inMethod = false;
+  let curIndent = 8;
 
   for (let rawLine of lines) {
     let line = rawLine.trim();
@@ -289,6 +290,7 @@ export function convertCppToPython(cppCode: string, title: string = 'Solution'):
 
       pyLines.push(`    def ${methodName}(${params.join(', ')}) -> ${pyRet}:`);
       inMethod = true;
+      curIndent = 8;
       continue;
     }
 
@@ -304,7 +306,12 @@ export function convertCppToPython(cppCode: string, title: string = 'Solution'):
     }
 
     if (line === '}') {
+      curIndent = Math.max(8, curIndent - 4);
       continue;
+    }
+
+    if (line.startsWith('} else if') || line.startsWith('} else')) {
+      curIndent = Math.max(8, curIndent - 4);
     }
 
     // Code transformations
@@ -329,7 +336,7 @@ export function convertCppToPython(cppCode: string, title: string = 'Solution'):
     // If-else statements
     const ifSingleReturn = conv.match(/if\s*\((.*)\)\s*return\s+(.*);?/);
     if (ifSingleReturn) {
-      conv = `if ${ifSingleReturn[1]}:\n            return ${ifSingleReturn[2].replace(/;$/, '')}`;
+      conv = `if ${ifSingleReturn[1]}:\n` + ' '.repeat(curIndent + 4) + `return ${ifSingleReturn[2].replace(/;$/, '')}`;
     } else {
       conv = conv.replace(/if\s*\((.*)\)\s*\{?/g, 'if $1:');
       conv = conv.replace(/else\s+if\s*\((.*)\)\s*\{?/g, 'elif $1:');
@@ -379,14 +386,17 @@ export function convertCppToPython(cppCode: string, title: string = 'Solution'):
 
     // Semicolons and brackets cleanup
     conv = conv.replace(/;\s*$/g, '');
-    conv = conv.replace(/\{$/, '');
+    conv = conv.replace(/\{$/, '').trim();
 
-    if (conv.trim().length > 0) {
+    if (conv.length > 0) {
       const splitSub = conv.split('\n');
       for (let s of splitSub) {
         let trimmed = s.trim();
         if (trimmed.length > 0) {
-          pyLines.push('        ' + trimmed);
+          pyLines.push(' '.repeat(curIndent) + trimmed);
+          if (trimmed.endsWith(':')) {
+            curIndent += 4;
+          }
         }
       }
     }
@@ -423,10 +433,13 @@ export function convertPythonToCpp(pythonCode: string, title?: string): string {
   const lines = pythonCode.split('\n');
   const cppBody: string[] = [];
   const headerComments: string[] = [];
-  let inMethod = false;
+  const indentStack: number[] = [];
+  const declaredVars = new Set<string>(['self']);
 
   for (let rawLine of lines) {
-    let line = rawLine.trim();
+    if (!rawLine.trim()) continue;
+    const indent = rawLine.search(/\S/);
+    const line = rawLine.trim();
 
     if (line.startsWith('from ') || line.startsWith('import ')) continue;
 
@@ -436,6 +449,14 @@ export function convertPythonToCpp(pythonCode: string, title?: string): string {
     }
 
     if (line.startsWith('class Solution:')) continue;
+    if (line.startsWith('if __name__ ==')) break;
+
+    // Pop closing braces for decreased indentation
+    while (indentStack.length > 0 && indent <= indentStack[indentStack.length - 1]) {
+      indentStack.pop();
+      const pad = '    '.repeat(Math.max(2, indentStack.length + 2));
+      cppBody.push(pad + '}');
+    }
 
     // Method definition with optional return type: def climbStairs(self, n: int) -> int:
     const defMatch = line.match(/def\s+([a-zA-Z0-9_]+)\s*\(([^)]*)\)(?:\s*->\s*([^:]+))?\s*:/);
@@ -459,31 +480,43 @@ export function convertPythonToCpp(pythonCode: string, title?: string): string {
         .map((p) => {
           if (p.includes(':')) {
             const [pName, pType] = p.split(':').map((s) => s.trim());
+            declaredVars.add(pName);
             if (pType.includes('List[int]')) return `vector<int>& ${pName}`;
             if (pType.includes('List[List[int]]')) return `vector<vector<int>>& ${pName}`;
             if (pType.includes('str')) return `string ${pName}`;
             if (pType.includes('bool')) return `bool ${pName}`;
             return `int ${pName}`;
           }
+          declaredVars.add(p);
           return `int ${p}`;
         })
         .join(', ');
 
       cppBody.push(`    ${cppRet} ${methodName}(${params}) {`);
-      inMethod = true;
+      indentStack.push(indent);
       continue;
     }
 
-    if (line.startsWith('if __name__ ==')) break;
+    // Single-line if statement: if n <= 2: return n
+    const singleIf = line.match(/^if\s+(.*?):\s*(return.*)$/);
+    if (singleIf) {
+      let retVal = singleIf[2].replace(/^return\s*/, '').replace(/;$/, '');
+      const pad = '    '.repeat(Math.max(2, indentStack.length + 1));
+      cppBody.push(`${pad}if (${singleIf[1]}) return ${retVal};`);
+      continue;
+    }
+
+    const isBlockStart = line.endsWith(':');
+    let converted = line;
 
     // Syntax replacements
-    let converted = line
+    converted = converted
       .replace(/print\((.*)\)/g, 'cout << $1 << endl;')
       .replace(/\bTrue\b/g, 'true')
       .replace(/\bFalse\b/g, 'false')
       .replace(/\bNone\b/g, 'nullptr')
-      .replace(/\band\b/g, '&&')
-      .replace(/\bor\b/g, '||')
+      .replace(/\band\b/g, ' && ')
+      .replace(/\bor\b/g, ' || ')
       .replace(/\bnot\s+/g, '!')
       .replace(/for\s+([a-zA-Z0-9_]+)\s+in\s+range\(len\(([a-zA-Z0-9_]+)\)\):/g, 'for (int $1 = 0; $1 < $2.size(); $1++) {')
       .replace(/for\s+([a-zA-Z0-9_]+)\s+in\s+range\(([^,]+),\s*([^)]+)\):/g, 'for (int $1 = $2; $1 < $3; $1++) {')
@@ -497,12 +530,44 @@ export function convertPythonToCpp(pythonCode: string, title?: string): string {
       .replace(/([a-zA-Z0-9_]+)\.append\(([^)]+)\)/g, '$1.push_back($2)')
       .replace(/([a-zA-Z0-9_]+)\.pop\(\)/g, '$1.pop_back()');
 
-    if (converted.length > 0) {
-      if (!converted.endsWith(';') && !converted.endsWith('{') && !converted.endsWith('}')) {
-        converted += ';';
-      }
-      cppBody.push('        ' + converted);
+    // 1D vector: dp = [0] * (n + 1)
+    const vecFill = converted.match(/^([a-zA-Z0-9_]+)\s*=\s*\[([^\]]+)\]\s*\*\s*\(?([^;]+)\)?/);
+    if (vecFill) {
+      declaredVars.add(vecFill[1]);
+      converted = `vector<int> ${vecFill[1]}(${vecFill[3].trim()}, ${vecFill[2].trim()})`;
     }
+
+    // Variable assignment: prev = 2 or ans = 0
+    const varAssign = converted.match(/^([a-zA-Z0-9_]+)\s*=\s*(.*)$/);
+    if (varAssign && !converted.startsWith('vector<') && !converted.includes('==')) {
+      const vName = varAssign[1];
+      if (!declaredVars.has(vName)) {
+        declaredVars.add(vName);
+        converted = `int ${vName} = ${varAssign[2]}`;
+      }
+    }
+
+    if (isBlockStart && !converted.endsWith('{')) {
+      converted += ' {';
+    }
+
+    if (!converted.endsWith(';') && !converted.endsWith('{') && !converted.endsWith('}')) {
+      converted += ';';
+    }
+
+    const pad = '    '.repeat(Math.max(2, indentStack.length + 1));
+    cppBody.push(pad + converted);
+
+    if (isBlockStart) {
+      indentStack.push(indent);
+    }
+  }
+
+  // Pop remaining braces
+  while (indentStack.length > 0) {
+    indentStack.pop();
+    const pad = '    '.repeat(Math.max(1, indentStack.length + 1));
+    cppBody.push(pad + '}');
   }
 
   const result: string[] = [];
@@ -528,7 +593,6 @@ export function convertPythonToCpp(pythonCode: string, title?: string): string {
     result.push('    }');
   } else {
     result.push(...cppBody);
-    result.push('    }');
   }
   result.push('};\n');
   result.push('int main() {');

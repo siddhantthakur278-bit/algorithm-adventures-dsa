@@ -87,9 +87,9 @@ export const TopHeaderBar: React.FC = () => {
 
       {/* 3. Glossy Brand Logo */}
       <div
-        onClick={() => setActiveTab('problems')}
+        onClick={() => setActiveTab('home')}
         className="logo cursor-pointer shrink-0"
-        title="Algorithm Adventures - Click to go to Problem Library"
+        title="Algorithm Adventures - Click to go to Home Dashboard"
       >
         <b className="logo-badge">⚡</b>
         <span className="hidden sm:inline">Algorithm Adventures</span>
@@ -98,6 +98,12 @@ export const TopHeaderBar: React.FC = () => {
       {/* 4. Glossy Quick Tabs Bar (Responsive: visible on desktop/laptop viewports) */}
       <div className="hidden lg:flex items-center shrink-0">
         <div className="tabs">
+          <button
+            onClick={() => setActiveTab('home')}
+            className={activeTab === 'home' ? 'on' : ''}
+          >
+            Home
+          </button>
           <button
             onClick={() => setActiveTab('problems')}
             className={activeTab === 'problems' ? 'on' : ''}

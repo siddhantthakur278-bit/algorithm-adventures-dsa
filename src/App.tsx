@@ -41,6 +41,7 @@ const BossBattleModal = React.lazy(() => import('./components/boss/BossBattleMod
 const MegaCheatSheets = React.lazy(() => import('./components/cheatsheet/MegaCheatSheets').then((m) => ({ default: m.MegaCheatSheets })));
 const ProblemLibraryHub = React.lazy(() => import('./components/problems/ProblemLibraryHub').then((m) => ({ default: m.ProblemLibraryHub })));
 const StriversA2ZSheetHub = React.lazy(() => import('./components/strivers/StriversA2ZSheetHub').then((m) => ({ default: m.StriversA2ZSheetHub })));
+const HomepageDashboard = React.lazy(() => import('./components/home/HomepageDashboard').then((m) => ({ default: m.HomepageDashboard })));
 const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/GlobalLeaderboardHub').then((m) => ({ default: m.GlobalLeaderboardHub })));
 const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityChatHub').then((m) => ({ default: m.CommunityChatHub })));
 import { isProfileSetupComplete } from './utils/universalLeaderboardService';
@@ -123,6 +124,7 @@ const MainContent: React.FC = () => {
 
       {activeSaga === 'dsa' && (
         <main className="flex-1 pb-16">
+          {activeTab === 'home' && <HomepageDashboard />}
           {activeTab === 'quest' && <DailyQuestHub />}
           {activeTab === 'leaderboard' && <GlobalLeaderboardHub />}
           {activeTab === 'chat' && <CommunityChatHub />}

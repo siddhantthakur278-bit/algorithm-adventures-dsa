@@ -311,7 +311,7 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
-  const [activeTab, setActiveTab] = useState<string>('quest');
+  const [activeTab, setActiveTab] = useState<string>('home');
 
   // Vertical Panel vs Classic Top Bar layout state
   const [layoutMode, setLayoutModeState] = useState<LayoutMode>(() => {

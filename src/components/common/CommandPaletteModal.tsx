@@ -31,6 +31,7 @@ import {
   Video,
   Globe,
   RotateCcw,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -72,6 +73,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
 
   const items: PaletteItem[] = [
     // --- Navigation Tabs ---
+    {
+      id: 'tab-home',
+      title: 'Command Center Home (Daily Quests, Curriculum Coverage, Live Stats, Smart To-Do)',
+      category: 'Navigation',
+      icon: LayoutDashboard,
+      badge: 'Home Dashboard',
+      onSelect: () => {
+        setActiveSaga('dsa');
+        setActiveTab('home');
+      },
+    },
     {
       id: 'tab-strivers-sheet',
       title: "Striver's A2Z DSA Sheet (346+ Questions, 18 Steps)",

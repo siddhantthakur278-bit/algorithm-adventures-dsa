@@ -34,6 +34,7 @@ import {
   Columns2,
   MessagesSquare,
   Target,
+  LayoutDashboard,
 } from 'lucide-react';
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
@@ -104,6 +105,7 @@ export const Navbar: React.FC = () => {
   };
 
   const tabs = [
+    { id: 'home', label: 'Home', icon: LayoutDashboard, badge: 'Overview' },
     { id: 'quest', label: 'Quests', icon: Sparkles, badge: '5 AM POTD' },
     { id: 'strivers-sheet', label: "Striver's A2Z Sheet", icon: Target, badge: 'A2Z 346 Qs' },
     { id: 'leaderboard', label: 'World Leaderboard', icon: Trophy, badge: 'Live Global' },
