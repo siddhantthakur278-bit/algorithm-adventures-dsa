@@ -15,6 +15,8 @@ import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
+import { AuthModal } from '../auth/AuthModal';
+import { getStoredAuthSession, AuthSession } from '../../utils/authService';
 import {
   QUICK_THEME_DOTS,
   applyTheme,
@@ -36,6 +38,9 @@ export const TopHeaderBar: React.FC = () => {
 
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
   const [showThemeModal, setShowThemeModal] = useState<boolean>(false);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [authModalTab, setAuthModalTab] = useState<'email' | 'phone' | 'google' | 'jwt'>('email');
+  const [currentSession, setCurrentSession] = useState<AuthSession | null>(getStoredAuthSession);
   const [currentTheme, setCurrentTheme] = useState<ThemePresetId>(() => getStoredTheme());
   const myProfile = getStoredUserProfile();
 
@@ -43,8 +48,23 @@ export const TopHeaderBar: React.FC = () => {
     const handleThemeChange = (e: any) => {
       if (e?.detail?.id) setCurrentTheme(e.detail.id);
     };
+    const handleOpenAuth = (e: any) => {
+      if (e?.detail?.tab) setAuthModalTab(e.detail.tab);
+      setShowAuthModal(true);
+    };
+    const handleSessionChange = (e: any) => {
+      setCurrentSession(e?.detail || null);
+    };
+
     window.addEventListener('theme-changed', handleThemeChange);
-    return () => window.removeEventListener('theme-changed', handleThemeChange);
+    window.addEventListener('open-auth-modal', handleOpenAuth);
+    window.addEventListener('auth-session-changed', handleSessionChange);
+
+    return () => {
+      window.removeEventListener('theme-changed', handleThemeChange);
+      window.removeEventListener('open-auth-modal', handleOpenAuth);
+      window.removeEventListener('auth-session-changed', handleSessionChange);
+    };
   }, []);
 
   const handleSelectTheme = (id: ThemePresetId) => {
@@ -248,20 +268,53 @@ export const TopHeaderBar: React.FC = () => {
         <LoFiRadioWidget />
       </div>
 
-      {/* 14. User Human Avatar Button */}
+      {/* 14. Quick JWT / OAuth Authentication & Verification Trigger */}
+      <button
+        onClick={() => {
+          sound.playPop();
+          setAuthModalTab(currentSession ? 'jwt' : 'email');
+          setShowAuthModal(true);
+        }}
+        className={`px-2.5 py-1.5 rounded-full border transition cursor-pointer text-xs font-semibold shrink-0 flex items-center gap-1.5 shadow-sm ${
+          currentSession
+            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
+            : 'bg-gradient-to-r from-amber-500/20 to-violet-500/20 hover:from-amber-500/30 hover:to-violet-500/30 border-amber-400/30 text-amber-200'
+        }`}
+        title={
+          currentSession
+            ? `Signed in as ${currentSession.user.displayName} (${currentSession.user.provider.toUpperCase()} JWT Active) - Click for Security Inspector`
+            : 'Sign In / Verify with Google OAuth, Email OTP, or Phone SMS OTP'
+        }
+      >
+        <span className="text-xs">
+          {currentSession?.user.provider === 'google' ? '🌐' : currentSession?.user.isPhoneVerified ? '📱' : '🛡️'}
+        </span>
+        <span className="hidden sm:inline font-mono">
+          {currentSession ? 'Verified' : 'Sign In / OTP'}
+        </span>
+      </button>
+
+      {/* 15. User Human Avatar Button */}
       <button
         onClick={() => setShowOnboardingModal(true)}
         className="p-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-xs transition cursor-pointer shadow-sm group shrink-0 flex items-center"
-        title={`Logged in as ${myProfile.displayName} (@${myProfile.handle}) - Click to configure identity`}
+        title={`Profile: ${myProfile.displayName} (@${myProfile.handle}) - Click to configure identity`}
       >
         <HumanAvatar
           seed={myProfile.handle}
           name={myProfile.displayName}
-          avatarUrl={myProfile.avatarUrl}
+          avatarUrl={currentSession?.user.avatarUrl || myProfile.avatarUrl}
           size="xs"
           showStatus={true}
         />
       </button>
+
+      {/* Authentication & JWT/OAuth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialTab={authModalTab}
+      />
 
       {/* Identity & Verification Modal */}
       <GlobalOnboardingModal

@@ -40,8 +40,11 @@ import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
+import { AuthModal } from '../auth/AuthModal';
+import { getStoredAuthSession, AuthSession } from '../../utils/authService';
 import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
+import { sound } from '../../utils/soundEffects';
 
 export const Navbar: React.FC = () => {
   const {
@@ -62,6 +65,8 @@ export const Navbar: React.FC = () => {
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentSession, setCurrentSession] = useState<AuthSession | null>(getStoredAuthSession);
   const myProfile = getStoredUserProfile();
   const [gitToken, setGitToken] = useState(() => loadGitHubConfig().token);
   const [gitOwner, setGitOwner] = useState(() => loadGitHubConfig().owner);
@@ -430,6 +435,23 @@ export const Navbar: React.FC = () => {
                 <span className="px-1.5 py-0.2 bg-amber-400 text-slate-950 rounded text-[9px] font-extrabold">
                   {stats.badges.length}
                 </span>
+              </button>
+
+              {/* Quick JWT / OAuth Authentication & Verification Trigger */}
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  setShowAuthModal(true);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                  currentSession
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                    : 'bg-gradient-to-r from-amber-500/20 to-violet-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-violet-500/30'
+                }`}
+                title="Sign In / Verify with Google OAuth, Email OTP, or Phone OTP"
+              >
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden lg:inline">{currentSession ? 'Verified' : 'Sign In / OTP'}</span>
               </button>
 
               {/* Universal Identity & Human Avatar Button */}
@@ -812,6 +834,12 @@ export const Navbar: React.FC = () => {
       <GlobalOnboardingModal
         isOpen={showOnboardingModal}
         onClose={() => setShowOnboardingModal(false)}
+      />
+
+      {/* Authentication & JWT/OAuth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
     </>
   );

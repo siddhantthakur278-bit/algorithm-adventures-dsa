@@ -41,6 +41,7 @@ const BossBattleModal = React.lazy(() => import('./components/boss/BossBattleMod
 const MegaCheatSheets = React.lazy(() => import('./components/cheatsheet/MegaCheatSheets').then((m) => ({ default: m.MegaCheatSheets })));
 const ProblemLibraryHub = React.lazy(() => import('./components/problems/ProblemLibraryHub').then((m) => ({ default: m.ProblemLibraryHub })));
 const StriversA2ZSheetHub = React.lazy(() => import('./components/strivers/StriversA2ZSheetHub').then((m) => ({ default: m.StriversA2ZSheetHub })));
+const CalculusHub = React.lazy(() => import('./components/calculus/CalculusHub').then((m) => ({ default: m.CalculusHub })));
 const HomepageDashboard = React.lazy(() => import('./components/home/HomepageDashboard').then((m) => ({ default: m.HomepageDashboard })));
 const GlobalLeaderboardHub = React.lazy(() => import('./components/leaderboard/GlobalLeaderboardHub').then((m) => ({ default: m.GlobalLeaderboardHub })));
 const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityChatHub').then((m) => ({ default: m.CommunityChatHub })));
@@ -104,6 +105,12 @@ const MainContent: React.FC = () => {
         </main>
       )}
 
+      {activeSaga === 'calculus' && (
+        <main className="flex-1 pb-16">
+          <CalculusHub />
+        </main>
+      )}
+
       {activeSaga === 'web-dev' && (
         <main className="flex-1 pb-16">
           <WebDevHub />
@@ -148,6 +155,7 @@ const MainContent: React.FC = () => {
           {activeTab === 'cheatsheet' && <MegaCheatSheets />}
           {activeTab === 'problems' && <ProblemLibraryHub />}
           {activeTab === 'strivers-sheet' && <StriversA2ZSheetHub />}
+          {activeTab === 'calculus' && <CalculusHub />}
         </main>
       )}
     </Suspense>
@@ -264,6 +272,31 @@ const FooterContent: React.FC = () => {
             <div className="flex items-center gap-4">
               <span className="text-slate-400 text-xs font-mono">
                 Prof. Pivot • Vee • Gauss-bot • 60 MCQs & 20 Brain-Gym
+              </span>
+            </div>
+          </>
+        )}
+
+        {activeSaga === 'calculus' && (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center -space-x-2">
+                <ProfessorAvatar size="sm" mood="wise" />
+                <PriAvatar size="sm" mood="teaching" />
+              </div>
+              <div>
+                <p className="font-bangers text-base text-[#A78BFA] tracking-wide">
+                  CALCULUS 1 — PROFESSOR LEONARD MASTERCLASS
+                </p>
+                <p className="text-xs text-slate-400">
+                  Limits, Derivatives, MVT, Integrals, U-Sub, Volumes &amp; Arc Length • 32 Full Lectures • Easy, Medium, Hard &amp; Extreme Practice Arena
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-slate-400 text-xs font-mono">
+                Interactive Riemann Sum &amp; Tangent Simulator
               </span>
             </div>
           </>

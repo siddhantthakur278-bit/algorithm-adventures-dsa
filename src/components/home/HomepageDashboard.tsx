@@ -68,6 +68,7 @@ export const HomepageDashboard: React.FC = () => {
   const {
     stats,
     setActiveTab,
+    setActiveSaga,
     scheduleState,
     dailyTargetStatus,
     realStreak,
@@ -276,6 +277,30 @@ export const HomepageDashboard: React.FC = () => {
             }
           }
         }
+      }
+
+      // 6. Check Calculus Challenges
+      if (!autoCompleted && (norm.includes('calculus') || norm.includes('derivative') || norm.includes('integral') || norm.includes('riemann') || norm.includes('limit'))) {
+        try {
+          const calcSolved = new Set(JSON.parse(localStorage.getItem('ada_calculus_solved_questions') || '[]'));
+          if (calcSolved.size > 0) {
+            autoCompleted = true;
+            reason = `Calculus Solved: ${calcSolved.size} practice challenges solved!`;
+            targetLink = { tab: 'calculus', label: 'Open Calculus Hub' };
+          }
+        } catch {}
+      }
+
+      // 7. Check Auth / Verification
+      if (!autoCompleted && (norm.includes('auth') || norm.includes('jwt') || norm.includes('otp') || norm.includes('google') || norm.includes('phone') || norm.includes('email verification'))) {
+        try {
+          const session = JSON.parse(localStorage.getItem('ada_auth_session_v2') || 'null');
+          if (session && (session.user.isEmailVerified || session.user.isPhoneVerified)) {
+            autoCompleted = true;
+            reason = `Verified: Signed in with ${session.user.provider.toUpperCase()} (JWT Active)!`;
+            targetLink = { tab: 'auth-modal', label: 'View JWT Security' };
+          }
+        } catch {}
       }
 
       const isEffectivelyCompleted = task.completed || autoCompleted;

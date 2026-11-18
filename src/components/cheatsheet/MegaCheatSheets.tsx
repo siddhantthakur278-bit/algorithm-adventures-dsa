@@ -111,6 +111,26 @@ export const MegaCheatSheets: React.FC = () => {
               <Key className="w-3.5 h-3.5" />
               OAuth 2.0 &amp; JWT Matrix
             </button>
+            <button
+              onClick={() => {
+                sound.playPop();
+                window.dispatchEvent(new CustomEvent('open-auth-modal'));
+              }}
+              className="px-3 py-1.5 rounded-xl text-xs font-bangers tracking-wider border-2 bg-gradient-to-r from-amber-500/20 to-purple-500/20 text-amber-300 border-amber-400/40 hover:from-amber-500/30 hover:to-purple-500/30 transition flex items-center gap-1.5"
+            >
+              <span>🛡️</span>
+              Sign In / OTP Modal
+            </button>
+            <button
+              onClick={() => {
+                sound.playPop();
+                setAppActiveTab('calculus');
+              }}
+              className="px-3 py-1.5 rounded-xl text-xs font-bangers tracking-wider border-2 bg-gradient-to-r from-violet-500/20 to-cyan-500/20 text-violet-300 border-violet-400/40 hover:from-violet-500/30 hover:to-cyan-500/30 transition flex items-center gap-1.5"
+            >
+              <span>📐</span>
+              Calculus 1 Arena (32 Ls)
+            </button>
           </div>
         </div>
       </div>

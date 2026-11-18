@@ -34,6 +34,7 @@ import {
   LayoutDashboard,
   Key,
   Shield,
+  Sigma,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -43,7 +44,7 @@ import { ambientRadio } from '../../utils/ambientMusicEngine';
 interface PaletteItem {
   id: string;
   title: string;
-  category: 'Navigation' | 'High-Tech Lab' | 'Saga' | 'Theme Accent' | 'Action' | 'Core CS Subjects';
+  category: 'Navigation' | 'High-Tech Lab' | 'Saga' | 'Theme Accent' | 'Action' | 'Core CS Subjects' | 'Authentication' | 'Mathematics';
   icon: React.ElementType | string;
   badge?: string;
   shortcut?: string;
@@ -75,6 +76,27 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
 
   const items: PaletteItem[] = [
     // --- Navigation Tabs ---
+    {
+      id: 'tab-auth-security',
+      title: 'Sign In / Authentication & Security (Google OAuth, Email OTP, Phone OTP & JWT Inspector)',
+      category: 'Authentication',
+      icon: Shield,
+      badge: 'OAuth & JWT',
+      onSelect: () => {
+        window.dispatchEvent(new CustomEvent('open-auth-modal'));
+      },
+    },
+    {
+      id: 'tab-calculus-saga',
+      title: 'Calculus 1 — Single Variable (32 Lectures by Prof. Leonard • Easy, Medium, Hard, Extreme Practice)',
+      category: 'Mathematics',
+      icon: Sigma,
+      badge: '32 Lectures',
+      onSelect: () => {
+        setActiveSaga('calculus');
+        setActiveTab('calculus');
+      },
+    },
     {
       id: 'tab-home',
       title: 'Command Center Home (Daily Quests, Curriculum Coverage, Live Stats, Smart To-Do)',

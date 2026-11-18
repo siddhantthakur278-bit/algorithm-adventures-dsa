@@ -9,6 +9,7 @@
 // and runnable code simulations in Python, C++, SQL & Bash.
 
 import { SupportedLanguage } from '../utils/languageTemplates';
+import { CALCULUS_SUBJECT } from './calculusData';
 
 export interface SubjectLecture {
   id: string;
@@ -3453,7 +3454,8 @@ export const OTHER_ACADEMIC_SUBJECTS: AcademicSubject[] = [
         "detailedNotes": "### Production Architecture Checklist:\n- Centralized authentication middleware.\n- Asymmetric keys (RS256) for multi-service architectures using JWKS.\n- Short access token lifetimes (15 min) with automated rotation.\n- Defense against algorithm confusion attacks (enforce `algorithms=['RS256']`)."
       }
     ]
-  }
+  },
+  CALCULUS_SUBJECT
 ];
 
 /**

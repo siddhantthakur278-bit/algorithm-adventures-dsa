@@ -159,6 +159,7 @@ const STORAGE_KEY_COMPLETED = 'ada_coder_army_completed_lectures';
 export type StudioTrack =
   | 'coder-army'
   | 'dp-masterclass'
+  | 'math-calculus'
   | 'os'
   | 'dbms'
   | 'cn'
@@ -171,6 +172,7 @@ export type StudioTrack =
   | 'software-eng'
   | 'devops'
   | 'ml-ai'
+  | 'auth-security'
   | 'curated'
   | 'custom';
 
@@ -183,6 +185,7 @@ export const LectureStudioHub: React.FC = () => {
   // Active Lecture Tracking per Subject
   const [activeSubjectLectureIds, setActiveSubjectLectureIds] = useState<Record<string, string>>({
     'dp-masterclass': 'dp-1',
+    'math-calculus': 'calc-1',
     os: 'os-1',
     dbms: 'dbms-1',
     cn: 'cn-1',
@@ -195,6 +198,7 @@ export const LectureStudioHub: React.FC = () => {
     'software-eng': 'se-1',
     devops: 'devops-1',
     'ml-ai': 'ml-1',
+    'auth-security': 'auth-1',
   });
 
   // Coder Army Active Lecture
@@ -502,7 +506,7 @@ export const LectureStudioHub: React.FC = () => {
     }
   };
 
-  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<'all' | 'dsa' | 'systems' | 'design' | 'theory' | 'modern'>('all');
+  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<'all' | 'dsa' | 'math' | 'systems' | 'design' | 'theory' | 'modern'>('all');
 
   const ALL_STUDIO_TRACKS: {
     id: StudioTrack;
@@ -510,10 +514,12 @@ export const LectureStudioHub: React.FC = () => {
     icon: string;
     badge: string;
     desc: string;
-    category: 'dsa' | 'systems' | 'design' | 'theory' | 'modern' | 'misc';
+    category: 'dsa' | 'math' | 'systems' | 'design' | 'theory' | 'modern' | 'misc';
   }[] = [
     { id: 'coder-army', label: 'Coder Army (DSA)', icon: '⚔️', badge: '78 Ls', desc: 'Rohit Negi Complete DSA Curriculum with DP', category: 'dsa' },
     { id: 'dp-masterclass', label: 'Dynamic Programming (DP)', icon: '🧩', badge: 'Hot 🔥', desc: "Striver's Take U Forward 56-Video DP Masterclass", category: 'dsa' },
+    { id: 'math-calculus', label: 'Calculus 1', icon: '📐', badge: 'Prof. Leonard (32 Ls)', desc: 'Limits, Derivatives, MVT, Integrals, U-Sub, Volumes & Arc Length', category: 'math' },
+    { id: 'auth-security', label: 'Auth & JWT Security', icon: '🛡️', badge: 'OAuth 2.0 PKCE', desc: 'JWT Signing, OAuth 2.0 PKCE, Token Lifecycles & Security', category: 'systems' },
     { id: 'os', label: 'Operating Systems', icon: '💻', badge: 'Gate Smashers', desc: 'Processes, Memory, Paging, Semaphores', category: 'systems' },
     { id: 'dbms', label: 'DBMS & SQL', icon: '🗄️', badge: 'Gate Smashers', desc: 'ER, Normalization, ACID, 2PL, B+ Trees', category: 'systems' },
     { id: 'cn', label: 'Computer Networks', icon: '🌐', badge: 'Gate Smashers', desc: 'OSI 7-Layer, Subnetting, TCP Handshake, ARQ', category: 'systems' },
@@ -533,6 +539,7 @@ export const LectureStudioHub: React.FC = () => {
   const visibleStudioTracks = ALL_STUDIO_TRACKS.filter((t) => {
     if (subjectCategoryFilter === 'all') return true;
     if (subjectCategoryFilter === 'dsa') return t.category === 'dsa';
+    if (subjectCategoryFilter === 'math') return t.category === 'math';
     if (subjectCategoryFilter === 'systems') return t.category === 'systems';
     if (subjectCategoryFilter === 'design') return t.category === 'design';
     if (subjectCategoryFilter === 'theory') return t.category === 'theory';
@@ -692,9 +699,10 @@ export const LectureStudioHub: React.FC = () => {
             Tracks:
           </span>
           {[
-            { id: 'all', label: 'All Tracks (16)' },
+            { id: 'all', label: 'All Tracks (18)' },
             { id: 'dsa', label: '⚔️ DSA & Dynamic Programming' },
-            { id: 'systems', label: '💻 Core Systems (OS, DBMS, CN, COA)' },
+            { id: 'math', label: '📐 Mathematics & Calculus 1' },
+            { id: 'systems', label: '💻 Core Systems & Security (OS, DBMS, CN, COA, Auth)' },
             { id: 'design', label: '🏗️ System Design & LLD' },
             { id: 'theory', label: '⚙️ Theory of Computation & Compiler' },
             { id: 'modern', label: '🐳 DevOps & Machine Learning' },

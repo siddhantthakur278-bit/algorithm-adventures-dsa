@@ -22,6 +22,7 @@ import {
   FileSpreadsheet,
   Database,
   Calculator,
+  Sigma,
   ChevronDown,
   ChevronRight,
   PanelLeftClose,
@@ -47,8 +48,11 @@ import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
+import { AuthModal } from '../auth/AuthModal';
+import { getStoredAuthSession, AuthSession } from '../../utils/authService';
 import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
+import { sound } from '../../utils/soundEffects';
 
 interface NavGroup {
   label: string;
@@ -83,6 +87,8 @@ export const VerticalSidebar: React.FC = () => {
 
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentSession, setCurrentSession] = useState<AuthSession | null>(getStoredAuthSession);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showSagaDropdown, setShowSagaDropdown] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
@@ -93,6 +99,7 @@ export const VerticalSidebar: React.FC = () => {
     { id: 'sql', label: 'SQL (PostgreSQL 16)', badge: '80 Belts', icon: Database, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
     { id: 'prisma', label: 'Prisma ORM v7', badge: 'v7 Capstone', icon: Code2, color: 'text-cyan-400', bg: 'bg-cyan-400/10' },
     { id: 'linear-algebra', label: 'Linear Algebra & 3D Math', badge: 'Maths', icon: Calculator, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+    { id: 'calculus', label: 'Calculus 1 (Prof. Leonard)', badge: '32 Lectures', icon: Sigma, color: 'text-violet-400', bg: 'bg-violet-400/10' },
     { id: 'web-dev', label: 'Full-Stack Web Dev', badge: 'MERN', icon: Globe, color: 'text-sky-400', bg: 'bg-sky-400/10' },
     { id: 'python-dsa', label: 'Python + DSA Adventures', badge: 'PyWasm', icon: BookOpen, color: 'text-amber-300', bg: 'bg-amber-400/10' },
     { id: 'roadmap', label: '40-Week Master Roadmap', badge: 'AI & CS', icon: Compass, color: 'text-emerald-300', bg: 'bg-emerald-400/10' },
@@ -457,6 +464,25 @@ export const VerticalSidebar: React.FC = () => {
 
           {/* Quick Action Dock Buttons */}
           <div className={`flex items-center gap-1 ${isSidebarCollapsed ? 'flex-col' : 'justify-between'}`}>
+            {/* Auth & Verification Modal Trigger */}
+            <button
+              onClick={() => {
+                sound.playPop();
+                setShowAuthModal(true);
+              }}
+              className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center justify-center ${
+                currentSession
+                  ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                  : 'bg-gradient-to-r from-amber-500/15 to-violet-500/15 hover:from-amber-500/25 hover:to-violet-500/25 text-amber-300 border-amber-400/30'
+              } ${isSidebarCollapsed ? 'w-full' : 'flex-1 gap-1 text-[11px] font-semibold'}`}
+              title="Authentication & JWT Security: Google OAuth, Email OTP & Phone SMS OTP"
+            >
+              <Shield className="w-3.5 h-3.5 shrink-0" />
+              {!isSidebarCollapsed && (
+                <span className="truncate">{currentSession ? 'Verified' : 'Auth / OTP'}</span>
+              )}
+            </button>
+
             {/* Identity & Gmail Verification Modal Trigger */}
             <button
               onClick={() => setShowOnboardingModal(true)}
@@ -547,6 +573,12 @@ export const VerticalSidebar: React.FC = () => {
       <GlobalOnboardingModal
         isOpen={showOnboardingModal}
         onClose={() => setShowOnboardingModal(false)}
+      />
+
+      {/* Authentication & JWT/OAuth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
 
       {/* Theme & Palette Modal */}

@@ -35,7 +35,7 @@ import { sound } from '../utils/soundEffects';
 import confetti from 'canvas-confetti';
 import { syncActiveScores, resetActiveScores } from '../utils/universalLeaderboardService';
 
-export type ActiveSaga = 'dsa' | 'sql' | 'prisma' | 'linear-algebra' | 'web-dev' | 'python-dsa' | 'roadmap';
+export type ActiveSaga = 'dsa' | 'sql' | 'prisma' | 'linear-algebra' | 'calculus' | 'web-dev' | 'python-dsa' | 'roadmap';
 export type LayoutMode = 'vertical-panel' | 'top-bar';
 
 interface CourseContextType {

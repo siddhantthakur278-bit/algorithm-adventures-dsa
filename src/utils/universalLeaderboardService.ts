@@ -8,6 +8,9 @@ export interface UniversalUserProfile {
   avatarUrl?: string;
   email?: string;
   isEmailVerified?: boolean;
+  phone?: string;
+  isPhoneVerified?: boolean;
+  authProvider?: 'google' | 'email_otp' | 'phone_otp' | 'guest';
   emailNotifications?: boolean;
   githubUsername: string;
   codeforcesHandle: string;
