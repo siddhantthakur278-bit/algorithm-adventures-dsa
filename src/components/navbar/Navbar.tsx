@@ -35,12 +35,15 @@ import {
   MessagesSquare,
   Target,
   LayoutDashboard,
+  CreditCard,
 } from 'lucide-react';
 import { loadGitHubConfig, saveGitHubConfig, testGitHubConnection } from '../../utils/githubService';
 import { AchievementsModal } from '../achievements/AchievementsModal';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 import { AuthModal } from '../auth/AuthModal';
+import { PaymentSandboxModal } from '../payments/PaymentSandboxModal';
+import { getCurrentPlan } from '../../utils/paymentService';
 import { getStoredAuthSession, AuthSession } from '../../utils/authService';
 import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
@@ -66,7 +69,9 @@ export const Navbar: React.FC = () => {
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentSession, setCurrentSession] = useState<AuthSession | null>(getStoredAuthSession);
+  const activePlan = getCurrentPlan();
   const myProfile = getStoredUserProfile();
   const [gitToken, setGitToken] = useState(() => loadGitHubConfig().token);
   const [gitOwner, setGitOwner] = useState(() => loadGitHubConfig().owner);
@@ -452,6 +457,24 @@ export const Navbar: React.FC = () => {
               >
                 <Shield className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden lg:inline">{currentSession ? 'Verified' : 'Sign In / OTP'}</span>
+              </button>
+
+              {/* 💳 Payment Sandbox & Subscription Plans Button */}
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  setShowPaymentModal(true);
+                }}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 hover:from-blue-500/25 hover:to-purple-500/25 rounded-xl border border-blue-400/30 text-blue-300 font-semibold text-xs transition cursor-pointer"
+                title="Payment Sandbox — Upgrade Plan (Razorpay / PayPal / Stripe)"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-blue-400" />
+                <span className="hidden lg:inline">{activePlan.id !== 'free' ? activePlan.badge + ' ' + activePlan.name : 'Upgrade'}</span>
+                {activePlan.id !== 'free' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold" style={{ backgroundColor: activePlan.color + '30', color: activePlan.color }}>
+                    {activePlan.id.toUpperCase()}
+                  </span>
+                )}
               </button>
 
               {/* Universal Identity & Human Avatar Button */}
@@ -840,6 +863,12 @@ export const Navbar: React.FC = () => {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* 💳 Payment Sandbox Modal (Razorpay / PayPal / Stripe) */}
+      <PaymentSandboxModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
       />
     </>
   );

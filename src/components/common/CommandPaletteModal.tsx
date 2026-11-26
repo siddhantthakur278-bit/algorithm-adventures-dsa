@@ -35,6 +35,7 @@ import {
   Key,
   Shield,
   Sigma,
+  CreditCard,
 } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { sound } from '../../utils/soundEffects';
@@ -44,7 +45,7 @@ import { ambientRadio } from '../../utils/ambientMusicEngine';
 interface PaletteItem {
   id: string;
   title: string;
-  category: 'Navigation' | 'High-Tech Lab' | 'Saga' | 'Theme Accent' | 'Action' | 'Core CS Subjects' | 'Authentication' | 'Mathematics';
+  category: 'Navigation' | 'High-Tech Lab' | 'Saga' | 'Theme Accent' | 'Action' | 'Core CS Subjects' | 'Authentication' | 'Mathematics' | 'Payments';
   icon: React.ElementType | string;
   badge?: string;
   shortcut?: string;
@@ -624,6 +625,40 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       onSelect: () => {
         sound.playPop();
         window.dispatchEvent(new CustomEvent('open-reset-journey'));
+      },
+    },
+    // --- Payment Sandbox ---
+    {
+      id: 'tab-payment-sandbox',
+      title: 'Payment Sandbox — Upgrade Plan (Razorpay / PayPal / Stripe Demo Checkout)',
+      category: 'Payments',
+      icon: CreditCard,
+      badge: 'Sandbox',
+      onSelect: () => {
+        sound.playPop();
+        window.dispatchEvent(new CustomEvent('open-payment-sandbox'));
+      },
+    },
+    {
+      id: 'tab-payment-plans',
+      title: 'View Subscription Plans — Free, Starter, Pro & Elite Tiers',
+      category: 'Payments',
+      icon: CreditCard,
+      badge: '4 Plans',
+      onSelect: () => {
+        sound.playPop();
+        window.dispatchEvent(new CustomEvent('open-payment-sandbox'));
+      },
+    },
+    {
+      id: 'tab-payment-history',
+      title: 'Transaction History & Receipts (Sandbox Mode)',
+      category: 'Payments',
+      icon: CreditCard,
+      badge: 'History',
+      onSelect: () => {
+        sound.playPop();
+        window.dispatchEvent(new CustomEvent('open-payment-sandbox'));
       },
     },
   ];

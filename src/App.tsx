@@ -48,6 +48,7 @@ const CommunityChatHub = React.lazy(() => import('./components/chat/CommunityCha
 import { isProfileSetupComplete } from './utils/universalLeaderboardService';
 import { GlobalOnboardingModal } from './components/common/GlobalOnboardingModal';
 import { ResetJourneyModal } from './components/common/ResetJourneyModal';
+import { PaymentSandboxModal } from './components/payments/PaymentSandboxModal';
 
 const ComicSuspenseLoader: React.FC<{ label?: string }> = ({ label = 'Loading Adventure...' }) => (
   <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-3 animate-fadeIn">
@@ -392,6 +393,7 @@ export const AppContent: React.FC = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => !isProfileSetupComplete());
   const [isResetJourneyModalOpen, setIsResetJourneyModalOpen] = useState(false);
   const [showMasterClock, setShowMasterClock] = useState(false);
+  const [showPaymentSandbox, setShowPaymentSandbox] = useState(false);
 
   useEffect(() => {
     applyTheme(getStoredTheme());
@@ -419,16 +421,22 @@ export const AppContent: React.FC = () => {
       setShowMasterClock((prev) => !prev);
     };
 
+    const handleOpenPaymentSandbox = () => {
+      setShowPaymentSandbox(true);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('open-command-palette', handleCustomOpen);
     window.addEventListener('open-reset-journey', handleOpenResetJourney);
     window.addEventListener('toggle-master-clock', handleToggleMasterClock);
+    window.addEventListener('open-payment-sandbox', handleOpenPaymentSandbox);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-command-palette', handleCustomOpen);
       window.removeEventListener('open-reset-journey', handleOpenResetJourney);
       window.removeEventListener('toggle-master-clock', handleToggleMasterClock);
+      window.removeEventListener('open-payment-sandbox', handleOpenPaymentSandbox);
     };
   }, [setIsSidebarCollapsed]);
 
@@ -517,6 +525,12 @@ export const AppContent: React.FC = () => {
       <ResetJourneyModal
         isOpen={isResetJourneyModalOpen}
         onClose={() => setIsResetJourneyModalOpen(false)}
+      />
+
+      {/* 💳 Payment Sandbox Modal (Razorpay / PayPal / Stripe) — Global */}
+      <PaymentSandboxModal
+        isOpen={showPaymentSandbox}
+        onClose={() => setShowPaymentSandbox(false)}
       />
     </div>
   );

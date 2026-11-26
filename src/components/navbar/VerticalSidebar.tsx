@@ -42,6 +42,7 @@ import {
   Palette,
   Target,
   LayoutDashboard,
+  CreditCard,
 } from 'lucide-react';
 import { FlameIcon } from '../common/Icons';
 import { LoFiRadioWidget } from '../common/LoFiRadioWidget';
@@ -49,6 +50,8 @@ import { AchievementsModal } from '../achievements/AchievementsModal';
 import { GlobalOnboardingModal } from '../common/GlobalOnboardingModal';
 import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
 import { AuthModal } from '../auth/AuthModal';
+import { PaymentSandboxModal } from '../payments/PaymentSandboxModal';
+import { getCurrentPlan } from '../../utils/paymentService';
 import { getStoredAuthSession, AuthSession } from '../../utils/authService';
 import { HumanAvatar } from '../common/HumanAvatar';
 import { getStoredUserProfile } from '../../utils/universalLeaderboardService';
@@ -88,11 +91,13 @@ export const VerticalSidebar: React.FC = () => {
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentSession, setCurrentSession] = useState<AuthSession | null>(getStoredAuthSession);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showSagaDropdown, setShowSagaDropdown] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const myProfile = getStoredUserProfile();
+  const activePlan = getCurrentPlan();
 
   const sagas = [
     { id: 'dsa', label: 'Advanced DSA Masterclass', badge: 'Core', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-400/10' },
@@ -483,6 +488,23 @@ export const VerticalSidebar: React.FC = () => {
               )}
             </button>
 
+            {/* 💳 Payment Sandbox & Subscription Plans Button */}
+            <button
+              onClick={() => {
+                sound.playPop();
+                setShowPaymentModal(true);
+              }}
+              className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center justify-center bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 text-blue-300 border-blue-400/30 ${
+                isSidebarCollapsed ? 'w-full' : 'flex-1 gap-1 text-[11px] font-semibold'
+              }`}
+              title="Payment Sandbox — Upgrade Plan (Razorpay / PayPal / Stripe)"
+            >
+              <CreditCard className="w-3.5 h-3.5 shrink-0 text-blue-400" />
+              {!isSidebarCollapsed && (
+                <span className="truncate">{activePlan.id !== 'free' ? activePlan.badge + ' ' + activePlan.name : '💳 Upgrade'}</span>
+              )}
+            </button>
+
             {/* Identity & Gmail Verification Modal Trigger */}
             <button
               onClick={() => setShowOnboardingModal(true)}
@@ -579,6 +601,12 @@ export const VerticalSidebar: React.FC = () => {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* 💳 Payment Sandbox Modal (Razorpay / PayPal / Stripe) */}
+      <PaymentSandboxModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
       />
 
       {/* Theme & Palette Modal */}
